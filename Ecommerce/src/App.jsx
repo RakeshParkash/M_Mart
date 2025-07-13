@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
+import Footer from "./components/Footer";
 import Topbar from "./components/Topbar";
 import Home from "./pages/Home";
 
@@ -39,6 +40,7 @@ function App() {
               
             </Routes>
           </main>
+          <Footer />
         </div>
       </div>
     </Router>

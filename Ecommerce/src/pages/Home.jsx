@@ -317,26 +317,18 @@ const Home = ({ theme = "red" }) => (
       transition: "background 0.4s",
     }}
   >
-    {/* Hero Section */}
     <HeroSection theme={theme} />
 
-    {/* Product Sections with dynamic headline colors */}
     <ProductSection title="Popular Products" products={products} theme={theme} accentColor={theme === "red" ? "blue" : "red"} />
     <ProductSection title="Snacks" products={snacks} theme={theme} accentColor="yellow" />
     <ProductSection title="Beverages" products={beverages} theme={theme} accentColor="blue" />
     <ProductSection title="Grains & Staples" products={grains} theme={theme} accentColor="green" />
     <ProductSection title="Bakery" products={bakery} theme={theme} accentColor="purple" />
 
-    {/* Featured Recipes */}
     <RecipesSection recipes={recipes} theme={theme} />
 
-    {/* Newsletter Signup */}
     <Newsletter theme={theme} />
 
-    {/* Footer */}
-    <footer className="max-w-6xl mx-auto py-8 px-4 text-center text-gray-500 text-sm mt-12">
-      &copy; {new Date().getFullYear()} GrocerEase. All rights reserved.
-    </footer>
   </div>
 );
 
