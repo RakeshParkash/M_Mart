@@ -1,0 +1,17 @@
+/* Remove all default margin and padding */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  background: #111; /* Your desired background */
+  overflow-x: hidden;
+}
+
+/* Remove margin/padding from all elements */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}

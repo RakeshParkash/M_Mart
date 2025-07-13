@@ -1,0 +1,128 @@
+.settings-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(24,24,24,0.24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+
+.settings-card {
+  background: #19191a;
+  color: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 28px 26px 18px 26px;
+  min-width: 300px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+}
+
+.settings-title {
+  font-family: 'Cinzel', serif;
+  color: #dc0505;
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+.settings-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.settings-group label {
+  font-size: 1.05rem;
+  color: #f2f2f2;
+  font-weight: 500;
+}
+
+.theme-toggle, .layout-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #222;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 7px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 2px 8px rgba(220,5,5,0.08);
+}
+.theme-toggle.selected, .layout-toggle.selected {
+  background: #dc0505;
+  color: #fff;
+}
+.theme-toggle:hover, .layout-toggle:hover {
+  background: #dc0505;
+  color: #fff;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+.apply-btn {
+  background: #dc0505;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 7px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.apply-btn:hover {
+  background: #b10404;
+}
+.cancel-btn {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 14px;
+  padding: 7px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.cancel-btn:hover {
+  background: #333;
+  color: #dc0505;
+}
+
+.sidebar-settings-btn {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+.settings-link {
+  background: #fff;
+  color: #222;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 18px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.settings-link:hover {
+  background: #dc0505;
+  color: #fff;
+}

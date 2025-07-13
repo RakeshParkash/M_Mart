@@ -1,0 +1,30 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "This for a personal website",
+  "homepage": "https://github.com/Jeevant010/Proper#readme",
+  "bugs": {
+    "url": "https://github.com/Jeevant010/Proper/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jeevant010/Proper.git"
+  },
+  "license": "ISC",
+  "author": "Jeevant",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.1",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1"
+  }
+}

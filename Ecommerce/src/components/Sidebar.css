@@ -1,0 +1,62 @@
+.luxury-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 100vh;
+  background: #111; /* Deep black */
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 40px;
+  box-shadow: 2px 0 16px rgba(0,0,0,0.12);
+  z-index: 1000;
+}
+
+.logo-container {
+  margin-bottom: 40px;
+}
+
+.logo-text {
+  font-family: 'Cinzel', serif;
+  font-size: 1.7rem;
+  font-weight: bold;
+  color: #dc0505; /* Vibrant red */
+  letter-spacing: 3px;
+  text-decoration: none;
+}
+
+.nav-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+}
+
+.nav-links li {
+  text-align: center;
+}
+
+.nav-links a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 2px;
+  padding: 10px 0;
+  display: block;
+  border-radius: 6px;
+  position: relative;
+  transition: background 0.2s, color 0.2s;
+}
+
+.nav-links a.active,
+.nav-links a:hover {
+  background: #dc0505;
+  color: #fff;
+  font-weight: 600;
+}
