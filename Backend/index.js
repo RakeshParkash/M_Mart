@@ -6,10 +6,10 @@ const passport = require("passport");
 const User = require("./models/User");
 const authRoutes = require("./routes/auth");
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 8080;
 
-// const JwtStrategy = require('passport-jwt').Strategy,
-//     ExtractJwt = require('passport-jwt').ExtractJwt;
+const JwtStrategy = require('passport-jwt').Strategy,
+    ExtractJwt = require('passport-jwt').ExtractJwt;
 
 app.use(express.json());
 require("dotenv").config();
@@ -56,5 +56,5 @@ app.get("/",(req,res) => {
 
 // app.use("/auth", authRoutes);
 app.listen(port , () => {
-    console.log("App is running on port http://localhost:8000: " + port);
+    console.log("App is running on port http://localhost:8080: " + port);
 });

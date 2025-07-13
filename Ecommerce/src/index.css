@@ -1,0 +1,9 @@
+@import "tailwindcss";
+body[data-theme="dark"] {
+  background: #181818;
+  color: #fff;
+}
+body[data-theme="bright"] {
+  background: #fff;
+  color: #222;
+}
