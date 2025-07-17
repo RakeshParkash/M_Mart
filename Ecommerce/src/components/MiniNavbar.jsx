@@ -103,7 +103,7 @@ export default function MiniNavbar({
             </div>
           ) : (
             <div id="MyAccount" className="flex items-center gap-2 mt-1 sm:mt-0">
-              <button  className="font-semibold text-[#1976d2] text-sm rounded-full cursor-pointer"
+              <button  className="font-semibold text-[#1976d2] text-sm rounded-full cursor-pointer text-[#1976d2] hover:bg-blue-50 bg-green-300 p-1"
                 onClick={Account}
               >My Account
               </button>
