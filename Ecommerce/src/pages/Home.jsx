@@ -21,121 +21,6 @@ const getHeadlineColors = (theme) => {
   }
 };
 
-const ProductSection = ({ title, products, theme, accentColor = "red" }) => {
-  const { headline, accent, border } = getHeadlineColors(theme);
-  return (
-    <section className="max-w-6xl mx-auto px-4 py-8">
-      <h2
-        className="text-2xl font-extrabold mb-8 border-l-4 pl-4"
-        style={{
-          color: headline,
-          borderColor: border,
-          letterSpacing: "0.01em",
-          textShadow: "0 1px 2px rgba(0,0,0,0.06)",
-        }}
-      >
-        {title}
-      </h2>
-      <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {products.map((item, idx) => (
-          <div
-            key={idx}
-            className="rounded-xl shadow-lg p-4 flex flex-col items-center border-t-4 transition hover:scale-105"
-            style={{
-              background: "var(--card-bg, #fff)",
-              borderColor: border,
-            }}
-          >
-            <img
-              src={item.img}
-              alt={item.name}
-              className="w-24 h-24 object-cover rounded-full border-4 mb-4"
-              style={{ borderColor: accent }}
-            />
-            <h3
-              className="text-lg font-bold mb-2"
-              style={{ color: accent }}
-            >
-              {item.name}
-            </h3>
-            <p
-              className="text-sm mb-1 text-center"
-              style={{ color: headline, opacity: 0.85 }}
-            >
-              {item.desc}
-            </p>
-            {item.price && (
-              <p
-                className="text-md font-semibold mb-3"
-                style={{ color: accent }}
-              >
-                {item.price}
-              </p>
-            )}
-            {item.cta && (
-              <button
-                className="mt-auto px-4 py-1 rounded-full font-medium transition hover:brightness-110"
-                style={{
-                  background: accent,
-                  color: "#fff",
-                  boxShadow: "0 2px 8px 0 rgba(0,0,0,0.10)",
-                }}
-              >
-                {item.cta}
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-};
-
-const RecipesSection = ({ recipes, theme }) => {
-  const { headline, accent, border } = getHeadlineColors(theme);
-  return (
-    <section className="max-w-6xl mx-auto px-4 py-12">
-      <h2
-        className="text-3xl font-bold mb-8 border-l-4 pl-4"
-        style={{
-          color: headline,
-          borderColor: border,
-          letterSpacing: "0.01em",
-          textShadow: "0 1px 2px rgba(0,0,0,0.06)",
-        }}
-      >
-        Featured Recipes
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {recipes.map((recipe, idx) => (
-          <div
-            key={idx}
-            className="rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition cursor-pointer"
-            style={{ background: "var(--card-bg, #fff)" }}
-          >
-            <img
-              src={recipe.img}
-              alt={recipe.title}
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-4">
-              <h3
-                className="text-xl font-semibold mb-2"
-                style={{ color: accent }}
-              >
-                {recipe.title}
-              </h3>
-              <p className="text-sm" style={{ color: headline, opacity: 0.85 }}>
-                {recipe.desc}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-};
-
 const Newsletter = ({ theme }) => {
   const { headline, accent, border } = getHeadlineColors(theme);
   return (
@@ -178,134 +63,134 @@ const Newsletter = ({ theme }) => {
   );
 };
 
-const products = [
-  {
-    name: "Cow Milk",
-    desc: "Fresh, pure cow milk. Delivered daily.",
-    price: "₹60/litre",
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    name: "Whole Wheat Flour",
-    desc: "Stone-ground, high-fiber wheat flour.",
-    price: "₹45/kg",
-    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    name: "Basmati Rice",
-    desc: "Aromatic long-grain rice, perfect for biryani.",
-    price: "₹120/kg",
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    name: "Organic Ghee",
-    desc: "Pure desi ghee made from cow's milk.",
-    price: "₹400/500ml",
-    img: "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    name: "Paneer Cubes",
-    desc: "Fresh, soft paneer. Perfect for curries.",
-    price: "₹280/kg",
-    img: "https://images.unsplash.com/photo-1464306076886-debca5e8a6b0?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    name: "Almonds",
-    desc: "Premium quality, raw whole almonds.",
-    price: "₹650/kg",
-    img: "https://images.unsplash.com/photo-1574226516831-e1dff420e8f8?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    name: "Poha (Flattened Rice)",
-    desc: "Light and easy to cook for breakfast.",
-    price: "₹60/500g",
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    name: "Soya Chunks",
-    desc: "Protein-rich soya nuggets for curries.",
-    price: "₹80/500g",
-    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
-  }
-];
+// const products = [
+//   {
+//     name: "Cow Milk",
+//     desc: "Fresh, pure cow milk. Delivered daily.",
+//     price: "₹60/litre",
+//     img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
+//   },
+//   {
+//     name: "Whole Wheat Flour",
+//     desc: "Stone-ground, high-fiber wheat flour.",
+//     price: "₹45/kg",
+//     img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
+//   },
+//   {
+//     name: "Basmati Rice",
+//     desc: "Aromatic long-grain rice, perfect for biryani.",
+//     price: "₹120/kg",
+//     img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
+//   },
+//   {
+//     name: "Organic Ghee",
+//     desc: "Pure desi ghee made from cow's milk.",
+//     price: "₹400/500ml",
+//     img: "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=400&q=80"
+//   },
+//   {
+//     name: "Paneer Cubes",
+//     desc: "Fresh, soft paneer. Perfect for curries.",
+//     price: "₹280/kg",
+//     img: "https://images.unsplash.com/photo-1464306076886-debca5e8a6b0?auto=format&fit=crop&w=400&q=80"
+//   },
+//   {
+//     name: "Almonds",
+//     desc: "Premium quality, raw whole almonds.",
+//     price: "₹650/kg",
+//     img: "https://images.unsplash.com/photo-1574226516831-e1dff420e8f8?auto=format&fit=crop&w=400&q=80"
+//   },
+//   {
+//     name: "Poha (Flattened Rice)",
+//     desc: "Light and easy to cook for breakfast.",
+//     price: "₹60/500g",
+//     img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
+//   },
+//   {
+//     name: "Soya Chunks",
+//     desc: "Protein-rich soya nuggets for curries.",
+//     price: "₹80/500g",
+//     img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
+//   }
+// ];
 
-const snacks = [
-  {
-    name: "Roasted Almonds",
-    desc: "Crunchy, protein-rich roasted almonds.",
-    price: "₹650/kg",
-    img: "https://images.unsplash.com/photo-1574226516831-e1dff420e8f8?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    name: "Masala Khakhra",
-    desc: "Healthy, baked Gujarati snack.",
-    price: "₹80/pack",
-    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
-  }
-];
+// const snacks = [
+//   {
+//     name: "Roasted Almonds",
+//     desc: "Crunchy, protein-rich roasted almonds.",
+//     price: "₹650/kg",
+//     img: "https://images.unsplash.com/photo-1574226516831-e1dff420e8f8?auto=format&fit=crop&w=400&q=80"
+//   },
+//   {
+//     name: "Masala Khakhra",
+//     desc: "Healthy, baked Gujarati snack.",
+//     price: "₹80/pack",
+//     img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
+//   }
+// ];
 
-const beverages = [
-  {
-    name: "Almond Milk",
-    desc: "Chilled, vegan almond milk for lactose-free nutrition.",
-    price: "₹120/litre",
-    img: "https://images.unsplash.com/photo-1574226516831-e1dff420e8f8?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    name: "Greek Yogurt Smoothie",
-    desc: "Probiotic-rich, natural smoothie.",
-    price: "₹90/bottle",
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
-  }
-];
+// const beverages = [
+//   {
+//     name: "Almond Milk",
+//     desc: "Chilled, vegan almond milk for lactose-free nutrition.",
+//     price: "₹120/litre",
+//     img: "https://images.unsplash.com/photo-1574226516831-e1dff420e8f8?auto=format&fit=crop&w=400&q=80"
+//   },
+//   {
+//     name: "Greek Yogurt Smoothie",
+//     desc: "Probiotic-rich, natural smoothie.",
+//     price: "₹90/bottle",
+//     img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
+//   }
+// ];
 
-const grains = [
-  {
-    name: "Basmati Rice",
-    desc: "Aromatic long-grain rice, perfect for biryani.",
-    price: "₹120/kg",
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    name: "Whole Wheat Flour",
-    desc: "Stone-ground, high-fiber wheat flour.",
-    price: "₹45/kg",
-    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
-  }
-];
+// const grains = [
+//   {
+//     name: "Basmati Rice",
+//     desc: "Aromatic long-grain rice, perfect for biryani.",
+//     price: "₹120/kg",
+//     img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
+//   },
+//   {
+//     name: "Whole Wheat Flour",
+//     desc: "Stone-ground, high-fiber wheat flour.",
+//     price: "₹45/kg",
+//     img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
+//   }
+// ];
 
-const bakery = [
-  {
-    name: "Whole Wheat Bread",
-    desc: "Freshly baked, healthy whole wheat bread.",
-    price: "₹40/loaf",
-    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    name: "Multigrain Buns",
-    desc: "Soft buns packed with grains and seeds.",
-    price: "₹60/pack",
-    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
-  }
-];
+// const bakery = [
+//   {
+//     name: "Whole Wheat Bread",
+//     desc: "Freshly baked, healthy whole wheat bread.",
+//     price: "₹40/loaf",
+//     img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
+//   },
+//   {
+//     name: "Multigrain Buns",
+//     desc: "Soft buns packed with grains and seeds.",
+//     price: "₹60/pack",
+//     img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
+//   }
+// ];
 
-const recipes = [
-  {
-    title: "Paneer Butter Masala",
-    desc: "Creamy and flavorful paneer curry.",
-    img: "https://images.unsplash.com/photo-1604908177523-0b6f8a9c8a3d?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    title: "Almond Milkshake",
-    desc: "Refreshing and healthy almond milkshake.",
-    img: "https://images.unsplash.com/photo-1556910103-1f9a6a0f3b0f?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    title: "Whole Wheat Bread Sandwich",
-    desc: "Tasty sandwich with fresh veggies and cheese.",
-    img: "https://images.unsplash.com/photo-1562967916-eb82221dfb43?auto=format&fit=crop&w=400&q=80"
-  }
-];
+// const recipes = [
+//   {
+//     title: "Paneer Butter Masala",
+//     desc: "Creamy and flavorful paneer curry.",
+//     img: "https://images.unsplash.com/photo-1604908177523-0b6f8a9c8a3d?auto=format&fit=crop&w=400&q=80"
+//   },
+//   {
+//     title: "Almond Milkshake",
+//     desc: "Refreshing and healthy almond milkshake.",
+//     img: "https://images.unsplash.com/photo-1556910103-1f9a6a0f3b0f?auto=format&fit=crop&w=400&q=80"
+//   },
+//   {
+//     title: "Whole Wheat Bread Sandwich",
+//     desc: "Tasty sandwich with fresh veggies and cheese.",
+//     img: "https://images.unsplash.com/photo-1562967916-eb82221dfb43?auto=format&fit=crop&w=400&q=80"
+//   }
+// ];
 
 
 const Home = ({ theme = "red" }) => (
@@ -318,15 +203,6 @@ const Home = ({ theme = "red" }) => (
     }}
   >
     <HeroSection theme={theme} />
-
-    <ProductSection title="Popular Products" products={products} theme={theme} accentColor={theme === "red" ? "blue" : "red"} />
-    <ProductSection title="Snacks" products={snacks} theme={theme} accentColor="yellow" />
-    <ProductSection title="Beverages" products={beverages} theme={theme} accentColor="blue" />
-    <ProductSection title="Grains & Staples" products={grains} theme={theme} accentColor="green" />
-    <ProductSection title="Bakery" products={bakery} theme={theme} accentColor="purple" />
-
-    <RecipesSection recipes={recipes} theme={theme} />
-
     <Newsletter theme={theme} />
 
   </div>

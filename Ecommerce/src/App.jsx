@@ -4,11 +4,17 @@ import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
 import Topbar from "./components/Topbar";
 import Home from "./pages/Home";
+import Login from './pages/Login';
+import Signup from "./pages/Signup";
+import MyAccount from "./pages/MyAccount"
+import { Navigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
+
 
 function App() {
   const [theme, setTheme] = useState("red"); // "red" or "blue"
   const [sidebarMode, setSidebarMode] = useState(true); // true: sidebar, false: topbar
-
+  const [cookie, setCookie] = useCookies(["token"]);
   // Set theme class on <body>
   useEffect(() => {
     document.body.classList.remove("theme-red", "theme-blue");
@@ -34,11 +40,22 @@ function App() {
           />
         )}
         <div className={`flex-1 min-h-screen overflow-auto ${sidebarMode ? "" : "pt-16"}`}>
-          <main className="px-2 py-8">
-            <Routes>
-              <Route path="/" element={<Home theme={theme} />} />
-              
-            </Routes>
+                <main className="px-2 py-8">
+                  {cookie.token ? (
+                  <Routes>
+                    <Route path="/home" element={<Home theme={theme} />} />
+                    <Route path="/MyAccount" element={< MyAccount />} />
+                    <Route path="*" element={<Navigate to="/home" />} />
+                  </Routes>
+                            ) : (
+                              
+                    <Routes>
+                        <Route path="/home" element={<Home theme={theme} />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="*" element={<Navigate to="/login" />} />
+                    </Routes>
+                )}
           </main>
           <Footer />
         </div>
