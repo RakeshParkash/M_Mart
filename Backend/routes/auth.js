@@ -6,39 +6,31 @@ const bcrypt = require("bcrypt");
 const { getToken } = require("../utils/helpers");
 const passport = require("passport");
 
-router.post("/signup",async (req,res) => {
+router.post("/signup", async (req, res) => {
+  let { firstName, lastName, email, phone, password } = req.body;
 
-    let { firstName, lastName, email , phone, password } = req.body;
-    if (!email || email.trim() === "") {
-        email = undefined;
-    }
-    if (!phone || !password || !firstName || !lastName) {
-        return res.status(400).json({ error: "All fields are required" });
-    }
+  // explicitly set undefined so Mongoose skips the field
+  if (!email || email.trim() === "") email = undefined;
 
-    const user = await User.findOne({ phone : phone });
-    if(user) {
-        return res
-        .status(403)
-        .json({ err : "A user with this email already exists." });
-    }
+  if (!phone || !password || !firstName || !lastName)
+    return res.status(400).json({ error: "Phone, password, firstName and lastName are required" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUserData = { 
-        firstName, 
-        lastName, 
-        ...(email && { email }),
-        phone,
-        password : hashedPassword,
-    };
-    const newUser = await User.create(newUserData);
+  const existing = await User.findOne({ phone });
+  if (existing) return res.status(409).json({ error: "Phone already registered" });
 
-    const token = await getToken( phone, newUser);
+  const hashed = await bcrypt.hash(password, 10);
+  const newUser = await User.create({
+    firstName,
+    lastName,
+    ...(email && { email }),
+    phone,
+    password: hashed
+  });
 
-    const userToReturn = {...newUser.toJSON(), token };
-    delete userToReturn.password;
-    return res.status(200).json(userToReturn);
-
+  const token = await getToken(phone, newUser);
+  const userToReturn = { ...newUser.toJSON(), token };
+  delete userToReturn.password;
+  return res.status(201).json(userToReturn);
 });
 
 router.post("/login", async (req,res) => {
@@ -58,7 +50,6 @@ router.post("/login", async (req,res) => {
     const userToReturn = { ...user.toJSON(), token};
     delete userToReturn.password;
     return res.status(200).json(userToReturn);
-
 });
 
 router.get("/get/me", passport.authenticate("jwt", {session: false}), async (req, res) => {

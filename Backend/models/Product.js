@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
 
 const Product = new mongoose.Schema({
-    image : {
-        type : String,
-        required : true
-    },
     name : {
         type: String,
         required: true,
@@ -13,13 +9,28 @@ const Product = new mongoose.Schema({
         type : String,
         required : true,
     },
-    selling_Price : {
+    quantity_Unit : {
         type : String,
         required : true,
     },
-    buying_Price : {
+    image : {
         type : String,
         required : true,
+    },
+    Stock : {
+        type : String,
+        required : false,
+        default : "",
+    },
+    selling_Price : {
+        type: Object,
+        required: false,
+        default: {},
+    },
+    buying_Price : {
+        type: Object,
+        required: false,
+        default: {},
     },
     
 });

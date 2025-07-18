@@ -10,6 +10,8 @@ const UserSchema = new mongoose.Schema({
   },
   email: {
     type: String,
+    unique: true, 
+    sparse: true
   },
   phone: {
     type: String,
@@ -22,7 +24,7 @@ const UserSchema = new mongoose.Schema({
   },
   purchased_history: {
     type: Object,
-    required: false, // maybe not required at user creation
+    required: false,
     default: {},
   },
   dues: {
