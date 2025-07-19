@@ -1,7 +1,7 @@
 // src/pages/AdminLogin.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../utils/server';
+import api from '../utils/api';
 import Input from '../components/shared/AdminInputs';
 import Button from '../components/shared/AdminButton';
 
@@ -13,19 +13,20 @@ export default function AdminLogin() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const submit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const { data } = await api.post('/admin/login', form);
-      localStorage.setItem('accessToken', data.accessToken); // Fixed: use accessToken!!
-      navigate('/admin/main');
-    } catch (err) {
-      alert(err.response?.data?.err || err.message || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const submit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const { data } = await api.post('/admin/login', form); // << Make sure this is /admin/login
+            localStorage.setItem('accessToken', data.accessToken); // Use accessToken, not token
+            navigate('/admin/main');
+        } catch (err) {
+            alert(err.response?.data?.err || err.message || 'Login failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

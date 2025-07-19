@@ -1,7 +1,7 @@
 // src/pages/AdminSignup.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../utils/server';
+import api from '../utils/api';
 import Input from '../components/shared/AdminInputs';
 import Button from '../components/shared/AdminButton';
 

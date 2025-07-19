@@ -12,6 +12,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const adminAuthRoutes = require('./routes/adminAuth');
 
+const Admin = require('./models/Admin');
 const User = require('./models/User');
 
 const port = process.env.PORT || 8080;
@@ -79,7 +80,7 @@ const opts = {
     secretOrKey: process.env.TOKEN_VALUE,
 };
 
-passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
+passport.use('user-jwt', new JwtStrategy(opts, async (jwt_payload, done) => {
     try {
         const user = await User.findById(jwt_payload.id);
         if (user) return done(null, user);
@@ -88,6 +89,17 @@ passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
         return done(err, false);
     }
 }));
+
+passport.use('admin-jwt', new JwtStrategy(opts, async (jwt_payload, done) => {
+    try {
+        const admin = await Admin.findById(jwt_payload.id);
+        if (admin) return done(null, admin);
+        return done(null, false);
+    } catch (err) {
+        return done(err, false);
+    }
+}));
+
 app.use(passport.initialize());
 
 // === ROUTES ===

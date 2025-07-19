@@ -20,7 +20,7 @@ const adminOrMasterKey = async (req, res, next) => {
         return next();
     } else {
         // For subsequent admins, require authentication
-        passport.authenticate('jwt', { session: false }, (err, user) => {
+        passport.authenticate('admin-jwt', { session: false } , (err, user) => {
             if (err || !user || user.role !== 'admin') {
                 return res.status(403).json({ err: 'Admin privileges required' });
             }
@@ -134,25 +134,62 @@ router.post('/token', (req, res) => {
     });
 });
 
-// Admin profile
-router.get('/me', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  const admin = await Admin.findById(req.user._id).select('-password');
-  res.json({ admin });
-});
+  router.get('/me', passport.authenticate('admin-jwt', { session: false }),
+
+  async (req, res) => {
+    try {
+      const admin = await Admin.findById(req.user._id).select('-password');
+      if (!admin) return res.status(404).json({ err: 'Admin not found' });
+      res.json({ admin });
+    } catch (err) {
+      res.status(500).json({ err: 'Server error' });
+    }
+  }
+);
 
 // Add user
-router.post('/add-user', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  const { name, email, phone } = req.body;
-  const user = await User.create({ name, email, phone });
-  res.json({ user });
-});
+router.post(
+  '/add-user',
+  passport.authenticate('admin-jwt', { session: false }),
+  body('name').notEmpty(),
+  body('email').isEmail(),
+  body('phone').notEmpty(),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ errors: errors.array() });
+
+    try {
+      const exists = await User.findOne({ email: req.body.email });
+      if (exists) return res.status(409).json({ err: 'Email already exists' });
+
+      const user = await User.create(req.body);
+      res.json({ user });
+    } catch (err) {
+      res.status(500).json({ err: 'Server error' });
+    }
+  }
+);
 
 // Add product
-router.post('/add-product', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  const { name, price, description } = req.body;
-  const product = await Product.create({ name, price, description });
-  res.json({ product });
-});
+router.post(
+  '/add-product',
+  passport.authenticate('admin-jwt', { session: false }),
+  body('name').notEmpty(),
+  body('price').isFloat({ min: 0 }),
+  body('description').optional().isString(),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ errors: errors.array() });
 
+    try {
+      const product = await Product.create(req.body);
+      res.json({ product });
+    } catch (err) {
+      res.status(500).json({ err: 'Server error' });
+    }
+  }
+);
 
 module.exports = router;

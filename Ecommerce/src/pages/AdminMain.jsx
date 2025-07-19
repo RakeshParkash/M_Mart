@@ -1,7 +1,6 @@
-// src/pages/AdminProfile.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../utils/server';
+import api from '../utils/api';
 import Input from '../components/shared/AdminInputs';
 import Button from '../components/shared/AdminButton';
 
@@ -12,7 +11,12 @@ export default function AdminMain() {
   const [productForm, setProductForm] = useState({ name: '', price: '', description: '' });
   const navigate = useNavigate();
 
-  // Fetch admin profile info on mount
+
+  const [csrf, setCSRF] = useState("");
+    useEffect(() => {
+    api.get("/admin/csrf-token").then(res => setCSRF(res.data.csrfToken || ""));
+    }, []);
+
   useEffect(() => {
     async function fetchProfile() {
       try {
@@ -29,14 +33,32 @@ export default function AdminMain() {
     fetchProfile();
   }, [navigate]);
 
-  // Handlers for forms
-  const handleUserForm = (e) => setUserForm({ ...userForm, [e.target.name]: e.target.value });
-  const handleProductForm = (e) => setProductForm({ ...productForm, [e.target.name]: e.target.value });
+  // Handle user form input
+  const handleUserForm = (e) =>
+    setUserForm({ ...userForm, [e.target.name]: e.target.value });
+
+  // Handle product form input
+  const handleProductForm = (e) =>
+    setProductForm({ ...productForm, [e.target.name]: e.target.value });
 
   const submitUser = async (e) => {
     e.preventDefault();
+    // Validate user form
+    if (!userForm.name.trim() || !userForm.email.trim()) {
+      alert('Please enter user name and email.');
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(userForm.email)) {
+      alert('Please enter a valid email.');
+      return;
+    }
     try {
-      await api.post('/admin/add-user', userForm);
+      await api.post('/admin/add-user', userForm, {
+        headers: {
+            "X-CSRF-Token": csrf
+        }
+        });
+
       alert('User added!');
       setUserForm({ name: '', email: '', phone: '' });
     } catch (err) {
@@ -46,8 +68,22 @@ export default function AdminMain() {
 
   const submitProduct = async (e) => {
     e.preventDefault();
+    // Validate product form
+    if (!productForm.name.trim() || !productForm.price) {
+      alert('Please enter product name and price.');
+      return;
+    }
+    if (isNaN(productForm.price) || Number(productForm.price) <= 0) {
+      alert('Price must be a positive number.');
+      return;
+    }
     try {
-      await api.post('/admin/add-product', productForm);
+      await api.post('/admin/add-product', productForm, {
+        headers: {
+            "X-CSRF-Token": csrf
+        }
+        });
+
       alert('Product added!');
       setProductForm({ name: '', price: '', description: '' });
     } catch (err) {
@@ -56,7 +92,12 @@ export default function AdminMain() {
   };
 
   const logout = async () => {
-    await api.post('/admin/logout');
+    await api.post('/admin/logout', {}, {
+        headers: {
+            "X-CSRF-Token": csrf
+        }
+        });
+
     localStorage.removeItem('accessToken');
     navigate('/admin/login');
   };
