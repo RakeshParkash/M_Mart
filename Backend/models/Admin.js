@@ -1,23 +1,32 @@
-const { Schema, model } = require('mongoose');
+const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const adminSchema = new Schema({
-phone: {
-type: String,
-required: true,
-unique: true,
-sparse: true,
-trim: true,
-match: [/^[0-9]{10,15}$/, 'Invalid phone']
-},
-password: { type: String, required: true, minlength: 8 },
-role:     { type: String, default: 'admin' }
-}, { timestamps: true });
-adminSchema.pre('save', async function(next) {
-if (!this.isModified('password')) return next();
-this.password = await bcrypt.hash(this.password, 12);
-next();
+
+const adminSchema = new mongoose.Schema({
+    firstName: {
+    type: String,
+    required: true,
+    },
+    lastName: {
+    type: String,
+    },
+    email: {
+    type: String,
+    unique: true, 
+    sparse: true
+    },
+    phone: { type: String, unique: true },
+    password: String,
+    role: { type: String, default: 'admin' }
 });
-adminSchema.methods.comparePassword = function(candidate) {
-return bcrypt.compare(candidate, this.password);
+
+adminSchema.methods.comparePassword = function(pwd) {
+  return bcrypt.compare(pwd, this.password);
 };
-module.exports = model('Admin', adminSchema);
+
+adminSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+module.exports = mongoose.model('Admin', adminSchema);

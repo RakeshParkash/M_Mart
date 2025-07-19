@@ -6,7 +6,11 @@ import Topbar from "./components/Topbar";
 import Home from "./pages/Home";
 import Login from './pages/Login';
 import Signup from "./pages/Signup";
-import MyAccount from "./pages/MyAccount"
+import AdminMain from "./pages/AdminMain";
+import AdminLogin from './pages/AdminLogin';
+import AdminSignup from "./pages/AdminSignup";
+import AdminChangePassword from "./pages/AdminChangePassword";
+import MyAccount from "./pages/MyAccount";
 import { Navigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 
@@ -35,7 +39,7 @@ function App() {
           <Topbar
             theme={theme}
             setTheme={setTheme}
-            sidebarMode={sidebarMode}
+            sidebarMode={sidebarMode} 
             setSidebarMode={setSidebarMode}
           />
         )}
@@ -45,7 +49,11 @@ function App() {
                   <Routes>
                     <Route path="/home" element={<Home theme={theme} />} />
                     <Route path="/MyAccount" element={< MyAccount />} />
-                    <Route path="*" element={<Navigate to="/home" />} />
+                    <Route path="*" element={<Navigate to="/home" />} />            
+                    <Route path="/admin/signup" element={<AdminSignup />} />
+                    <Route path="admin/login"  element={<AdminLogin />} />
+                    <Route path="/admin/main"  element={<AdminMain />} />
+                    <Route path="/change-password" element={<AdminChangePassword />} />
                   </Routes>
                             ) : (
                               
