@@ -2,8 +2,12 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
-const { createAccessToken, createRefreshToken } = require('../utils/helpers');
+const User = require("../models/User");
+const Product = require("../models/Product");
+const { createAccessToken, createRefreshToken , verifyToken , isAdmin , validateBody } = require('../utils/helpers');
 const passport = require('passport');
+
+
 
 const router = express.Router();
 
@@ -148,48 +152,159 @@ router.post('/token', (req, res) => {
 );
 
 // Add user
+
 router.post(
   '/add-user',
   passport.authenticate('admin-jwt', { session: false }),
-  body('name').notEmpty(),
-  body('email').isEmail(),
-  body('phone').notEmpty(),
+  [
+    body('name').notEmpty().withMessage('Name is required'),
+    body('email').isEmail().withMessage('Valid email is required'),
+    body('phone').notEmpty().withMessage('Phone number is required')
+  ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty())
+    if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, phone } = req.body;
 
     try {
-      const exists = await User.findOne({ email: req.body.email });
-      if (exists) return res.status(409).json({ err: 'Email already exists' });
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail) {
+        return res.status(409).json({ error: 'Email already exists' });
+      }
+
+      const existingPhone = await User.findOne({ phone });
+      if (existingPhone) {
+        return res.status(409).json({ error: 'Phone number already exists' });
+      }
 
       const user = await User.create(req.body);
-      res.json({ user });
+      res.status(201).json({ message: 'User created successfully', user });
     } catch (err) {
-      res.status(500).json({ err: 'Server error' });
+      console.error(err);
+      res.status(500).json({ error: 'Server error' });
     }
   }
 );
 
-// Add product
-router.post(
-  '/add-product',
-  passport.authenticate('admin-jwt', { session: false }),
-  body('name').notEmpty(),
-  body('price').isFloat({ min: 0 }),
-  body('description').optional().isString(),
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-      return res.status(400).json({ errors: errors.array() });
 
-    try {
-      const product = await Product.create(req.body);
-      res.json({ product });
-    } catch (err) {
-      res.status(500).json({ err: 'Server error' });
+
+// Get recent users
+router.get('/users', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 5, 100);
+  const total = await User.countDocuments({});
+  const users = await User.find({}).select('name email phone').sort('-createdAt').limit(limit);
+  res.json({ total, users });
+});
+
+
+
+router.post("/user/:id/purchase", verifyToken, isAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { date, items } = req.body;
+
+  try {
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "Items array is missing or empty" });
     }
+
+    // Validate and sanitize input
+    const validItems = [];
+    const duesItems = [];
+
+    for (const item of items) {
+      const { name, quantity, advancePaid, totalPrice } = item;
+
+      if (
+        typeof name !== "string" ||
+        typeof quantity !== "number" ||
+        typeof advancePaid !== "number" ||
+        typeof totalPrice !== "number"
+      ) {
+        return res.status(400).json({ message: "Invalid or missing item fields" });
+      }
+
+      const dueAmount = totalPrice - advancePaid;
+      if (isNaN(dueAmount)) {
+        return res.status(400).json({ message: "Invalid due amount calculation" });
+      }
+
+      validItems.push({ name, quantity, advancePaid, totalPrice });
+      duesItems.push({ name, quantity, dueAmount, fullyPaid: dueAmount <= 0 });
+    }
+
+    user.purchased_history.push({ date, items: validItems });
+    user.dues.push({ date, items: duesItems });
+
+    await user.save();
+
+    res.json({ message: "Purchase and dues recorded." });
+  } catch (err) {
+    console.error("Purchase Error:", err);
+    res.status(500).json({ message: "Server error" });
   }
-);
+});
+
+router.post("/product", verifyToken, isAdmin, validateBody,  async (req, res) => {
+  try {
+    const newProduct = new Product(req.body);
+    await newProduct.save();
+    res.json({ message: "Product created successfully", product: newProduct });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ message: "Product creation failed", error: err.message });
+  }
+});
+
+// Get all products
+router.get("/products", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch products" });
+  }
+});
+
+// Get product by ID
+router.get("/product/:id", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+    res.json(product);
+  } catch (err) {
+    res.status(400).json({ message: "Invalid product ID" });
+  }
+});
+
+// Update product by ID
+router.put("/product/:id", verifyToken, isAdmin, validateBody , async (req, res) => {
+  try {
+    const updated = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updated) return res.status(404).json({ message: "Product not found" });
+    res.json({ message: "Product updated", product: updated });
+  } catch (err) {
+    res.status(400).json({ message: "Update failed", error: err.message });
+  }
+});
+
+// Delete product by ID
+router.delete("/product/:id", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const deleted = await Product.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: "Product not found" });
+    res.json({ message: "Product deleted" });
+  } catch (err) {
+    res.status(400).json({ message: "Delete failed" });
+  }
+});
+
+
+
 
 module.exports = router;

@@ -9,10 +9,10 @@ import Signup from "./pages/Signup";
 import AdminMain from "./pages/AdminMain";
 import AdminLogin from './pages/AdminLogin';
 import AdminSignup from "./pages/AdminSignup";
-import AdminChangePassword from "./pages/AdminChangePassword";
 import MyAccount from "./pages/MyAccount";
 import { Navigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import AdminProduct from "./pages/AdminProduct";
 
 
 function App() {
@@ -53,7 +53,7 @@ function App() {
                     <Route path="/admin/signup" element={<AdminSignup />} />
                     <Route path="admin/login"  element={<AdminLogin />} />
                     <Route path="/admin/main"  element={<AdminMain />} />
-                    <Route path="/change-password" element={<AdminChangePassword />} />
+                    <Route path="/admin/products" element={<AdminProduct />} />
                   </Routes>
                             ) : (
                               

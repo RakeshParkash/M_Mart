@@ -3,7 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
-const { getToken } = require("../utils/helpers");
+const { getToken, verifyToken } = require("../utils/helpers");
 const passport = require("passport");
 
 router.post("/signup", async (req, res) => {
@@ -52,7 +52,7 @@ router.post("/login", async (req,res) => {
     return res.status(200).json(userToReturn);
 });
 
-router.get("/get/me", passport.authenticate("jwt", {session: false}), async (req, res) => {
+router.get("/me", verifyToken, passport.authenticate("user-jwt", { session: false }), async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('-password');
         if (!user) {
@@ -65,7 +65,7 @@ router.get("/get/me", passport.authenticate("jwt", {session: false}), async (req
     }
 });
 
-router.get("/get/user/:userId", passport.authenticate("jwt", {session: false}), async (req, res) => {
+router.get("/get/user/:userId", passport.authenticate("user-jwt", { session: false }), async (req, res) => {
     try {
         const { userId } = req.params;
         const user = await User.findById(userId).select('-password');
@@ -115,7 +115,7 @@ router.post('/change-password', authenticate, async (req, res) => {
         }
 
         // Optionally check if new password is strong, not same as old, etc.
-        if (newPassword.length < 8)
+        if (newPassword.length <= 6)
         return res.status(400).json({ message: 'Password must be at least 6 characters.' });
 
         // Hash and set new password

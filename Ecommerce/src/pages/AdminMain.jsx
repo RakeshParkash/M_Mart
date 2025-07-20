@@ -1,140 +1,124 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
-import Input from '../components/shared/AdminInputs';
 import Button from '../components/shared/AdminButton';
 
-export default function AdminMain() {
-  const [adminData, setAdminData] = useState(null);
+export default function AdminDashboard() {
+  const [admin, setAdmin] = useState(null);
+  const [counts, setCounts] = useState({ users: 0, products: 0 });
+  const [recentUsers, setRecentUsers] = useState([]);
+  const [recentProducts, setRecentProducts] = useState([]);
+  const [csrf, setCSRF] = useState('');
   const [loading, setLoading] = useState(true);
-  const [userForm, setUserForm] = useState({ name: '', email: '', phone: '' });
-  const [productForm, setProductForm] = useState({ name: '', price: '', description: '' });
+
   const navigate = useNavigate();
 
-
-  const [csrf, setCSRF] = useState("");
-    useEffect(() => {
-    api.get("/admin/csrf-token").then(res => setCSRF(res.data.csrfToken || ""));
-    }, []);
-
+  // Get CSRF and profile on mount
   useEffect(() => {
-    async function fetchProfile() {
-      try {
-        const { data } = await api.get('/admin/me');
-        setAdminData(data.admin);
-      } catch (err) {
-        if (err.response?.status === 401) {
-          navigate('/admin/login');
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProfile();
+    api.get('/admin/csrf-token').then(res => setCSRF(res.data.csrfToken || ''));
+    api.get('/admin/me').then(res => setAdmin(res.data.admin)).catch(() => navigate('/admin/login'));
   }, [navigate]);
 
-  // Handle user form input
-  const handleUserForm = (e) =>
-    setUserForm({ ...userForm, [e.target.name]: e.target.value });
+  // Fetch dashboard stats (users/products) and recent lists
+  useEffect(() => {
+    async function fetchDashboard() {
+      setLoading(true);
+      try {
+        // You must create these summary endpoints in backend for large db!
+        const [users, products] = await Promise.all([
+          api.get('/admin/users?limit=5'),
+          api.get('/admin/products?limit=5')
+        ]);
+        setRecentUsers(users.data.users || []);
+        setRecentProducts(products.data.products || []);
 
-  // Handle product form input
-  const handleProductForm = (e) =>
-    setProductForm({ ...productForm, [e.target.name]: e.target.value });
-
-  const submitUser = async (e) => {
-    e.preventDefault();
-    // Validate user form
-    if (!userForm.name.trim() || !userForm.email.trim()) {
-      alert('Please enter user name and email.');
-      return;
-    }
-    if (!/\S+@\S+\.\S+/.test(userForm.email)) {
-      alert('Please enter a valid email.');
-      return;
-    }
-    try {
-      await api.post('/admin/add-user', userForm, {
-        headers: {
-            "X-CSRF-Token": csrf
-        }
+        setCounts({
+          users: typeof users.data.total === 'number'
+            ? users.data.total : users.data.users?.length || 0,
+          products: typeof products.data.total === 'number'
+            ? products.data.total : products.data.products?.length || 0,
         });
-
-      alert('User added!');
-      setUserForm({ name: '', email: '', phone: '' });
-    } catch (err) {
-      alert(err.response?.data?.err || 'Failed to add user');
+      } 
+      catch (err) {
+        // swallow error, already handled in profile
+      }
+      setLoading(false);
     }
-  };
-
-  const submitProduct = async (e) => {
-    e.preventDefault();
-    // Validate product form
-    if (!productForm.name.trim() || !productForm.price) {
-      alert('Please enter product name and price.');
-      return;
-    }
-    if (isNaN(productForm.price) || Number(productForm.price) <= 0) {
-      alert('Price must be a positive number.');
-      return;
-    }
-    try {
-      await api.post('/admin/add-product', productForm, {
-        headers: {
-            "X-CSRF-Token": csrf
-        }
-        });
-
-      alert('Product added!');
-      setProductForm({ name: '', price: '', description: '' });
-    } catch (err) {
-      alert(err.response?.data?.err || 'Failed to add product');
-    }
-  };
+    fetchDashboard();
+  }, []);
 
   const logout = async () => {
-    await api.post('/admin/logout', {}, {
-        headers: {
-            "X-CSRF-Token": csrf
-        }
-        });
-
+    await api.post('/admin/logout', {}, { headers: { 'X-CSRF-Token': csrf } });
     localStorage.removeItem('accessToken');
     navigate('/admin/login');
   };
 
-  if (loading) return <div>Loading profile...</div>;
-  if (!adminData) return <div>Unable to load account.</div>;
+  if (loading || !admin) return <div className="text-center py-16">Loading dashboard...</div>;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12">
-      <div className="w-full max-w-lg bg-white rounded-xl p-8 shadow space-y-6 text-black">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Admin Profile</h1>
-          <Button onClick={logout} className="bg-red-600 hover:bg-red-700 text-white px-4">Logout</Button>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white py-8 px-4">
+      {/* HEADER: Profile and logout */}
+      <div className="flex items-center justify-between max-w-5xl mx-auto mb-6">
         <div>
-          <p><b>Phone:</b> {adminData.phone}</p>
-          {adminData.email && <p><b>Email:</b> {adminData.email}</p>}
-          <p><b>Role:</b> {adminData.role}</p>
+          <h1 className="text-4xl font-bold text-indigo-800 mb-1">Admin Dashboard</h1>
+          <p className="text-indigo-500">{admin.firstName} {admin.lastName} &middot; <span className="text-gray-500">{admin.role}</span></p>
+          {admin.email && <p className="text-gray-500">{admin.email}</p>}
+          <p className="text-gray-500">Phone: {admin.phone}</p>
+        </div>
+        <Button className="bg-red-600 hover:bg-red-700 text-white px-6" onClick={logout}>Logout</Button>
+      </div>
+
+      {/* WIDGETS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        {/* Users widget */}
+        <div className="rounded-2xl bg-white shadow-lg p-6 flex flex-col justify-between">
+          <div className="flex items-center mb-2">
+            <span className="text-2xl font-bold text-blue-600 mr-2">{counts.users}</span>
+            <span className="text-gray-600">Users</span>
+          </div>
+          <ul className="mb-3">
+            {recentUsers?.map(u => (
+              <li key={u._id} className="flex items-center justify-between border-b py-1 text-sm">
+                <span>{u.name || u.email || u.phone}</span>
+                <span className="text-gray-400">{u.email}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="flex gap-2">
+            <Link to="/admin/users" className="text-blue-600 hover:underline">View All Users</Link>
+            <Link to="/admin/add-user" className="text-blue-600 hover:underline">Add User</Link>
+          </div>
         </div>
 
-        <hr />
-        <h2 className="text-xl font-bold mb-2">Add New User</h2>
-        <form onSubmit={submitUser} className="space-y-2">
-          <Input label="Name" name="name" value={userForm.name} onChange={handleUserForm} required />
-          <Input label="Email" name="email" value={userForm.email} onChange={handleUserForm} required />
-          <Input label="Phone" name="phone" value={userForm.phone} onChange={handleUserForm} />
-          <Button>Add User</Button>
-        </form>
+        {/* Products widget */}
+        <div className="rounded-2xl bg-white shadow-lg p-6 flex flex-col justify-between">
+          <div className="flex items-center mb-2">
+            <span className="text-2xl font-bold text-green-600 mr-2">{counts.products}</span>
+            <span className="text-gray-600">Products</span>
+          </div>
+          <ul className="mb-3">
+            {recentProducts?.map(p => (
+              <li key={p._id} className="flex items-center justify-between border-b py-1 text-sm">
+                <span>{p.name}</span>
+                <span className="text-gray-400">{p.price && `₹${p.price}`}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="flex gap-2">
+            <Link to="/admin/products" className="text-green-600 hover:underline">View All Products</Link>
+            <Link to="/admin/add-product" className="text-green-600 hover:underline">Add Product</Link>
+          </div>
+        </div>
+      </div>
 
-        <hr />
-        <h2 className="text-xl font-bold mb-2">Add New Product</h2>
-        <form onSubmit={submitProduct} className="space-y-2">
-          <Input label="Name" name="name" value={productForm.name} onChange={handleProductForm} required />
-          <Input label="Price" name="price" value={productForm.price} onChange={handleProductForm} required type="number" min="0" />
-          <Input label="Description" name="description" value={productForm.description} onChange={handleProductForm} />
-          <Button>Add Product</Button>
-        </form>
+      {/* Quick action center: Add User/Product */}
+      <div className="max-w-2xl border-t border-blue-200 mt-12 mx-auto pt-6 flex justify-center gap-8">
+        <Link to="/admin/products">
+          <Button className="w-36 bg-blue-600 hover:bg-blue-700 text-white">➕ Add User</Button>
+        </Link>
+        <Link to="/admin/add-product">
+          <Button className="w-36 bg-green-600 hover:bg-green-700 text-white">➕ Add Product</Button>
+        </Link>
       </div>
     </div>
   );

@@ -65,7 +65,7 @@ const grains = [
   { name: "Whole Wheat Flour", desc: "Stone-ground, high-fiber wheat flour.", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80", price: "₹45/kg", cta: "Add to Cart" },
 ];
 
-// Extended mock data for additional sections:
+
 const bakery = [
   { name: "Whole Wheat Bread", desc: "Freshly baked every day.", img: "https://images.unsplash.com/photo-1509406422903-af9df4c41e1a?auto=format&fit=crop&w=400&q=80", price: "₹40/loaf", cta: "Add to Cart" },
   { name: "Brownie Box", desc: "Chocolate fudge brownies.", img: "https://images.unsplash.com/photo-1519864643098-3d0bca8eece7?auto=format&fit=crop&w=400&q=80", price: "₹220/box", cta: "Add to Cart" },

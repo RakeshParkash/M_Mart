@@ -9,6 +9,7 @@ const footerLinks = [
   { label: 'About', to: '/about' },
   { label: 'Contact', to: '/contact' },
   { label: 'Offers', to: '/offers' },
+  { label: 'Admin', to: '/admin/login' },
 ];
 
 const socialLinks = [

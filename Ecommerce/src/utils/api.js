@@ -1,5 +1,7 @@
 // api.js
 import axios from 'axios';
+import { setAuthFromOutside } from '../utils/authContext';
+
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API || 'http://localhost:8080',
@@ -21,14 +23,21 @@ api.interceptors.response.use(
       try {
         const { data } = await api.post('/admin/token');
         localStorage.setItem('accessToken', data.accessToken);
+        
+        // ✅ Tell React we are authenticated again
+        setAuthFromOutside(true);
+
+        // ✅ Retry the failed request
         return api(original);
       } catch {
         localStorage.removeItem('accessToken');
+        setAuthFromOutside(false);
         window.location.href = '/login';
       }
     }
     return Promise.reject(err);
   }
 );
+
 
 export default api;

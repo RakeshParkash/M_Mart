@@ -126,7 +126,7 @@ function Account() {
         const token = cookies.token;
         if (!token) throw new Error('No authentication token found');
         // Step 1: Get current user
-        const meResponse = await fetch(`${backendUrl}/get/me`, {
+        const meResponse = await fetch(`${backendUrl}/me`, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           credentials: 'include',
           signal: controller.signal,
