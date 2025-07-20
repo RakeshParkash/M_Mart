@@ -11,6 +11,7 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const adminAuthRoutes = require('./routes/adminAuth');
+const productRoutes = require('./routes/product');
 
 const Admin = require('./models/Admin');
 const User = require('./models/User');
@@ -107,7 +108,7 @@ app.get("/", (req, res) => res.send("Hello, World!"));
 
 app.use(authRoutes); // Public auth routes
 app.use('/admin', adminLimiter, adminAuthRoutes); // Admin routes, rate-limited
-
+app.use("/products", productRoutes);
 // CSRF token endpoint
 app.get('/admin/csrf-token', csrfProtection, (req, res) =>
     res.json({ csrfToken: req.csrfToken() })

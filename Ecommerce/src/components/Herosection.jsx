@@ -14,6 +14,9 @@ const getColors = (accentColor) => {
   }
 };
 
+
+
+
 // Generalized Section
 const ProductSection = ({ id, title, products, accentColor = "red" }) => {
   const { heading, accent, border, text } = getColors(accentColor);
@@ -44,40 +47,7 @@ const ProductSection = ({ id, title, products, accentColor = "red" }) => {
   );
 };
 
-// Mock data for all sections
-const perishables = [
-  { name: "Fresh Cow Milk", desc: "Farm-fresh, pure cow milk delivered every morning.", img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80", price: "₹60/litre", cta: "Add to Cart" },
-  { name: "Homemade Paneer", desc: "Soft, creamy paneer made from pure milk.", img: "https://images.unsplash.com/photo-1464306076886-debca5e8a6b0?auto=format&fit=crop&w=400&q=80", price: "₹280/kg", cta: "Add to Cart" },
-];
 
-const snacks = [
-  { name: "Roasted Almonds", desc: "Protein-rich roasted almonds.", img: "https://images.unsplash.com/photo-1574226516831-e1dff420e8f8?auto=format&fit=crop&w=400&q=80", price: "₹650/kg", cta: "Add to Cart" },
-  { name: "Masala Khakhra", desc: "Healthy, baked Gujarati snack.", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80", price: "₹80/pack", cta: "Add to Cart" },
-];
-
-const beverages = [
-  { name: "Almond Milk", desc: "Vegan almond milk for lactose-free nutrition.", img: "https://images.unsplash.com/photo-1574226516831-e1dff420e8f8?auto=format&fit=crop&w=400&q=80", price: "₹120/litre", cta: "Add to Cart" },
-  { name: "Greek Yogurt Smoothie", desc: "Probiotic-rich, natural smoothie.", img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80", price: "₹90/bottle", cta: "Add to Cart" },
-];
-
-const grains = [
-  { name: "Basmati Rice", desc: "Aromatic long-grain rice.", img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80", price: "₹120/kg", cta: "Add to Cart" },
-  { name: "Whole Wheat Flour", desc: "Stone-ground, high-fiber wheat flour.", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80", price: "₹45/kg", cta: "Add to Cart" },
-];
-
-
-const bakery = [
-  { name: "Whole Wheat Bread", desc: "Freshly baked every day.", img: "https://images.unsplash.com/photo-1509406422903-af9df4c41e1a?auto=format&fit=crop&w=400&q=80", price: "₹40/loaf", cta: "Add to Cart" },
-  { name: "Brownie Box", desc: "Chocolate fudge brownies.", img: "https://images.unsplash.com/photo-1519864643098-3d0bca8eece7?auto=format&fit=crop&w=400&q=80", price: "₹220/box", cta: "Add to Cart" },
-];
-const dairy = [
-  { name: "Fresh Curd", desc: "Traditional homemade curd.", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80", price: "₹60/500g", cta: "Add to Cart" },
-  { name: "Desi Ghee", desc: "Rich, aromatic cow ghee.", img: "https://images.unsplash.com/photo-1464306076886-debca5e8a6b0?auto=format&fit=crop&w=400&q=80", price: "₹500/1L", cta: "Add to Cart" },
-];
-const offers = [
-  { name: "Milk Combo", desc: "Buy 2L milk, get 1 butter free.", img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80", price: "₹120", cta: "Grab Offer" },
-  { name: "Snack Saver Pack", desc: "Flat 20% off on Snack Combos.", img: "https://images.unsplash.com/photo-1574226516831-e1dff420e8f8?auto=format&fit=crop&w=400&q=80", price: "₹300", cta: "Get Now" },
-];
 
 const ContactSection = () => (
   <section id="contact" className="max-w-6xl mx-auto px-4 py-16 text-black">
@@ -135,6 +105,22 @@ export default function HeroSection() {
 
   // Placeholder: implement as you wish.
   const handleSearch = () => alert("search");
+    const [allProducts, setAllProducts] = useState({
+    Perishables: [],
+    Snacks: [],
+    Beverages: [],
+    Grains: [],
+    Bakery: [],
+    Dairy: [],
+    Offers: []
+  });
+
+  useEffect(() => {
+    fetch("http://localhost:8080/products/get") // Update the URL as needed
+      .then((res) => res.json())
+      .then((data) => setAllProducts(data))
+      .catch((err) => console.error("Failed to fetch products", err));
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#fff3e0] via-white to-[#e3f2fd]">
@@ -152,16 +138,18 @@ export default function HeroSection() {
             />
       </div>
       {/* Hero/Home Section */}
-      <HeroBanner perishables={perishables} />
+      <HeroBanner perishables={allProducts.Perishables.slice(0, 4)} />
+
 
       {/* All other product sections, ids must match MiniNavbar! */}
-      <ProductSection id="perishables" title="Perishables" products={perishables} accentColor="red" />
-      <ProductSection id="snacks" title="Snacks" products={snacks} accentColor="yellow" />
-      <ProductSection id="beverages" title="Beverages" products={beverages} accentColor="blue" />
-      <ProductSection id="grains" title="Grains & Staples" products={grains} accentColor="green" />
-      <ProductSection id="bakery" title="Bakery" products={bakery} accentColor="purple" />
-      <ProductSection id="dairy" title="Dairy" products={dairy} accentColor="red" />
-      <ProductSection id="offers" title="Offers" products={offers} accentColor="blue" />
+      <ProductSection id="perishables" title="Perishables" products={allProducts.Perishables || []} accentColor="red" />
+      <ProductSection id="snacks" title="Snacks" products={allProducts.Snacks || []} accentColor="yellow" />
+      <ProductSection id="beverages" title="Beverages" products={allProducts.Beverages || []} accentColor="blue" />
+      <ProductSection id="grains" title="Grains & Staples" products={allProducts.Grains || []} accentColor="green" />
+      <ProductSection id="bakery" title="Bakery" products={allProducts.Bakery || []} accentColor="purple" />
+      <ProductSection id="dairy" title="Dairy" products={allProducts.Dairy || []} accentColor="red" />
+      <ProductSection id="offers" title="Offers" products={allProducts.Offers || []} accentColor="blue" />
+
 
       <ContactSection id="contact" />
 
