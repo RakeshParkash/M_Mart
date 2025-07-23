@@ -3,7 +3,7 @@ import { backendUrl } from '../utils/config.js';
 import { useCookies } from 'react-cookie';
 import { useNavigate, Link } from 'react-router-dom';
 
-// Tailwind luxury modal overlay + card
+// Tailwind modal for password change (unchanged)
 function ChangePasswordModal({ open, onClose, onSubmit, loading, error, success }) {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -91,26 +91,65 @@ function ChangePasswordModal({ open, onClose, onSubmit, loading, error, success 
   );
 }
 
-// Status badge utility
-function StatusBadge({ status }) {
-  const map = {
-    pending: "bg-yellow-100 text-yellow-700 border border-yellow-200",
-    confirmed: "bg-green-100 text-green-700 border border-green-200",
-    cancelled: "bg-red-100 text-red-500 border border-red-200"
-  };
+// PURCHASE HISTORY CARD (Collapse per date)
+function PurchaseCard({ purchase }) {
+  const [open, setOpen] = useState(false);
   return (
-    <span className={`inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${map[status.toLowerCase()] || 'bg-gray-200 text-gray-700'}`}>
-      {status}
-    </span>
+    <div className="rounded-xl border border-[#e8e1d1] bg-[#fcfaf7] shadow-sm overflow-hidden mb-6 transition">
+      {/* Header */}
+      <button
+        className="w-full text-left flex justify-between items-center px-6 py-4 hover:bg-[#fffbe6] transition group"
+        onClick={() => setOpen(prev => !prev)}
+        aria-expanded={open ? "true" : "false"}
+      >
+        <div className="flex items-center gap-4">
+          <span className="inline-block px-3 py-1 rounded-full bg-[#d4af37]/15 text-[#a67c52] font-bold text-xs leading-relaxed">
+            {new Date(purchase.date).toLocaleDateString()}
+          </span>
+          <span className="uppercase font-semibold text-[#424242] text-xs opacity-80 tracking-wider">
+            {purchase.items.length} item{purchase.items.length !== 1 && "s"}
+          </span>
+        </div>
+        <span className={`text-xl text-[#d4af37] transition duration-200 ${open ? "rotate-90" : ""}`}>
+          ▶
+        </span>
+      </button>
+      <div className={`${open ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"} transition-all duration-400 overflow-hidden`}>
+        <div className="p-0 md:p-6">
+          <table className="w-full mt-2 rounded-md overflow-hidden bg-white shadow-sm">
+            <thead>
+              <tr className="bg-[#fdf6ea] text-[#a67c52] font-bold text-sm">
+                <th className="py-2 px-3 text-left">Item</th>
+                <th className="py-2 px-3 text-center">Quantity</th>
+                <th className="py-2 px-3 text-right">Advance Paid</th>
+                <th className="py-2 px-3 text-right">Total Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {purchase.items.map((item, idx) => (
+                <tr key={item.name + idx} className="odd:bg-[#f9f6ef]/50 even:bg-white border-b last:border-0">
+                  <td className="py-2 px-3 font-semibold text-[#273042]">{item.name}</td>
+                  <td className="py-2 px-3 text-center">{item.quantity}</td>
+                  <td className="py-2 px-3 text-right text-green-700 font-semibold">
+                    ₹{item.advancePaid?.toLocaleString()}
+                  </td>
+                  <td className="py-2 px-3 text-right font-semibold">
+                    ₹{item.totalPrice?.toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 }
 
 function Account() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [cookies, , removeCookie] = useCookies(['token']);
-  const navigate = useNavigate();
+  const [fetchError, setFetchError] = useState(null);
 
   // Modal state
   const [changeOpen, setChangeOpen] = useState(false);
@@ -118,14 +157,18 @@ function Account() {
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState('');
 
+  const [cookies, , removeCookie] = useCookies(['token']);
+  const navigate = useNavigate();
+
+  // Fetch user on mount
   useEffect(() => {
     const controller = new AbortController();
-    const fetchUserData = async () => {
+    async function fetchUserData() {
       setLoading(true);
       try {
         const token = cookies.token;
         if (!token) throw new Error('No authentication token found');
-        // Step 1: Get current user
+        // Get current user's ID
         const meResponse = await fetch(`${backendUrl}/me`, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -133,31 +176,41 @@ function Account() {
         });
         if (!meResponse.ok) throw new Error(meResponse.status === 401 ? 'Session expired' : 'Failed to fetch user data');
         const meData = await meResponse.json();
-        // Step 2: Get detailed user data
+
+        // Get detailed user (with purchase history)
         const userResponse = await fetch(`${backendUrl}/get/user/${meData._id}`, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           credentials: 'include',
           signal: controller.signal,
         });
-        if (!userResponse.ok) throw new Error('Failed to fetch detailed user data');
+        if (!userResponse.ok) throw new Error('Failed to fetch user details');
         const user = await userResponse.json();
         setUserData({
           _id: user._id,
-          name: (user.firstName + " " + user.lastName).trim() || 'Guest',
+          name: ((user.firstName || "") + " " + (user.lastName || "")).trim() || 'Guest',
           email: user.email || 'No email provided',
           phone: user.phone || 'Not provided',
-          bookings: Array.isArray(user.bookings)
-            ? user.bookings.map((booking) => ({
-                id: booking._id,
-                tourName: booking.tourName,
-                date: booking.date ? new Date(booking.date).toLocaleDateString() : 'N/A',
-                status: booking.status || 'Pending',
-              }))
+          purchased_history: Array.isArray(user.purchased_history)
+            ? user.purchased_history
+                .map(p => ({
+                  date: p.date,
+                  items: Array.isArray(p.items)
+                    ? p.items.map(item => ({
+                        name: item.name,
+                        quantity: item.quantity,
+                        advancePaid: item.advancePaid,
+                        totalPrice: item.totalPrice,
+                      }))
+                    : [],
+                }))
+                // Sort latest date first
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
             : [],
         });
+
       } catch (err) {
         if (err.name === 'AbortError') return;
-        setError(err.message);
+        setFetchError(err.message);
         if (
           err.message.toLowerCase().includes('authentication') ||
           err.message.toLowerCase().includes('session')
@@ -168,22 +221,15 @@ function Account() {
       } finally {
         setLoading(false);
       }
-    };
+    }
     fetchUserData();
     return () => controller.abort();
   }, [cookies.token, navigate, removeCookie]);
-
-  const handleLogout = () => {
-    removeCookie('token', { path: '/' });
-    navigate('/auth/login');
-  };
 
   // Password change logic
   const handlePassword = async (oldPassword, newPassword, repeat) => {
     setPwError('');
     setPwSuccess('');
-
-    // Basic frontend validation
     if (!oldPassword || !newPassword || !repeat) {
       setPwError("Please fill all fields.");
       return;
@@ -196,7 +242,6 @@ function Account() {
       setPwError("Passwords do not match.");
       return;
     }
-
     setPwLoading(true);
     try {
       const token = cookies.token;
@@ -228,6 +273,12 @@ function Account() {
     }
   };
 
+  // Logout
+  const handleLogout = () => {
+    removeCookie('token', { path: '/' });
+    navigate('/auth/login');
+  };
+
   // Render states
   if (loading) {
     return (
@@ -237,12 +288,12 @@ function Account() {
       </div>
     );
   }
-  if (error) {
+  if (fetchError) {
     return (
       <div className="text-center p-8 max-w-xl mx-auto bg-white rounded-2xl shadow-lg mt-8">
         <h2 className="text-2xl text-[#2c3e50] font-light mb-4">Something went wrong</h2>
         <p className="text-red-600 bg-red-50 rounded-lg border-l-4 border-red-400 p-4 font-medium mb-6">
-          {error}
+          {fetchError}
         </p>
         <div className="flex gap-4 justify-center">
           <button
@@ -270,46 +321,38 @@ function Account() {
   }
 
   return (
-    <div className="
-      max-w-[1400px] mx-auto min-h-screen
-      px-4 md:px-16 py-12 md:py-24
-      font-montserrat text-[#333]
-      bg-gradient-to-br from-[#f9f9f9] to-[#fff]
-    ">
+    <div className="max-w-[1400px] mx-auto min-h-screen px-4 md:px-16 py-12 md:py-24 font-montserrat text-[#333] bg-gradient-to-br from-[#f9f9f9] to-[#fff]">
       <h1 className="
-          text-[2.3rem] md:text-[3em] font-light
-          text-center text-[#2c3e50] mb-12 uppercase tracking-wide relative
-          after:block after:mx-auto after:mt-6
-          after:w-[150px] after:h-[2px] after:bg-gradient-to-r 
-          after:from-transparent after:via-[#d4af37] after:to-transparent
-        ">
+        text-[2.3rem] md:text-[3em] font-light
+        text-center text-[#2c3e50] mb-12 uppercase tracking-wide relative
+        after:block after:mx-auto after:mt-6
+        after:w-[150px] after:h-[2px] after:bg-gradient-to-r 
+        after:from-transparent after:via-[#d4af37] after:to-transparent
+      ">
         Welcome, {userData.name}
       </h1>
 
-      <div className="
-        grid gap-12 py-8
-        grid-cols-1 lg:grid-cols-[1fr_2fr]
-      ">
+      <div className="grid gap-12 py-8 grid-cols-1 lg:grid-cols-[1fr_2fr]">
         {/* Personal Info */}
         <section className="
-            bg-white/90 rounded-2xl p-8 md:p-12
-            border border-white/80
-            shadow-[0_15px_30px_rgba(0,0,0,0.05)]
-            backdrop-blur-lg
-            relative overflow-hidden
-            transition-all duration-500
-            before:content-[''] before:absolute before:top-0 before:left-0
-            before:w-full before:h-[5px]
-            before:bg-gradient-to-r before:from-[#d4af37]
-            before:via-[#a67c52]
-            before:to-[#d4af37]
-            hover:-translate-y-2 hover:shadow-[0_25px_50px_rgba(0,0,0,0.10)]
+          bg-white/90 rounded-2xl p-8 md:p-12
+          border border-white/80
+          shadow-[0_15px_30px_rgba(0,0,0,0.05)]
+          backdrop-blur-lg
+          relative overflow-hidden
+          transition-all duration-500
+          before:content-[''] before:absolute before:top-0 before:left-0
+          before:w-full before:h-[5px]
+          before:bg-gradient-to-r before:from-[#d4af37]
+          before:via-[#a67c52]
+          before:to-[#d4af37]
+          hover:-translate-y-2 hover:shadow-[0_25px_50px_rgba(0,0,0,0.10)]
         ">
           <h2 className="text-2xl font-normal text-[#2c3e50] mb-8 pb-4
               border-b border-black/10 tracking-wide relative
               after:content-[''] after:absolute after:bottom-[-1px] after:left-0
               after:w-[50px] after:h-[2px] after:bg-[#d4af37]"
-          >Personal Information</h2>
+          >Personal Info</h2>
           <div className="grid grid-cols-1 gap-6">
             <div className="flex justify-between items-center py-5 border-b border-black/5">
               <span className="font-medium text-[#7f8c8d] text-base tracking-wide">Name:</span>
@@ -324,52 +367,45 @@ function Account() {
               <span className="text-right font-medium text-lg text-[#2c3e50]">{userData.phone}</span>
             </div>
           </div>
-          <button className="
-            inline-block w-full px-8 py-4 rounded-full font-bold mt-6
-            bg-gradient-to-r from-[#d4af37] to-[#a67c52] text-white
-            shadow-[0_5px_15px_rgba(212,175,55,0.3)]
-            relative overflow-hidden z-10
-            transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_25px_rgba(0,0,0,0.2)]
-            before:content-[''] before:absolute before:top-0 before:left-0
-            before:w-full before:h-full before:bg-white/10 before:-translate-x-full
-            hover:before:translate-x-0 before:transition-transform before:duration-300
-          ">
+          <button
+            className="
+              inline-block w-full px-8 py-4 rounded-full font-bold mt-6
+              bg-gradient-to-r from-[#d4af37] to-[#a67c52] text-white
+              shadow-[0_5px_15px_rgba(212,175,55,0.3)]
+              relative overflow-hidden z-10
+              transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_25px_rgba(0,0,0,0.2)]
+              before:content-[''] before:absolute before:top-0 before:left-0
+              before:w-full before:h-full before:bg-white/10 before:-translate-x-full
+              hover:before:translate-x-0 before:transition-transform before:duration-300
+            "
+            // onClick={handleProfileEdit}
+          >
             Edit Profile
           </button>
         </section>
 
-        {/* Bookings */}
+        {/* Purchase History */}
         <section className="bg-white/90 rounded-2xl p-8 md:p-12 border border-white/80 shadow-[0_15px_30px_rgba(0,0,0,0.05)] backdrop-blur-lg relative overflow-hidden">
           <h2 className="text-2xl font-normal text-[#2c3e50] mb-8 pb-4 border-b border-black/10 tracking-wide relative after:content-[''] after:absolute after:bottom-[-1px] after:left-0 after:w-[50px] after:h-[2px] after:bg-[#d4af37]">
-            Your Bookings
+            Your Purchases
           </h2>
-          {userData.bookings.length > 0 ? (
-            <ul className="grid gap-6 p-0 m-0 list-none">
-              {userData.bookings.map((booking) => (
-                <li key={booking.id}
-                  className="bg-white rounded-xl p-6 shadow-[0_5px_15px_rgba(0,0,0,0.03)] border border-black/5 relative overflow-hidden transition-all duration-400
-                  before:content-[''] before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-gradient-to-b before:from-[#d4af37] before:to-[#a67c52]
-                  hover:-translate-y-1 hover:shadow-[0_10px_25px_rgba(0,0,0,0.08)]"
-                >
-                  <h3 className="mb-3 font-medium text-[#2c3e50] text-lg">{booking.tourName}</h3>
-                  <div className="flex justify-between items-center text-sm text-[#7f8c8d]">
-                    <span>Date: {booking.date}</span>
-                    <StatusBadge status={booking.status} />
-                  </div>
-                </li>
+          {userData.purchased_history && userData.purchased_history.length > 0 ? (
+            <div>
+              {userData.purchased_history.map((purchase, idx) => (
+                <PurchaseCard purchase={purchase} key={purchase.date + idx} />
               ))}
-            </ul>
+            </div>
           ) : (
             <div className="
               text-center px-8 py-12 bg-[#f8f9fa]/50 
               rounded-xl border border-dashed border-black/10
             ">
               <p className="text-[#7f8c8d] mb-6 text-lg">
-                You haven't made any bookings yet.
+                No purchases yet.
               </p>
-              <Link to="/tours"
+              <Link to="/shop"
                 className="inline-block px-6 py-3 rounded-full font-bold bg-gradient-to-r from-[#2ecc71] to-[#27ae60] text-white shadow-[0_5px_15px_rgba(46,204,113,0.3)] hover:-translate-y-1"
-              >Explore Available Tours</Link>
+              >Go Shopping</Link>
             </div>
           )}
         </section>
@@ -395,7 +431,7 @@ function Account() {
         </section>
       </div>
 
-      {/* Modal */}
+      {/* Password Modal */}
       <ChangePasswordModal
         open={changeOpen}
         onClose={() => { setChangeOpen(false); setPwError(''); setPwSuccess(''); }}

@@ -4,12 +4,27 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 const User = require("../models/User");
 const Product = require("../models/Product");
+const Contact = require('../models/Contact');
 const { createAccessToken, createRefreshToken , verifyToken , isAdmin , validateBody } = require('../utils/helpers');
 const passport = require('passport');
 
 
 
 const router = express.Router();
+
+
+
+
+/*
+
+Auth of admin
+
+*/
+
+
+
+
+
 
 // Middleware: check masterKey OR logged-in admin
 const adminOrMasterKey = async (req, res, next) => {
@@ -138,6 +153,16 @@ router.post('/token', (req, res) => {
     });
 });
 
+
+
+
+/*
+
+  get admin
+
+*/  
+
+
   router.get('/me', passport.authenticate('admin-jwt', { session: false }),
 
   async (req, res) => {
@@ -151,7 +176,16 @@ router.post('/token', (req, res) => {
   }
 );
 
-// Add user
+
+
+
+
+/*    The complete user model         */
+
+
+
+
+//Add
 
 router.post(
   '/add-user',
@@ -190,6 +224,29 @@ router.post(
 );
 
 
+// Delete user
+
+
+router.delete('/delete-user/:id', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Save deletion in history
+    await History.create({
+      type: 'user-deletion',
+      performedBy: req.user._id,
+      data: user,
+      timestamp: new Date()
+    });
+
+    res.json({ message: 'User deleted and logged in history' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
+
 
 // Get recent users
 router.get('/users', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
@@ -199,56 +256,103 @@ router.get('/users', passport.authenticate('admin-jwt', { session: false }), asy
   res.json({ total, users });
 });
 
-
-
-router.post("/user/:id/purchase", verifyToken, isAdmin, async (req, res) => {
-  const { id } = req.params;
-  const { date, items } = req.body;
-
+router.post('/user/:userId/purchase', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
   try {
-    const user = await User.findById(id);
+    const { date, items } = req.body;
+
+    if (!date || !Array.isArray(items) || items.length === 0)
+      return res.status(400).json({ message: "Date and items are required" });
+
+    const user = await User.findById(req.params.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ message: "Items array is missing or empty" });
+    const existingEntry = user.purchased_history.find(ph => ph.date === date);
+
+    if (existingEntry) {
+      items.forEach(newItem => {
+        const existingItem = existingEntry.items.find(i => i.name === newItem.name);
+        if (existingItem) {
+          existingItem.quantity += newItem.quantity;
+          existingItem.advancePaid += newItem.advancePaid;
+          existingItem.totalPrice += newItem.totalPrice;
+        } else {
+          existingEntry.items.push(newItem);
+        }
+      });
+    } else {
+      user.purchased_history.push({ date, items });
     }
-
-    // Validate and sanitize input
-    const validItems = [];
-    const duesItems = [];
-
-    for (const item of items) {
-      const { name, quantity, advancePaid, totalPrice } = item;
-
-      if (
-        typeof name !== "string" ||
-        typeof quantity !== "number" ||
-        typeof advancePaid !== "number" ||
-        typeof totalPrice !== "number"
-      ) {
-        return res.status(400).json({ message: "Invalid or missing item fields" });
-      }
-
-      const dueAmount = totalPrice - advancePaid;
-      if (isNaN(dueAmount)) {
-        return res.status(400).json({ message: "Invalid due amount calculation" });
-      }
-
-      validItems.push({ name, quantity, advancePaid, totalPrice });
-      duesItems.push({ name, quantity, dueAmount, fullyPaid: dueAmount <= 0 });
-    }
-
-    user.purchased_history.push({ date, items: validItems });
-    user.dues.push({ date, items: duesItems });
 
     await user.save();
-
-    res.json({ message: "Purchase and dues recorded." });
+    res.json({ message: "Purchase history updated", user });
   } catch (err) {
-    console.error("Purchase Error:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
+
+
+router.post('/user/:userId/due', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
+  try {
+    const { date, items } = req.body;
+
+    if (!date || !Array.isArray(items) || items.length === 0)
+      return res.status(400).json({ message: "Date and items are required" });
+
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const existingEntry = user.dues.find(d => d.date === date);
+
+    if (existingEntry) {
+      items.forEach(newItem => {
+        const existingItem = existingEntry.items.find(i => i.name === newItem.name);
+        if (existingItem) {
+          existingItem.quantity += newItem.quantity;
+          existingItem.dueAmount += newItem.dueAmount;
+          existingItem.fullyPaid = existingItem.fullyPaid && newItem.fullyPaid; // keep false if any is false
+        } else {
+          existingEntry.items.push(newItem);
+        }
+      });
+    } else {
+      user.dues.push({ date, items });
+    }
+
+    await user.save();
+    res.json({ message: "Due history updated", user });
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+router.delete('/user/:userId/history/:type/:date', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
+  const { type, date } = req.params;
+  if (!["purchased_history", "dues"].includes(type)) {
+    return res.status(400).json({ message: "Invalid history type" });
+  }
+
+  const user = await User.findById(req.params.userId);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  user[type] = user[type].filter(entry => entry.date !== date);
+  await user.save();
+
+  res.json({ message: `${type} entry removed`, user });
+});
+
+
+
+
+
+
+
+////** product crud operations */
+
+
+
+
+
 
 router.post("/product", verifyToken, isAdmin, validateBody,  async (req, res) => {
   try {
@@ -266,6 +370,23 @@ router.get("/products", verifyToken, isAdmin, async (req, res) => {
   try {
     const products = await Product.find();
     res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch products" });
+  }
+});
+// Get all products (with count support)
+router.get("/products/count", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const countOnly = req.query.count === 'true';
+
+    if (countOnly) {
+      const totalCount = await Product.countDocuments();
+      return res.json({ totalCount });
+    }
+
+    res.json({ 
+      totalCount: countOnly ? await Product.countDocuments() : undefined 
+    });
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch products" });
   }
@@ -303,6 +424,58 @@ router.delete("/product/:id", verifyToken, isAdmin, async (req, res) => {
     res.status(400).json({ message: "Delete failed" });
   }
 });
+
+
+
+
+
+
+
+/**
+ * message
+ */
+
+
+
+
+// Get contact messages
+router.get('/contact/messages', 
+  passport.authenticate('admin-jwt', { session: false }),
+  async (req, res) => {
+    try {
+      const messages = await Contact.find()
+        .sort({ createdAt: -1 }) // -1 for descending (newest first)
+        .exec();
+      
+      res.json({ 
+        success: true,
+        messages 
+      });
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to fetch messages' 
+      });
+    }
+  }
+);
+
+// Delete a message
+router.delete('/contact/message/:id', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
+  const message = await Contact.findByIdAndDelete(req.params.id);
+  if (!message) return res.status(404).json({ error: 'Message not found' });
+
+  await History.create({
+    type: 'contact-message-deletion',
+    performedBy: req.user._id,
+    data: message,
+    timestamp: new Date()
+  });
+
+  res.json({ message: 'Message deleted and logged in history' });
+});
+
 
 
 

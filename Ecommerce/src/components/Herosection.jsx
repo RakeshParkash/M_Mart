@@ -10,7 +10,16 @@ const getColors = (accentColor) => {
     case "yellow": return { heading: "#b28704", accent: "#fbc02d", border: "#fbc02d", text: "#333" };
     case "green": return { heading: "#1b5e20", accent: "#388e3c", border: "#388e3c", text: "#222" };
     case "purple": return { heading: "#4a148c", accent: "#8e24aa", border: "#8e24aa", text: "#222" };
-    case "red": default: return { heading: "#b71c1c", accent: "#d32f2f", border: "#d32f2f", text: "#222" };
+    case "red": return { heading: "#b71c1c", accent: "#d32f2f", border: "#d32f2f", text: "#222" };
+    case "gray":
+    return {
+    heading: "#424242",   // Dark gray
+    accent: "#616161",    // Mid gray
+    border: "#757575",    // Light border gray
+    text: "#212121"       // Very dark for contrast
+  };
+  default:
+    return { heading: "#b71c1c", accent: "#d32f2f", border: "#d32f2f", text: "#222" };
   }
 };
 
@@ -21,9 +30,9 @@ const getColors = (accentColor) => {
 const ProductSection = ({ id, title, products, accentColor = "red" }) => {
   const { heading, accent, border, text } = getColors(accentColor);
   return (
-    <section id={id} className="max-w-6xl mx-auto px-4 py-8 scroll-mt-20">
-      <h2 className="text-2xl font-extrabold mb-8 border-l-4 pl-4" style={{ color: heading, borderColor: border }}>{title}</h2>
-      <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    <section id={id} className="rounded-xl shadow-lg p-4 flex flex-col items-center border-t-4 transition hover:scale-105 animate-fade-in " >
+      <h2 className="text-2xl font-extrabold mb-8 border-l-4 pl-4 rounded-full" style={{ color: heading, borderColor: border }}>{title}</h2>
+      <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
         {products.map((item, idx) => (
           <div
             key={idx}
@@ -35,7 +44,7 @@ const ProductSection = ({ id, title, products, accentColor = "red" }) => {
             <p className="text-sm mb-1 text-center" style={{ color: text }}>{item.desc}</p>
             {item.price && <p className="text-md font-semibold mb-3" style={{ color: accent }}>{item.price}</p>}
             {item.cta && (
-              <button className="mt-auto px-4 py-1 rounded-full font-medium transition hover:brightness-110"
+              <button className="mt-auto px-4 py-1 rounded-full font-medium transition hover:brightness-110 cursor-pointer"
                 style={{ background: accent, color: "#fff", boxShadow: "0 2px 8px 0 rgba(0,0,0,0.10)" }}>
                 {item.cta}
               </button>
@@ -49,8 +58,8 @@ const ProductSection = ({ id, title, products, accentColor = "red" }) => {
 
 
 
-const ContactSection = () => (
-  <section id="contact" className="max-w-6xl mx-auto px-4 py-16 text-black">
+const ContactSection = ({ id = "contact" } ) => (
+  <section id={id} className="max-w-6xl mx-auto px-4 py-16 text-black rounded">
     <h2 className="text-2xl font-extrabold mb-8 border-l-4 pl-4" style={{ color: "#4a148c", borderColor: "#8e24aa" }}>Contact Us</h2>
     <div className="bg-white rounded-xl shadow p-6 md:p-12 flex flex-col items-center gap-4">
       <p>Have questions? We’d love to hear from you. Reach us at <a href="mailto:support@grocerease.com" className="text-[#1976d2] underline">support@example.com</a></p>
@@ -65,11 +74,11 @@ const HeroBanner = ({ perishables }) => (
     {/* Left: Headline */}
     <div className="flex-1 text-center md:text-left mb-8 md:mb-0">
       <h1 className="text-4xl md:text-5xl font-extrabold mb-4" style={{ color: "#1976d2" }}>Fresh Perishables, Delivered Daily</h1>
-      <p className="text-lg mb-6" style={{ color: "#b71c1c" }}>
+      <p className="text-lg mb-6" style={{ color: "black" }}>
         Discover the best dairy, bakery, and plant-based perishables for your healthy vegetarian lifestyle.
       </p>
       <a href="#perishables">
-        <button className="bg-[#1976d2] hover:bg-[#b71c1c] text-white px-6 py-3 rounded-full font-semibold text-lg shadow-md transition">
+        <button className="bg-[#1976d2] hover:bg-[#b71c1c] text-white px-6 py-3 rounded-full font-semibold text-lg shadow-md transition cursor-pointer">
           Shop Bestsellers
         </button>
       </a>
@@ -112,20 +121,37 @@ export default function HeroSection() {
     Grains: [],
     Bakery: [],
     Dairy: [],
-    Offers: []
+    Offers: [],
+    Others: []
   });
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8080/products/get") // Update the URL as needed
-      .then((res) => res.json())
-      .then((data) => setAllProducts(data))
-      .catch((err) => console.error("Failed to fetch products", err));
+    setLoading(true);
+    fetch("http://localhost:8080/products/get")
+      .then(res => res.json())
+      .then(data => setAllProducts(data))
+      .catch(err => {
+        console.error("Failed to fetch products", err);
+        setError(true);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
+
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-[#fff3e0] via-white to-[#e3f2fd]">
+    <div className="relative min-h-screen bg-gradient-to-br from-[#fff3e0] via-white to-[#e3f2fd] rounded-full">
       
-      <div className="fixed top-0 left-[260px] w-[calc(100%-260px)] z-50 bg-white shadow-md">
+      <div className="
+        fixed top-0 
+        left-[56px] md:left-[260px] 
+        w-[calc(100%-56px)] md:w-[calc(100%-260px)] 
+        z-50 bg-white shadow-md
+      ">
+
+
             <MiniNavbar
               isAuthenticated={isAuthenticated}
               onLogin={handleLogin}
@@ -140,8 +166,13 @@ export default function HeroSection() {
       {/* Hero/Home Section */}
       <HeroBanner perishables={allProducts.Perishables.slice(0, 4)} />
 
-
-      {/* All other product sections, ids must match MiniNavbar! */}
+      {loading ? (
+          <div className="text-center text-lg py-12">Loading products...</div>
+        ) : error ? (
+          <div className="text-center text-red-600 py-12">Failed to load products. Please try again.</div>
+        ) : (
+          <>
+             {/* All other product sections, ids must match MiniNavbar! */}
       <ProductSection id="perishables" title="Perishables" products={allProducts.Perishables || []} accentColor="red" />
       <ProductSection id="snacks" title="Snacks" products={allProducts.Snacks || []} accentColor="yellow" />
       <ProductSection id="beverages" title="Beverages" products={allProducts.Beverages || []} accentColor="blue" />
@@ -149,9 +180,15 @@ export default function HeroSection() {
       <ProductSection id="bakery" title="Bakery" products={allProducts.Bakery || []} accentColor="purple" />
       <ProductSection id="dairy" title="Dairy" products={allProducts.Dairy || []} accentColor="red" />
       <ProductSection id="offers" title="Offers" products={allProducts.Offers || []} accentColor="blue" />
+      <ProductSection id="others" title="Others" products={allProducts.Others || []} accentColor="gray" />
+
 
 
       <ContactSection id="contact" />
+          </>
+        )}
+
+     
 
       
     </div>

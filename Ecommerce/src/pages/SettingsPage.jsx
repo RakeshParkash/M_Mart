@@ -3,13 +3,10 @@ import React, { useRef, useEffect } from "react";
 export default function SettingsPopover({
   theme,
   setTheme,
-  sidebarMode,
-  setSidebarMode,
   onClose
 }) {
   const popoverRef = useRef(null);
 
-  // Close popover when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (popoverRef.current && !popoverRef.current.contains(event.target)) {
@@ -41,18 +38,6 @@ export default function SettingsPopover({
           }}
         >
           {theme === "red" ? "Switch to Blue" : "Switch to Red"}
-        </button>
-      </div>
-      <div>
-        <label className="font-medium mr-2">Layout:</label>
-        <button
-          className="px-3 py-1 rounded-full bg-gray-700 text-white font-semibold transition"
-          onClick={() => {
-            setSidebarMode((m) => !m);
-            onClose();
-          }}
-        >
-          {sidebarMode ? "Topbar" : "Sidebar"}
         </button>
       </div>
     </div>

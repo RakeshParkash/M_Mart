@@ -5,10 +5,10 @@ import { NavLink } from 'react-router-dom';
 
 const footerLinks = [
   { label: 'Home', to: '/' },
-  { label: 'Shop', to: '/shop' },
-  { label: 'About', to: '/about' },
+  { label: 'Shop', to: '/categories' },
+  // { label: 'About', to: '/about' },
   { label: 'Contact', to: '/contact' },
-  { label: 'Offers', to: '/offers' },
+  // { label: 'Offers', to: '/offers' },
   { label: 'Admin', to: '/admin/login ' },
 ];
 

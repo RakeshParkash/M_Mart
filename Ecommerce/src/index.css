@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+
+html, body {
+  overflow-x: hidden;
+}
+
 /* Theme: Red (Dark) */
 body.theme-red {
   --bg-main: #7f1d1d;
@@ -47,3 +52,11 @@ body.theme-blue {
   --card-border: #1e88e5;
 }
 
+/* App.css or index.css */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
