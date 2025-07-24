@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { backendUrl } from '../utils/config.js';
 import { useCookies } from 'react-cookie';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -169,7 +168,7 @@ function Account() {
         const token = cookies.token;
         if (!token) throw new Error('No authentication token found');
         // Get current user's ID
-        const meResponse = await fetch(`${backendUrl}/me`, {
+        const meResponse = await fetch(`${import.meta.env.VITE_API}/me`, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           credentials: 'include',
           signal: controller.signal,
@@ -178,7 +177,7 @@ function Account() {
         const meData = await meResponse.json();
 
         // Get detailed user (with purchase history)
-        const userResponse = await fetch(`${backendUrl}/get/user/${meData._id}`, {
+        const userResponse = await fetch(`${import.meta.env.VITE_API}/get/user/${meData._id}`, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           credentials: 'include',
           signal: controller.signal,
@@ -245,7 +244,7 @@ function Account() {
     setPwLoading(true);
     try {
       const token = cookies.token;
-      const response = await fetch(`${backendUrl}/change-password`, {
+      const response = await fetch(`${import.meta.env.VITE_API}/change-password`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

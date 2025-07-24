@@ -171,7 +171,7 @@ export default function AdminUsers() {
       if (editing) {
         await api.put(`/admin/user/${editing._id}`, payload);
       } else {
-        // Your backend uses '/add-user' to create user
+        
         await api.post("/admin/add-user", payload);
       }
 

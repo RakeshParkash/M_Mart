@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { backendUrl } from '../utils/config.js';
 import { useCookies } from 'react-cookie';
 import { useNavigate, Link } from 'react-router-dom';
 

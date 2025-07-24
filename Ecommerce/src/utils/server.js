@@ -1,5 +1,4 @@
 // helpers.js
-import { backendUrl } from "./config";
 
 // Uses localStorage for token, keep in sync with where you actually store it!
 const getToken = () => localStorage.getItem('accessToken');
@@ -9,7 +8,7 @@ export const makeUnauthenticatedPOSTRequest = async (route, body) => {
     if (!route) throw new Error("Route is required");
     if (!body) throw new Error("Request body is required");
 
-    const response = await fetch(backendUrl + route, {
+    const response = await fetch(import.meta.env.VITE_API + route, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -36,7 +35,7 @@ export const makeUnauthenticatedPOSTRequest = async (route, body) => {
 
 export const makeAuthenticatedPOSTRequest = async (route, body) => {
   const token = getToken();
-  const response = await fetch(backendUrl + route, {
+  const response = await fetch(import.meta.env.VITE_API + route, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -49,7 +48,7 @@ export const makeAuthenticatedPOSTRequest = async (route, body) => {
 
 export const makeAuthenticatedGETRequest = async (route) => {
   const token = getToken();
-  const response = await fetch(backendUrl + route, {
+  const response = await fetch(import.meta.env.VITE_API + route, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

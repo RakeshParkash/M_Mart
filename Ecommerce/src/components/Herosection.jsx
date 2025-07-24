@@ -130,7 +130,7 @@ export default function HeroSection() {
 
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:8080/products/get")
+    fetch(`${import.meta.env.VITE_API}/products/get`)
       .then(res => res.json())
       .then(data => setAllProducts(data))
       .catch(err => {
