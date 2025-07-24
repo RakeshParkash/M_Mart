@@ -186,10 +186,15 @@ export default function AdminDashboard() {
           </Button>
         </Link>
       </div>
-      <div className='mt-5 ml-116 w-70 item-center flex justify-center'>
+      <div className="max-w-2xl border-t border-blue-200 mt-12 mx-auto pt-6 flex justify-center gap-8">
         <Link to="/admin/messages">
-          <Button className="w-36 bg-red-600 hover:bg-red-700 text-white ">
-            See Messages
+          <Button className="w-36 bg-blue-600 hover:bg-blue-700 text-white">
+            See Mesages
+          </Button>
+        </Link>
+        <Link to="/admin/history">
+          <Button className="w-36 bg-green-600 hover:bg-green-700 text-white">
+            See Deleted user History
           </Button>
         </Link>
       </div>

@@ -22,6 +22,7 @@ import ContactSection from "./pages/Contact";
 import Order from "./pages/Order";
 import AdminMessages from "./pages/AdminMessages";
 import AdminUser from "./pages/AdminUser";
+import AdminUserHistory from './pages/AdminUserHistory';
 
 function App() {
   const [theme, setTheme] = useState("red"); // "red" or "blue"
@@ -100,6 +101,7 @@ function App() {
                 <Route path="/orders" element={<Order />} />
                 {/* <Route path="/cart" element={<Cart />} /> */}
                 {/* <Route path="/support" element={<Support />} /> */}
+                <Route path="/admin/history" element={<AdminUserHistory />} />
                 <Route path="/admin/messages" element={<AdminMessages />} />
                 <Route path="/admin/products" element={<AdminProduct />} />
                 <Route path="/categories" element={<CategoryBrowser />} />

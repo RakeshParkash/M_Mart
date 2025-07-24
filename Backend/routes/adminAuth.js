@@ -1,15 +1,15 @@
 const express = require('express');
+const mongoose = require('mongoose')
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 const User = require("../models/User");
 const Product = require("../models/Product");
 const Contact = require('../models/Contact');
+const History = require('../models/History');
 const { createAccessToken, createRefreshToken , verifyToken , isAdmin , validateBody } = require('../utils/helpers');
 const passport = require('passport');
-
-
-
+const bcrypt = require('bcrypt');
 const router = express.Router();
 
 
@@ -191,33 +191,70 @@ router.post(
   '/add-user',
   passport.authenticate('admin-jwt', { session: false }),
   [
-    body('name').notEmpty().withMessage('Name is required'),
-    body('email').isEmail().withMessage('Valid email is required'),
-    body('phone').notEmpty().withMessage('Phone number is required')
+    body('firstName').notEmpty().withMessage('First name is required'),
+    body('phone').notEmpty().withMessage('Phone number is required'),
+    body('password').notEmpty().withMessage('Password is required'),
+    body('email')
+      .optional({ checkFalsy: true })
+      .isEmail()
+      .withMessage('Email must be valid'),
+    body('lastName')
+      .optional({ checkFalsy: true })
+      .trim()
   ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: errors.array()
+      });
     }
 
-    const { email, phone } = req.body;
+    const { firstName, lastName, email, phone, password } = req.body;
 
     try {
-      const existingEmail = await User.findOne({ email });
-      if (existingEmail) {
-        return res.status(409).json({ error: 'Email already exists' });
-      }
-
+      // Check if phone number already exists
       const existingPhone = await User.findOne({ phone });
       if (existingPhone) {
         return res.status(409).json({ error: 'Phone number already exists' });
       }
 
-      const user = await User.create(req.body);
-      res.status(201).json({ message: 'User created successfully', user });
+      // Check if email exists only if provided
+      if (email) {
+        const existingEmail = await User.findOne({ email });
+        if (existingEmail) {
+          return res.status(409).json({ error: 'Email already exists' });
+        }
+      }
+
+      // Build user object dynamically
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = {
+        firstName,
+        lastName,
+        phone,
+        password: hashedPassword
+      };
+
+      if (email) {
+        newUser.email = email;
+      }
+
+      const user = await User.create(newUser);
+
+      res.status(201).json({
+        message: 'User created successfully',
+        user: {
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phone: user.phone,
+          email: user.email || null
+        }
+      });
     } catch (err) {
-      console.error(err);
+      console.error('Error adding user:', err);
       res.status(500).json({ error: 'Server error' });
     }
   }
@@ -227,24 +264,54 @@ router.post(
 // Delete user
 
 
-router.delete('/delete-user/:id', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
-  try {
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+router.delete('/delete-user/:id',
+  passport.authenticate('admin-jwt', { session: false }),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    // Save deletion in history
-    await History.create({
-      type: 'user-deletion',
-      performedBy: req.user._id,
-      data: user,
-      timestamp: new Date()
-    });
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: 'Invalid user ID' });
+      }
 
-    res.json({ message: 'User deleted and logged in history' });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete user' });
+      const user = await User.findByIdAndDelete(id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      await History.create({
+        type: 'user-deletion',
+        performedBy: req.user?._id || null,
+        data: user,
+        timestamp: new Date(),
+      });
+
+      res.json({ message: 'User deleted and logged in history' });
+    } catch (err) {
+      console.error('Delete error:', err);
+      res.status(500).json({ error: 'Failed to delete user' });
+    }
   }
-});
+);
+
+// history
+
+// Fetch all user deletion history (latest first)
+router.get('/deleted-history',
+  passport.authenticate('admin-jwt', { session: false }),
+  async (req, res) => {
+    try {
+      const logs = await History.find({ type: 'user-deletion' })
+        .populate('performedBy', 'firstName lastName email') // optional
+        .sort({ timestamp: -1 });
+
+      res.json({ history: logs });
+    } catch (err) {
+      console.error('Error fetching history:', err);
+      res.status(500).json({ error: 'Failed to fetch history' });
+    }
+  }
+);
 
 
 
@@ -252,7 +319,7 @@ router.delete('/delete-user/:id', passport.authenticate('admin-jwt', { session: 
 router.get('/users', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 5, 100);
   const total = await User.countDocuments({});
-  const users = await User.find({}).select('name email phone').sort('-createdAt').limit(limit);
+  const users = await User.find({}).select('firstName lastName email phone purchased_history dues');
   res.json({ total, users });
 });
 
@@ -324,6 +391,26 @@ router.post('/user/:userId/due', passport.authenticate('admin-jwt', { session: f
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+router.put(
+  '/user/:id',
+  passport.authenticate('admin-jwt', { session: false }),
+  async (req, res) => {
+    try {
+      const updateFields = { ...req.body };
+      // Optionally: never update password here directly unless you hash it (depends on your auth logic)
+      if ('password' in updateFields && !updateFields.password) delete updateFields.password;
+
+      const user = await User.findByIdAndUpdate(req.params.id, updateFields, { new: true, runValidators: true });
+      if (!user) return res.status(404).json({ error: "User not found" });
+      res.json({ message: "User updated successfully", user });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to update user" });
+    }
+  }
+);
+
 
 
 router.delete('/user/:userId/history/:type/:date', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {

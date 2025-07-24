@@ -162,7 +162,7 @@ export default function AdminUsers() {
       const payload = {
         firstName: userForm.firstName,
         lastName: userForm.lastName,
-        email: userForm.email,
+        email: userForm.email || "",
         phone: userForm.phone,
         // Only send password if creating new user or if updated password (you might want to improve logic)
         ...(userForm.password ? { password: userForm.password } : {}),
@@ -454,7 +454,6 @@ export default function AdminUsers() {
                       name="email"
                       value={userForm.email}
                       onChange={handleUserForm}
-                      required
                       className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                   </div>
@@ -552,17 +551,18 @@ export default function AdminUsers() {
   <p>No purchase history</p>
 )}
 
-                  {(viewHistoryUser?.purchased_history || [])
-                    .slice()
-                    .sort((a, b) => b.date.localeCompare(a.date))
-                    .map((entry) => (
-                      <HistoryEntry
-                        key={entry.date}
-                        entry={entry}
-                        onDelete={deleteHistoryEntry}
-                        type="purchased_history"
-                      />
-                    ))}
+              {(viewHistoryUser?.purchased_history ?? [])
+                .slice()
+                .sort((a, b) => b.date.localeCompare(a.date))
+                .map((entry, idx) => (
+                  <HistoryEntry
+                    key={`${entry.date}-${idx}`}
+                    entry={entry}
+                    onDelete={deleteHistoryEntry}
+                    type="purchased_history"
+                  />
+              ))}
+
 
                   {/* Add Purchase Form */}
                   <div className="mt-6 border-t pt-5">
@@ -685,12 +685,12 @@ export default function AdminUsers() {
   <p>No purchase history</p>
 )}
 
-                  {(viewHistoryUser?.dues || [])
+                  {(viewHistoryUser?.dues ?? [])
                     .slice()
                     .sort((a, b) => b.date.localeCompare(a.date))
-                    .map((entry) => (
+                    .map((entry , idx) => (
                       <HistoryEntry
-                        key={entry.date}
+                        key={`${entry.date}-${idx}`}
                         entry={entry}
                         onDelete={deleteHistoryEntry}
                         type="dues"
