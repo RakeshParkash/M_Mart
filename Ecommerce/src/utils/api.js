@@ -1,10 +1,10 @@
 // api.js
 import axios from 'axios';
 import { setAuthFromOutside } from '../utils/authContext';
-
+import { backendUrl } from './config';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API || 'http://localhost:8080',
+  baseURL: import.meta.env.VITE_API || backendUrl,
   withCredentials: true,
 });
 

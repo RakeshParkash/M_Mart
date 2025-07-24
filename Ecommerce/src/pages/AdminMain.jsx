@@ -79,7 +79,11 @@ export default function AdminDashboard() {
   if (error) {
     return (
       <div className="text-center py-16 text-red-500">
-        {error} - <button onClick={() => window.location.reload()} className="text-blue-500">Try again</button>
+        {error} - <button onClick={() => window.location.reload()} className="text-blue-500">
+            <Link to={'/admin/login'}>
+              Try again
+            </Link>
+          </button>
       </div>
     );
   }
