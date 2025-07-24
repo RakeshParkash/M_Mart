@@ -162,16 +162,16 @@ export default function AdminProducts() {
         {fetching ? (
           <div className="text-center text-xl text-blue-700">Loading products...</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {products.map((prod) => (
               <div
                 key={prod._id}
                 className="bg-white shadow-xl hover:shadow-2xl rounded-2xl p-5 transition-all hover:-translate-y-1 overflow-hidden flex flex-col"
               >
-                <div className="h-40 bg-gray-50 rounded-xl flex items-center justify-center mb-3 overflow-hidden">
+                <div className="bg-gray-50 rounded-xl flex items-center justify-center mb-3 overflow-hidden max-h-32 sm:max-h-40">
                   <img
                     src={prod.image}
-                    className="max-h-[140px] max-w-[220px] object-contain mx-auto"
+                    className="max-h-32 sm:max-h-40 max-w-full object-contain mx-auto"
                     alt={prod.name}
                   />
                 </div>
@@ -223,160 +223,212 @@ export default function AdminProducts() {
 
         {/* Add/Edit Modal */}
         {modalOpen && (
-          <div
-            className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center"
-            style={{ backdropFilter: "blur(3px)" }}
-            onClick={() => { setModalOpen(false); setEditing(null); }}
-          >
-            <div className="w-full max-w-lg bg-white rounded-2xl p-8 shadow-2xl space-y-4 relative max-h-[92vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
+            <div
+              className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center"
+              style={{ backdropFilter: "blur(3px)" }}
+              onClick={() => { setModalOpen(false); setEditing(null); }}
             >
-              <h3 className="text-2xl font-semibold mb-2 text-blue-800 flex items-center gap-2">
-                {editing ? <span>✏️</span> : <span>➕</span>}
-                {editing ? "Edit Product" : "Add New Product"}
-              </h3>
-              <button
-                type="button"
-                onClick={() => { setModalOpen(false); setEditing(null); }}
-                className="absolute right-5 top-4 text-gray-400 hover:text-gray-600 text-2xl leading-tight font-bold cursor-pointer"
-                title="Close"
-                tabIndex={0}
-                aria-label="Close"
-              >✕</button>
-
-              <form onSubmit={submitForm} className="space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Product Name</label>
-                    <input
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      name="name"
-                      value={form.name}
-                      onChange={handleForm}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Category</label>
-                    <input
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      name="category"
-                      value={form.category}
-                      onChange={handleForm}
-                      required
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-xs font-semibold mb-1">Description</label>
-                    <textarea
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      name="description"
-                      value={form.description}
-                      onChange={handleForm}
-                      required
-                    ></textarea>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Image URL</label>
-                    <input
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      name="image"
-                      value={form.image}
-                      onChange={handleForm}
-                      required
-                    />
-                    {form.image && (
-                      <img src={form.image} alt="Preview" className="h-20 mt-2 mx-auto rounded shadow border" />
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Quantity Unit</label>
-                    <input
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      name="quantity_Unit"
-                      value={form.quantity_Unit}
-                      onChange={handleForm}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Stock Type</label>
-                    <select
-                      name="stock.type"
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      value={form.stock.type}
-                      onChange={handleForm}
-                    >
-                      <option value="packet">Packet</option>
-                      <option value="weight">Weight</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Stock Value</label>
-                    <input
-                      type="number"
-                      min={0}
-                      name="stock.value"
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      value={form.stock.value}
-                      onChange={handleForm}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Stock Unit</label>
-                    <input
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      name="stock.unit"
-                      value={form.stock.unit}
-                      onChange={handleForm}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Selling Price</label>
-                    <input
-                      type="number"
-                      min="0"
-                      name="selling_Price.price"
-                      value={form.selling_Price.price}
-                      onChange={handleForm}
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                    <input
-                      className="w-full border mt-2 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      name="selling_Price.unit"
-                      value={form.selling_Price.unit}
-                      onChange={handleForm}
-                      placeholder="Unit (eg. kg/pc/box)"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Buying Price</label>
-                    <input
-                      type="number"
-                      min="0"
-                      name="buying_Price.price"
-                      value={form.buying_Price.price}
-                      onChange={handleForm}
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                    <input
-                      className="w-full border mt-2 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      name="buying_Price.unit"
-                      value={form.buying_Price.unit}
-                      onChange={handleForm}
-                      placeholder="Unit (eg. kg/pc/box)"
-                    />
-                  </div>
-                </div>
+              <div
+                className="w-full max-w-md sm:max-w-lg lg:max-w-xl bg-white rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl space-y-4 relative max-h-[92vh] overflow-y-auto"
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Header */}
+                <h3 className="text-2xl font-semibold mb-2 text-blue-800 flex items-center gap-2">
+                  {editing ? <span>✏️</span> : <span>➕</span>}
+                  {editing ? "Edit Product" : "Add New Product"}
+                </h3>
                 <button
-                  className="w-full mt-3 bg-gradient-to-tr from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-600 text-white py-2 rounded-xl text-lg font-bold active:scale-95 transition cursor-pointer"
-                  type="submit"
-                >{editing ? "Update Product" : "Add Product"}</button>
-                {error && <div className="text-red-500 mt-2">{error}</div>}
-              </form>
+                  type="button"
+                  onClick={() => { setModalOpen(false); setEditing(null); }}
+                  className="absolute right-5 top-4 text-gray-400 hover:text-gray-600 text-2xl leading-tight font-bold cursor-pointer"
+                  title="Close"
+                  tabIndex={0}
+                  aria-label="Close"
+                >✕</button>
+
+                {/* Form */}
+                <form onSubmit={submitForm} className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Product Name */}
+                    <div>
+                      <label className="block text-xs font-semibold mb-1" htmlFor="name">Product Name</label>
+                      <input
+                        id="name"
+                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        name="name"
+                        value={form.name}
+                        onChange={handleForm}
+                        required
+                        type="text"
+                      />
+                    </div>
+
+                    {/* Category */}
+                    <div>
+                      <label className="block text-xs font-semibold mb-1" htmlFor="category">Category</label>
+                      <input
+                        id="category"
+                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        name="category"
+                        value={form.category}
+                        onChange={handleForm}
+                        required
+                        type="text"
+                      />
+                    </div>
+
+                    {/* Description (full width) */}
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-semibold mb-1" htmlFor="description">Description</label>
+                      <textarea
+                        id="description"
+                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        name="description"
+                        value={form.description}
+                        onChange={handleForm}
+                        rows={3}
+                        required
+                      ></textarea>
+                    </div>
+
+                    {/* Image URL */}
+                    <div>
+                      <label className="block text-xs font-semibold mb-1" htmlFor="image">Image URL</label>
+                      <input
+                        id="image"
+                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        name="image"
+                        value={form.image}
+                        onChange={handleForm}
+                        type="url"
+                        required
+                      />
+                      {form.image && (
+                        <img src={form.image} alt="Preview" className="h-20 mt-2 mx-auto rounded shadow border" />
+                      )}
+                    </div>
+
+                    {/* Quantity Unit */}
+                    <div>
+                      <label className="block text-xs font-semibold mb-1" htmlFor="quantity_Unit">Quantity Unit</label>
+                      <input
+                        id="quantity_Unit"
+                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        name="quantity_Unit"
+                        value={form.quantity_Unit}
+                        onChange={handleForm}
+                        required
+                        type="text"
+                      />
+                    </div>
+
+                    {/* Stock Type */}
+                    <div>
+                      <label className="block text-xs font-semibold mb-1" htmlFor="stock.type">Stock Type</label>
+                      <select
+                        id="stock.type"
+                        name="stock.type"
+                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        value={form.stock.type}
+                        onChange={handleForm}
+                      >
+                        <option value="packet">Packet</option>
+                        <option value="weight">Weight</option>
+                      </select>
+                    </div>
+
+                    {/* Stock Value */}
+                    <div>
+                      <label className="block text-xs font-semibold mb-1" htmlFor="stock.value">Stock Value</label>
+                      <input
+                        id="stock.value"
+                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        name="stock.value"
+                        value={form.stock.value}
+                        onChange={handleForm}
+                        type="number"
+                        min={0}
+                        step="any"
+                      />
+                    </div>
+
+                    {/* Stock Unit */}
+                    <div>
+                      <label className="block text-xs font-semibold mb-1" htmlFor="stock.unit">Stock Unit</label>
+                      <input
+                        id="stock.unit"
+                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        name="stock.unit"
+                        value={form.stock.unit}
+                        onChange={handleForm}
+                        type="text"
+                      />
+                    </div>
+
+                    {/* Selling Price */}
+                    <div>
+                      <label className="block text-xs font-semibold mb-1" htmlFor="selling_Price.price">Selling Price</label>
+                      <input
+                        id="selling_Price.price"
+                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        name="selling_Price.price"
+                        value={form.selling_Price.price}
+                        onChange={handleForm}
+                        type="number"
+                        min={0}
+                        step="any"
+                      />
+                      <input
+                        id="selling_Price.unit"
+                        className="w-full border mt-2 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        name="selling_Price.unit"
+                        value={form.selling_Price.unit}
+                        onChange={handleForm}
+                        type="text"
+                        placeholder="Unit (eg. kg/pc/box)"
+                      />
+                    </div>
+
+                    {/* Buying Price */}
+                    <div>
+                      <label className="block text-xs font-semibold mb-1" htmlFor="buying_Price.price">Buying Price</label>
+                      <input
+                        id="buying_Price.price"
+                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        name="buying_Price.price"
+                        value={form.buying_Price.price}
+                        onChange={handleForm}
+                        type="number"
+                        min={0}
+                        step="any"
+                      />
+                      <input
+                        id="buying_Price.unit"
+                        className="w-full border mt-2 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        name="buying_Price.unit"
+                        value={form.buying_Price.unit}
+                        onChange={handleForm}
+                        type="text"
+                        placeholder="Unit (eg. kg/pc/box)"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    className="w-full mt-3 bg-gradient-to-tr from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-600 text-white py-2 rounded-xl text-lg font-bold active:scale-95 transition cursor-pointer"
+                  >
+                    {editing ? "Update Product" : "Add Product"}
+                  </button>
+
+                  {/* Error Message */}
+                  {error && <div className="text-red-500 mt-2 text-center">{error}</div>}
+                </form>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
       </div>
     </div>
   );

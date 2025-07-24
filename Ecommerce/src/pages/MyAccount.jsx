@@ -113,7 +113,7 @@ function PurchaseCard({ purchase }) {
           ▶
         </span>
       </button>
-      <div className={`${open ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"} transition-all duration-400 overflow-hidden`}>
+      <div className={`${open ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"} transition-all duration-400 overflow-x-auto`}>
         <div className="p-0 md:p-6">
           <table className="w-full mt-2 rounded-md overflow-hidden bg-white shadow-sm">
             <thead>
@@ -331,7 +331,7 @@ function Account() {
         Welcome, {userData.name}
       </h1>
 
-      <div className="grid gap-12 py-8 grid-cols-1 lg:grid-cols-[1fr_2fr]">
+      <div className="grid-cols-1 md:grid-cols-[1fr_2fr] lg:grid-cols-[1fr_2fr]">
         {/* Personal Info */}
         <section className="
           bg-white/90 rounded-2xl p-8 md:p-12
@@ -402,7 +402,7 @@ function Account() {
               <p className="text-[#7f8c8d] mb-6 text-lg">
                 No purchases yet.
               </p>
-              <Link to="/shop"
+              <Link to="/categories"
                 className="inline-block px-6 py-3 rounded-full font-bold bg-gradient-to-r from-[#2ecc71] to-[#27ae60] text-white shadow-[0_5px_15px_rgba(46,204,113,0.3)] hover:-translate-y-1"
               >Go Shopping</Link>
             </div>

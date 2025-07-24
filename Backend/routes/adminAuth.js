@@ -317,11 +317,27 @@ router.get('/deleted-history',
 
 // Get recent users
 router.get('/users', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
-  const limit = Math.min(Number(req.query.limit) || 5, 100);
-  const total = await User.countDocuments({});
-  const users = await User.find({}).select('firstName lastName email phone purchased_history dues');
-  res.json({ total, users });
+  try {
+    const countOnly = req.query.count === 'true';
+    let totalUsers = 0;
+    if (countOnly) {
+      totalUsers = await User.countDocuments() ;
+    }
+    const limit = Math.min(parseInt(req.query.limit) || 5, 100);
+    const skip = parseInt(req.query.skip) || 0;
+
+    const users = await User.find({})
+      .select('firstName lastName email phone')
+      .limit(limit)
+      .skip(skip);
+
+    res.json({ totalUsers, users });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
+
 
 router.post('/user/:userId/purchase', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
   try {
@@ -465,17 +481,22 @@ router.get("/products", verifyToken, isAdmin, async (req, res) => {
 router.get("/products/count", verifyToken, isAdmin, async (req, res) => {
   try {
     const countOnly = req.query.count === 'true';
-
+    let totalCount = 0;
     if (countOnly) {
-      const totalCount = await Product.countDocuments();
-      return res.json({ totalCount });
+      totalCount = await Product.countDocuments() ;
     }
+    const limit = Math.min(parseInt(req.query.limit) || 5, 100);
+    const skip = parseInt(req.query.skip) || 0;
 
-    res.json({ 
-      totalCount: countOnly ? await Product.countDocuments() : undefined 
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch products" });
+    const products = await Product.find({})
+      .select(' name selling_Price')
+      .limit(limit)
+      .skip(skip);
+
+    res.json({ totalCount, products });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 

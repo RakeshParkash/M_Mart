@@ -109,7 +109,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* WIDGETS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-5xl mx-auto px-4 sm:px-6 md:px-0">
         {/* Users widget */}
         <div className="rounded-2xl bg-white shadow-lg p-6 flex flex-col justify-between">
           <div className="flex items-center mb-2">
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
           <ul className="mb-3">
             {recentUsers.map(u => (
               <li key={u._id} className="flex items-center justify-between border-b py-1 text-sm">
-                <span>{u.name || u.email || u.phone || 'Unknown User'}</span>
+                <span className="truncate max-w-[120px] text-red-700">{u.firstName + u.lastName || 'Unknown User'}</span>
                 <span className="text-gray-400">{u.email || 'No email'}</span>
               </li>
             ))}
@@ -152,14 +152,24 @@ export default function AdminDashboard() {
           </div>
           <ul className="mb-3">
             {recentProducts.map(p => (
-              <li key={p._id} className="flex items-center justify-between border-b py-1 text-sm">
-                <span className="truncate max-w-[120px]">{p.name || 'Unnamed Product'}</span>
-                <span className="text-gray-400">
-                  {p.price ? `₹${p.price.toLocaleString()}` : 'No price'}
+              <li
+                key={p._id}
+                className="flex items-center justify-between border-b py-2 text-sm sm:text-base"
+              >
+                <span className="truncate max-w-[60%] sm:max-w-[70%] text-ellipsis text-blue-700 overflow-hidden">
+                  {p.name || 'Unnamed Product'}
+                </span>
+
+                {/* Product Price */}
+                <span className="text-gray-500 text-right ml-2 min-w-[30%] sm:min-w-[20%]">
+                  {p?.selling_Price?.price != null
+                    ? `₹${p.selling_Price.price.toLocaleString()}`
+                    : 'No price'}
                 </span>
               </li>
             ))}
           </ul>
+
           <div className="flex gap-2">
             <Link 
               to="/admin/products" 
@@ -193,7 +203,7 @@ export default function AdminDashboard() {
       <div className="max-w-2xl border-t border-blue-200 mt-12 mx-auto pt-6 flex justify-center gap-8">
         <Link to="/admin/messages">
           <Button className="w-36 bg-blue-600 hover:bg-blue-700 text-white">
-            See Mesages
+            See Messages
           </Button>
         </Link>
         <Link to="/admin/history">
