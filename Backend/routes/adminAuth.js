@@ -327,7 +327,7 @@ router.get('/users', passport.authenticate('admin-jwt', { session: false }), asy
     const skip = parseInt(req.query.skip) || 0;
 
     const users = await User.find({})
-      .select('firstName lastName email phone')
+      .select('firstName lastName email phone purchased_history dues ')
       .limit(limit)
       .skip(skip);
 
