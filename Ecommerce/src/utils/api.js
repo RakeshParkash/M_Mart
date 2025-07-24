@@ -4,7 +4,7 @@ import { setAuthFromOutside } from '../utils/authContext';
 import { backendUrl } from './config';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API || backendUrl,
+  baseURL: import.meta.env.VITE_API || "https://m-mart-ad2q.onrender.com" ,
   withCredentials: true,
 });
 
