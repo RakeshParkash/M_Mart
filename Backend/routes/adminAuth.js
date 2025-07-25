@@ -339,39 +339,82 @@ router.get('/users', passport.authenticate('admin-jwt', { session: false }), asy
 });
 
 
-router.post('/user/:userId/purchase', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
-  try {
-    const { date, items } = req.body;
+router.post(
+  '/user/:userId/purchase',
+  passport.authenticate('admin-jwt', { session: false }),
+  async (req, res) => {
+    try {
+      const { date, items } = req.body;
 
-    if (!date || !Array.isArray(items) || items.length === 0)
-      return res.status(400).json({ message: "Date and items are required" });
+      if (!date || !Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ message: 'Date and items are required' });
+      }
 
-    const user = await User.findById(req.params.userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+      const user = await User.findById(req.params.userId);
+      if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const existingEntry = user.purchased_history.find(ph => ph.date === date);
+      // Handle Purchase History
+      let existingPurchase = user.purchased_history.find(ph => ph.date === date);
+      if (!existingPurchase) {
+        existingPurchase = { date, items: [] };
+        user.purchased_history.push(existingPurchase);
+      }
 
-    if (existingEntry) {
       items.forEach(newItem => {
-        const existingItem = existingEntry.items.find(i => i.name === newItem.name);
-        if (existingItem) {
-          existingItem.quantity += newItem.quantity;
-          existingItem.advancePaid += newItem.advancePaid;
-          existingItem.totalPrice += newItem.totalPrice;
-        } else {
-          existingEntry.items.push(newItem);
-        }
+  const { name, quantity, advancePaid, totalPrice } = newItem;
+
+  // ---- PURCHASED HISTORY FIX ----
+  let purchaseIndex = user.purchased_history.findIndex(ph => ph.date === date);
+  if (purchaseIndex === -1) {
+    user.purchased_history.push({
+      date,
+      items: [{ name, quantity, advancePaid, totalPrice }]
+    });
+  } else {
+    const purchaseEntry = user.purchased_history[purchaseIndex];
+    const existingItem = purchaseEntry.items.find(i => i.name === name);
+    if (existingItem) {
+      existingItem.quantity += quantity;
+      existingItem.advancePaid += advancePaid;
+      existingItem.totalPrice += totalPrice;
+    } else {
+      purchaseEntry.items.push({ name, quantity, advancePaid, totalPrice });
+    }
+  }
+
+  // ---- DUES FIX ----
+  if (advancePaid < totalPrice) {
+    const dueAmount = totalPrice - advancePaid;
+    let dueIndex = user.dues.findIndex(d => d.date === date);
+    if (dueIndex === -1) {
+      user.dues.push({
+        date,
+        items: [{ name, quantity, dueAmount, fullyPaid: false }]
       });
     } else {
-      user.purchased_history.push({ date, items });
+      const dueEntry = user.dues[dueIndex];
+      const dueItem = dueEntry.items.find(i => i.name === name);
+      if (dueItem) {
+        dueItem.quantity += quantity;
+        dueItem.dueAmount += dueAmount;
+        dueItem.fullyPaid = false;
+      } else {
+        dueEntry.items.push({ name, quantity, dueAmount, fullyPaid: false });
+      }
     }
-
-    await user.save();
-    res.json({ message: "Purchase history updated", user });
-  } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
   }
 });
+
+
+
+      await user.save();
+      res.json({ message: 'Purchase and dues updated', user });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
 
 
 router.post('/user/:userId/due', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
