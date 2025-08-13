@@ -50,7 +50,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use(cors({
-    origin: ["http://localhost:5173", "https://m-mart-jade.vercel.app"],
+    origin: ["http://localhost:5173", "https://m-mart-eight.vercel.app"],
     methods: "GET,POST,PUT,DELETE",
     credentials: true
 }));
