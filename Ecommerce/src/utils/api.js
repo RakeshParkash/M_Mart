@@ -12,7 +12,7 @@ api.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
-// Handle 401 & refresh access token automatically
+
 api.interceptors.response.use(
   r => r,
   async (err) => {
@@ -23,10 +23,10 @@ api.interceptors.response.use(
         const { data } = await api.post('/admin/token');
         localStorage.setItem('accessToken', data.accessToken);
         
-        // ✅ Tell React we are authenticated again
+        
         setAuthFromOutside(true);
 
-        // ✅ Retry the failed request
+        
         return api(original);
       } catch {
         localStorage.removeItem('accessToken');
