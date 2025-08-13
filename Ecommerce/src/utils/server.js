@@ -1,56 +1,49 @@
 // helpers.js
-const API_BASE = import.meta.env.VITE_API || "https://m-mart-ad2q.onrender.com";
+
 // Uses localStorage for token, keep in sync with where you actually store it!
 const getToken = () => localStorage.getItem('accessToken');
 
-const handleResponse = async (response) => {
-  const data = await response.json().catch(() => ({}));
-  
-  if (!response.ok) {
-    const error = new Error(data.message || `HTTP error! status: ${response.status}`);
-    error.status = response.status;
-    error.data = data;
-    throw error;
-  }
-  
-  return data;
-};
-
 export const makeUnauthenticatedPOSTRequest = async (route, body) => {
   try {
-    const response = await fetch(`${API_BASE}${route}`, {
+    if (!route) throw new Error("Route is required");
+    if (!body) throw new Error("Request body is required");
+
+    const response = await fetch(import.meta.env.VITE_API + route, {
       method: "POST",
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json"
+        "Accept": "application/json",
       },
       body: JSON.stringify(body),
-      credentials: 'include' // Crucial for cookies/JWT
     });
 
-    return await handleResponse(response);
+    if (!response.ok) {
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        errorData = { message: await response.text() };
+      }
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
   } catch (error) {
-    console.error("POST request failed:", { route, error });
-    throw error;
+    console.error("POST request failed:", { route, error: error.message });
+    return { success: false, error: error.message };
   }
 };
 
-// For authenticated requests
-export const makeAuthenticatedRequest = async (route, { method = 'GET', body }) => {
+export const makeAuthenticatedPOSTRequest = async (route, body) => {
   const token = getToken();
-  if (!token) throw new Error("No authentication token found");
-
-  const response = await fetch(`${API_BASE}${route}`, {
-    method,
+  const response = await fetch(import.meta.env.VITE_API + route, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     },
-    body: body ? JSON.stringify(body) : undefined,
-    credentials: 'include'
+    body: JSON.stringify(body),
   });
-
-  return await handleResponse(response);
+  return await response.json();
 };
 
 export const makeAuthenticatedGETRequest = async (route) => {
