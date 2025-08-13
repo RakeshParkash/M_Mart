@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/(.*)", "destination": "https://m-mart-ad2q.onrender.com/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
