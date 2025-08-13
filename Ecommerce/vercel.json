@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "https://m-mart-ad2q.onrender.com/$1" },
+    { "source": "/api/(.*)", "destination": "https://m-mart-eight.vercel.app/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
