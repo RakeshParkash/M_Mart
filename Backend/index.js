@@ -60,8 +60,8 @@ app.use(helmet());
 
 // Rate limiting, only for /admin routes
 const adminLimiter = rateLimit({
-    windowMs: 1000 * 60 * 1000,
-    max: 2000,
+    windowMs:  60 * 1000,
+    max: 20,
     standardHeaders: true,
     legacyHeaders: false,
 });
