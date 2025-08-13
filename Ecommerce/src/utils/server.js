@@ -3,51 +3,54 @@
 // Uses localStorage for token, keep in sync with where you actually store it!
 const getToken = () => localStorage.getItem('accessToken');
 
-const handleErrorResponse = async (response) => {
+const handleResponse = async (response) => {
+  const data = await response.json().catch(() => ({}));
   
-  const responseClone = response.clone();
-  
-  try {
-    const errorData = await responseClone.json();
-    return errorData.message || `HTTP error! status: ${response.status}`;
-  } catch {
-    const errorText = await response.text();
-    return errorText || `HTTP error! status: ${response.status}`;
+  if (!response.ok) {
+    const error = new Error(data.message || `HTTP error! status: ${response.status}`);
+    error.status = response.status;
+    error.data = data;
+    throw error;
   }
+  
+  return data;
 };
 
 export const makeUnauthenticatedPOSTRequest = async (route, body) => {
   try {
-    const API_BASE = import.meta.env.VITE_API || "https://m-mart-ad2q.onrender.com";
     const response = await fetch(`${API_BASE}${route}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
       body: JSON.stringify(body),
+      credentials: 'include' // Crucial for cookies/JWT
     });
 
-    if (!response.ok) {
-      const errorMessage = await handleErrorResponse(response);
-      throw new Error(errorMessage);
-    }
-    
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
-    console.error("POST request failed:", { route, error: error.message });
+    console.error("POST request failed:", { route, error });
     throw error;
   }
 };
 
-export const makeAuthenticatedPOSTRequest = async (route, body) => {
+// For authenticated requests
+export const makeAuthenticatedRequest = async (route, { method = 'GET', body }) => {
   const token = getToken();
-  const response = await fetch(import.meta.env.VITE_API + route, {
-    method: "POST",
+  if (!token) throw new Error("No authentication token found");
+
+  const response = await fetch(`${API_BASE}${route}`, {
+    method,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`
     },
-    body: JSON.stringify(body),
+    body: body ? JSON.stringify(body) : undefined,
+    credentials: 'include'
   });
-  return await response.json();
+
+  return await handleResponse(response);
 };
 
 export const makeAuthenticatedGETRequest = async (route) => {
