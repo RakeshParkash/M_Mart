@@ -134,7 +134,7 @@ export default function AdminDashboard() {
               View All Users
             </Link>
             <Link 
-              to="/admin/users/add" 
+              to="/admin/users" 
               className="text-blue-600 hover:underline"
             >
               Add User

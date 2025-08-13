@@ -33,23 +33,68 @@ router.post("/signup", async (req, res) => {
   return res.status(201).json(userToReturn);
 });
 
-router.post("/login", async (req,res) => {
-    const { phone, password } =req.body;
+// Enhanced login route with better error handling
+router.post("/login", async (req, res) => {
+    try {
+        
+        
+        const { phone, password } = req.body;
+        
+        // Validate input
+        if (!phone?.trim() || !password?.trim()) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Phone and password are required' 
+            });
+        }
 
-    const user = await User.findOne({ phone :phone });
-    if(!user){
-        return res.status(401).json({ err : "Invalid credentials" });
+        // Find user with phone validation
+        const user = await User.findOne({ 
+            phone: phone.trim() 
+        }).select('+password'); // Ensure password is fetched
+        
+        if (!user) {
+            console.log("No user found for phone:", phone.trim());
+            return res.status(401).json({ 
+                success: false,
+                message: 'Invalid credentials' // Generic message for security
+            });
+        }
+
+        // Password verification
+        const isMatch = await bcrypt.compare(password.trim(), user.password);
+        if (!isMatch) {
+            console.log("Password mismatch for user:", user._id);
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
+        }
+
+        // Token generation
+        const token = jwt.sign(
+            { id: user._id, phone: user.phone },
+            process.env.TOKEN_VALUE,
+            { expiresIn: '30d' }
+        );
+
+        // Response
+        const userToReturn = user.toObject();
+        delete userToReturn.password;
+        
+        res.status(200).json({
+            success: true,
+            token,
+            user: userToReturn
+        });
+
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
     }
-
-    const isPasswordValid = await bcrypt.compare( password,user.password );
-    if(!isPasswordValid){
-        return res.status(401).json({ err : "Invalid credentials" });
-    }
-
-    const token = await getToken(user.phone, user);
-    const userToReturn = { ...user.toJSON(), token};
-    delete userToReturn.password;
-    return res.status(200).json(userToReturn);
 });
 
 router.get("/me", verifyToken, passport.authenticate("user-jwt", { session: false }), async (req, res) => {
