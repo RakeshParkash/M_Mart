@@ -1,5 +1,5 @@
 // helpers.js
-
+const API_BASE = import.meta.env.VITE_API || "https://m-mart-ad2q.onrender.com";
 // Uses localStorage for token, keep in sync with where you actually store it!
 const getToken = () => localStorage.getItem('accessToken');
 
