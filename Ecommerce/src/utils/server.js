@@ -3,33 +3,37 @@
 // Uses localStorage for token, keep in sync with where you actually store it!
 const getToken = () => localStorage.getItem('accessToken');
 
+const handleErrorResponse = async (response) => {
+  
+  const responseClone = response.clone();
+  
+  try {
+    const errorData = await responseClone.json();
+    return errorData.message || `HTTP error! status: ${response.status}`;
+  } catch {
+    const errorText = await response.text();
+    return errorText || `HTTP error! status: ${response.status}`;
+  }
+};
+
 export const makeUnauthenticatedPOSTRequest = async (route, body) => {
   try {
-    if (!route) throw new Error("Route is required");
-    if (!body) throw new Error("Request body is required");
-
-    const response = await fetch(import.meta.env.VITE_API + route, {
+    const API_BASE = import.meta.env.VITE_API || "https://m-mart-ad2q.onrender.com";
+    const response = await fetch(`${API_BASE}${route}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
-      let errorData;
-      try {
-        errorData = await response.json();
-      } catch (e) {
-        errorData = { message: await response.text() };
-      }
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      const errorMessage = await handleErrorResponse(response);
+      throw new Error(errorMessage);
     }
+    
     return await response.json();
   } catch (error) {
     console.error("POST request failed:", { route, error: error.message });
-    return { success: false, error: error.message };
+    throw error;
   }
 };
 
