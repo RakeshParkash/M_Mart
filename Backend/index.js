@@ -38,11 +38,11 @@ mongoose.connect(
             { email: 1 },
             { unique: true, partialFilterExpression: { email: { $type: "string" } } }
         );
-        console.log(" Partial unique index created on 'email'");
+        console.log(" Partial unique index created on 'email' ");
     })
     .catch(err => console.error(" Error while connecting to MongoDB:", err));
 
-// ==== MIDDLEWARES ====
+// ======================= MIDDLEWARES ===========================
 const app = express();
 
 app.use(express.json());
@@ -111,12 +111,12 @@ app.get('/admin/csrf-token', csrfProtection, (req, res) =>
     res.json({ csrfToken: req.csrfToken() })
 );
 
-// === ROUTES ===
+// ========================== ROUTES ================================
 app.get("/", (req, res) => res.send("Hello, World!"));
 
 app.use(authRoutes); // Public auth routes
 app.use('/admin',  adminAuthRoutes); // Admin routes, rate-limited
 app.use("/products", productRoutes);
 app.use("/contact", contactRoutes);
-// ==== START SERVER ====
+// ========================= START SERVER ==========================
 app.listen(port, () => console.log("App is running on port " + port));

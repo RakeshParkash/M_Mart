@@ -323,12 +323,10 @@ router.get('/users', passport.authenticate('admin-jwt', { session: false }), asy
     if (countOnly) {
       totalUsers = await User.countDocuments() ;
     }
-    const limit = Math.min(parseInt(req.query.limit) || 5, 100);
     const skip = parseInt(req.query.skip) || 0;
 
     const users = await User.find({})
       .select('firstName lastName email phone purchased_history dues ')
-      .limit(limit)
       .skip(skip);
 
     res.json({ totalUsers, users });
