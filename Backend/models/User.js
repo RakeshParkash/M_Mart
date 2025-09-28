@@ -8,6 +8,7 @@ const purchaseSchema = new mongoose.Schema({
       quantity: { type: Number, required: true },
       advancePaid: { type: Number, required: true },
       totalPrice: { type: Number, required: true },
+      status: { type: String, default: "Delivered" }
     }
   ]
 }, { _id: false });

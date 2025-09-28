@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useCookies } from 'react-cookie';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../utils/api'; // Make sure this matches your API utility
+import api from '../utils/api';
 
 function CartItem({ item, onRemove, onUpdateQuantity }) {
   const { product, quantity } = item;
@@ -47,7 +46,6 @@ function CartItem({ item, onRemove, onUpdateQuantity }) {
 }
 
 function Cart() {
-  const [cookies] = useCookies(['token']);
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -60,10 +58,7 @@ function Cart() {
       setLoading(true);
       setError('');
       try {
-        const { data } = await api.get('/cart', {
-          headers: { Authorization: `Bearer ${cookies.token}` },
-        });
-        // Adjust if your backend returns { cart: [...] }
+        const { data } = await api.get('/cart');
         setCart(data.cart || []);
       } catch (err) {
         setError('Failed to load cart.');
@@ -72,15 +67,13 @@ function Cart() {
       setLoading(false);
     }
     fetchCart();
-  }, [cookies.token]);
+  }, []);
 
   // Remove item from cart
   const handleRemove = async (item) => {
     setUpdating(true);
     try {
-      await api.delete(`/cart/${item.product._id || item.product.id}`, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
+      await api.delete(`/cart/${item.product._id}`);
       setCart((prev) => prev.filter(ci => ci.product._id !== item.product._id));
     } catch {
       setError('Failed to remove item.');
@@ -92,11 +85,7 @@ function Cart() {
   const handleUpdateQuantity = async (item, newQuantity) => {
     setUpdating(true);
     try {
-      await api.patch(`/cart/${item.product._id}`, {
-        quantity: newQuantity,
-      }, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
+      await api.patch(`/cart/${item.product._id}`, { quantity: newQuantity });
       setCart((prev) =>
         prev.map(ci =>
           ci.product._id === item.product._id
@@ -155,7 +144,7 @@ function Cart() {
           <div>
             {cart.map((item, idx) => (
               <CartItem
-                key={item.product._id || item.product.id || idx}
+                key={item.product._id || idx}
                 item={item}
                 onRemove={handleRemove}
                 onUpdateQuantity={handleUpdateQuantity}

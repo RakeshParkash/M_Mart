@@ -42,6 +42,7 @@ const LoginComponent = () => {
                     secure: true,
                     sameSite: 'strict'
                 });
+                localStorage.setItem("accessToken", response.token); 
                 
                 navigate("/home");
             } else {

@@ -175,14 +175,14 @@ router.post('/change-password', authenticate, async (req, res) => {
     });
 
     // View cart
-    router.get('/cart', authenticate, async (req, res) => {
+    router.get('/cart', passport.authenticate("user-jwt", { session: false }) , async (req, res) => {
         const user = await User.findById(req.user.id).populate('cart.product');
         if (!user) return res.status(404).json({ message: "User not found" });
         res.json({ cart: user.cart });
     });
 
     // Add/update item in cart
-    router.post('/cart', authenticate, async (req, res) => {
+    router.post('/cart', passport.authenticate("user-jwt", { session: false }) , async (req, res) => {
         const { productId, quantity } = req.body;
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: "User not found" });
@@ -198,7 +198,7 @@ router.post('/change-password', authenticate, async (req, res) => {
     });
 
     // Set quantity for an item in cart
-    router.patch('/cart/:productId', authenticate, async (req, res) => {
+    router.patch('/cart/:productId', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
         const { quantity } = req.body;
         if (!quantity || quantity < 1) return res.status(400).json({ message: "Invalid quantity" });
         const user = await User.findById(req.user.id);
@@ -211,7 +211,7 @@ router.post('/change-password', authenticate, async (req, res) => {
     });
 
     // Remove item from cart
-    router.delete('/cart/:productId', authenticate, async (req, res) => {
+    router.delete('/cart/:productId', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: "User not found" });
         user.cart = user.cart.filter(ci => !ci.product.equals(req.params.productId));
@@ -220,14 +220,14 @@ router.post('/change-password', authenticate, async (req, res) => {
     });
 
     // View wishlist
-    router.get('/wishlist', authenticate, async (req, res) => {
+    router.get('/wishlist', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
         const user = await User.findById(req.user.id).populate('wishlist.product');
         if (!user) return res.status(404).json({ message: "User not found" });
         res.json({ wishlist: user.wishlist });
     });
 
     // Add to wishlist
-    router.post('/wishlist', authenticate, async (req, res) => {
+    router.post('/wishlist', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
         const { productId } = req.body;
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: "User not found" });
@@ -239,7 +239,7 @@ router.post('/change-password', authenticate, async (req, res) => {
     });
 
     // Remove from wishlist
-    router.delete('/wishlist/:productId', authenticate, async (req, res) => {
+    router.delete('/wishlist/:productId', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: "User not found" });
         user.wishlist = user.wishlist.filter(wi => !wi.product.equals(req.params.productId));
@@ -248,14 +248,14 @@ router.post('/change-password', authenticate, async (req, res) => {
     });
 
     // View total amount spent
-    router.get('/total-amount', authenticate, async (req, res) => {
+    router.get('/total-amount', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: "User not found" });
         res.json({ totalAmountSpent: user.totalAmountSpent || 0 });
     });
 
     // PATCH purchase/dues item quantity
-    router.patch('/history/:type/:date/:itemName', authenticate, async (req, res) => {
+    router.patch('/history/:type/:date/:itemName', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
         const { type, date, itemName } = req.params;
         const { quantity } = req.body;
         if (!["purchased_history", "dues"].includes(type)) {
@@ -276,7 +276,7 @@ router.post('/change-password', authenticate, async (req, res) => {
     });
 
     // DELETE purchase/dues item (per-item)
-    router.delete('/history/:type/:date/:itemName', authenticate, async (req, res) => {
+    router.delete('/history/:type/:date/:itemName', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
         const { type, date, itemName } = req.params;
         if (!["purchased_history", "dues"].includes(type)) {
             return res.status(400).json({ message: "Invalid history type" });
