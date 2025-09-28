@@ -149,6 +149,8 @@ function Account() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
 
   // Modal state
   const [changeOpen, setChangeOpen] = useState(false);
@@ -184,6 +186,23 @@ function Account() {
         });
         if (!userResponse.ok) throw new Error('Failed to fetch user details');
         const user = await userResponse.json();
+
+        // Get cart
+        const cartRes = await fetch(`${import.meta.env.VITE_API}/cart`, {
+          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
+          signal: controller.signal,
+        });
+        const cartData = cartRes.ok ? await cartRes.json() : { cart: [] };
+
+        // Get wishlist
+        const wishlistRes = await fetch(`${import.meta.env.VITE_API}/wishlist`, {
+          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
+          signal: controller.signal,
+        });
+        const wishlistData = wishlistRes.ok ? await wishlistRes.json() : { wishlist: [] };
+
         setUserData({
           _id: user._id,
           name: ((user.firstName || "") + " " + (user.lastName || "")).trim() || 'Guest',
@@ -328,7 +347,7 @@ function Account() {
         after:w-[150px] after:h-[2px] after:bg-gradient-to-r 
         after:from-transparent after:via-[#d4af37] after:to-transparent
       ">
-        Welcome, {userData.name}
+        Welcome, {userData && userData.name}
       </h1>
 
       <div className="grid-cols-1 md:grid-cols-[1fr_2fr] lg:grid-cols-[1fr_2fr]">
@@ -409,6 +428,21 @@ function Account() {
           )}
         </section>
 
+        {/* Wishlist and Cart quick links */}
+        <section className="bg-white/90 rounded-2xl p-8 md:p-12 border border-white/80 shadow-[0_15px_30px_rgba(0,0,0,0.05)] backdrop-blur-lg relative overflow-hidden mb-8">
+          <h2 className="text-2xl font-normal text-[#2c3e50] mb-8 pb-4 border-b border-black/10 tracking-wide">
+            Your Wishlist & Cart
+          </h2>
+          <div className="flex gap-8 flex-wrap justify-center">
+            <Link to="/wishlist" className="inline-block px-6 py-3 rounded-full font-bold bg-gradient-to-r from-[#e67e22] to-[#f1c40f] text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition">
+              Wishlist ({wishlist.length})
+            </Link>
+            <Link to="/cart" className="inline-block px-6 py-3 rounded-full font-bold bg-gradient-to-r from-[#2ecc71] to-[#27ae60] text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition">
+              Cart ({cart.length})
+            </Link>
+          </div>
+        </section>
+
         {/* Actions */}
         <section className="
             bg-white/90 rounded-2xl p-8 md:p-12
@@ -442,5 +476,6 @@ function Account() {
     </div>
   );
 }
+
 
 export default Account;

@@ -25,6 +25,7 @@ import AdminMessages from "./pages/AdminMessages";
 import AdminUser from "./pages/AdminUser";
 import AdminUserHistory from './pages/AdminUserHistory';
 import Cart from "./pages/Cart";
+import Wishlist from "./pages/Wishlist";
 
 function App() {
   const [theme, setTheme] = useState("red");
@@ -98,6 +99,7 @@ function App() {
                 <Route path="/MyAccount" element={<MyAccount />} />
                 <Route path="/orders" element={<Order />} />
                 <Route path="/cart" element={<Cart />} />
+                <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="/admin/signup" element={<AdminSignup />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin/main" element={<AdminMain />} />

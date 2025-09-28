@@ -5,6 +5,7 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const { getToken, verifyToken } = require("../utils/helpers");
 const passport = require("passport");
+const mongoose = require("mongoose");
 
 router.post("/signup", async (req, res) => {
   let { firstName, lastName, email, phone, password } = req.body;
@@ -174,160 +175,149 @@ router.post('/change-password', authenticate, async (req, res) => {
     }
     });
 
-    // View cart
-    router.get('/cart', passport.authenticate("user-jwt", { session: false }) , async (req, res) => {
-        const user = await User.findById(req.user.id).populate('cart.product');
-        if (!user) return res.status(404).json({ message: "User not found" });
-        res.json({ cart: user.cart });
-    });
-
-    // Add/update item in cart
-    router.post('/cart', passport.authenticate("user-jwt", { session: false }) , async (req, res) => {
-        const { productId, quantity } = req.body;
-        const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: "User not found" });
-        let cartItem = user.cart.find(ci => ci.product.equals(productId));
-        if (cartItem) {
-            cartItem.quantity += quantity;
-            if (cartItem.quantity < 1) cartItem.quantity = 1;
-        } else {
-            user.cart.push({ product: productId, quantity: Math.max(1, quantity) });
-        }
-        await user.save();
-        res.json({ cart: user.cart });
-    });
-
-    // Set quantity for an item in cart
-    router.patch('/cart/:productId', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
-        const { quantity } = req.body;
-        if (!quantity || quantity < 1) return res.status(400).json({ message: "Invalid quantity" });
-        const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: "User not found" });
-        let cartItem = user.cart.find(ci => ci.product.equals(req.params.productId));
-        if (!cartItem) return res.status(404).json({ message: "Cart item not found" });
-        cartItem.quantity = quantity;
-        await user.save();
-        res.json({ cart: user.cart });
-    });
-
-    // Remove item from cart
-    router.delete('/cart/:productId', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
-        const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: "User not found" });
-        user.cart = user.cart.filter(ci => !ci.product.equals(req.params.productId));
-        await user.save();
-        res.json({ cart: user.cart });
-    });
-
-    // View wishlist
-    router.get('/wishlist', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
-        const user = await User.findById(req.user.id).populate('wishlist.product');
-        if (!user) return res.status(404).json({ message: "User not found" });
-        res.json({ wishlist: user.wishlist });
-    });
-
-    // Add to wishlist
-    router.post('/wishlist', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
-        const { productId } = req.body;
-        const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: "User not found" });
-        if (!user.wishlist.some(wi => wi.product.equals(productId))) {
-            user.wishlist.push({ product: productId });
-            await user.save();
-        }
-        res.json({ wishlist: user.wishlist });
-    });
-
-    // Remove from wishlist
-    router.delete('/wishlist/:productId', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
-        const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: "User not found" });
-        user.wishlist = user.wishlist.filter(wi => !wi.product.equals(req.params.productId));
-        await user.save();
-        res.json({ wishlist: user.wishlist });
-    });
-
-    // View total amount spent
-    router.get('/total-amount', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
-        const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: "User not found" });
-        res.json({ totalAmountSpent: user.totalAmountSpent || 0 });
-    });
-
-    // PATCH purchase/dues item quantity
-    router.patch('/history/:type/:date/:itemName', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
-        const { type, date, itemName } = req.params;
-        const { quantity } = req.body;
-        if (!["purchased_history", "dues"].includes(type)) {
-            return res.status(400).json({ message: "Invalid history type" });
-        }
-        if (typeof quantity !== 'number' || quantity < 1) {
-            return res.status(400).json({ message: "Invalid quantity" });
-        }
-        const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: "User not found" });
-        const entry = user[type].find(entry => entry.date === date);
-        if (!entry) return res.status(404).json({ message: "Date entry not found" });
-        const item = entry.items.find(item => item.name === itemName);
-        if (!item) return res.status(404).json({ message: "Item not found" });
-        item.quantity = quantity;
-        await user.save();
-        res.json({ message: "Item quantity updated", user });
-    });
-
-    // DELETE purchase/dues item (per-item)
-    router.delete('/history/:type/:date/:itemName', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
-        const { type, date, itemName } = req.params;
-        if (!["purchased_history", "dues"].includes(type)) {
-            return res.status(400).json({ message: "Invalid history type" });
-        }
-        const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: "User not found" });
-        const entry = user[type].find(entry => entry.date === date);
-        if (!entry) return res.status(404).json({ message: "Date entry not found" });
-        entry.items = entry.items.filter(item => item.name !== itemName);
-        // Remove the entry if no items left for that date
-        if (entry.items.length === 0) {
-            user[type] = user[type].filter(entry => entry.date !== date);
-        }
-        await user.save();
-        res.json({ message: "History item deleted", user });
-    });
 
 
-    // Get all orders (purchase history) for logged-in user
-router.get('/orders', passport.authenticate('user-jwt', { session: false }), async (req, res) => {
-  const user = await User.findById(req.user._id);
-  if (!user) return res.status(404).json({ message: 'User not found' });
-  // Return purchase history; you can filter or process as needed
-  res.json({ orders: user.purchased_history || [] });
-});
 
-router.get('/orders/current', passport.authenticate('user-jwt', { session: false }), async (req, res) => {
-  const user = await User.findById(req.user._id);
-  if (!user) return res.status(404).json({ message: 'User not found' });
-  // Example: filter for items with status 'Pending'
-  const currentOrders = [];
-  for (const purchase of user.purchased_history || []) {
-    const pendingItems = (purchase.items || []).filter(item => item.status === 'Pending');
-    if (pendingItems.length)
-      currentOrders.push({ date: purchase.date, items: pendingItems });
+
+
+    function isValidObjectId(id) {
+        return mongoose.Types.ObjectId.isValid(id);
+    }
+// --- CART ROUTES ---
+
+// View cart
+router.get('/cart', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate('cart.product');
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({ cart: user.cart });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching cart", error: err.message });
   }
-  res.json({ orders: currentOrders });
 });
 
-router.get('/orders/history', passport.authenticate('user-jwt', { session: false }), async (req, res) => {
-  const user = await User.findById(req.user._id);
-  if (!user) return res.status(404).json({ message: 'User not found' });
-  // Example: filter for items with status 'Delivered' or 'Cancelled'
-  const historyOrders = [];
-  for (const purchase of user.purchased_history || []) {
-    const deliveredItems = (purchase.items || []).filter(item => item.status !== 'Pending');
-    if (deliveredItems.length)
-      historyOrders.push({ date: purchase.date, items: deliveredItems });
+// Add/update item in cart
+router.post('/cart', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
+  const { productId, quantity } = req.body;
+  if ( !isValidObjectId(productId) || !quantity || quantity < 1)
+    return res.status(400).json({ message: `Valid productId and quantity > 0 required. `  });
+
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Defensive: ensure cart is always array
+    if (!Array.isArray(user.cart)) user.cart = [];
+
+    let cartItem = user.cart.find(ci => ci.product && ci.product.equals(productId));
+    if (cartItem) {
+      cartItem.quantity += quantity;
+      if (cartItem.quantity < 1) cartItem.quantity = 1;
+    } else {
+      user.cart.push({ product: productId, quantity: Math.max(1, quantity) });
+    }
+
+    await user.save();
+    res.json({ cart: user.cart });
+  } catch (err) {
+    res.status(500).json({ message: "Error updating cart", error: err.message });
   }
-  res.json({ orders: historyOrders });
 });
 
+// Set quantity for an item in cart
+router.patch('/cart/:productId', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
+  const { quantity } = req.body;
+  const { productId } = req.params;
+  if (!isValidObjectId(productId) || !quantity || quantity < 1)
+    return res.status(400).json({ message: "Valid productId and quantity > 0 required." });
+
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Defensive comparison
+    let cartItem = user.cart.find(ci => ci.product && ci.product.toString() === productId.toString());
+    if (!cartItem) return res.status(404).json({ message: "Cart item not found" });
+
+    cartItem.quantity = quantity;
+    await user.save();
+    res.json({ cart: user.cart });
+  } catch (err) {
+    console.error('PATCH /cart/:productId error:', err);
+    res.status(500).json({ message: "Error updating cart item", error: err.message });
+  }
+});
+
+// Remove item from cart
+router.delete('/cart/:productId', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
+  const { productId } = req.params;
+  if (!isValidObjectId(productId))
+    return res.status(400).json({ message: "Valid productId required." });
+
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.cart = user.cart.filter(ci => ci.product && !ci.product.equals(productId));
+    await user.save();
+    res.json({ cart: user.cart });
+  } catch (err) {
+    res.status(500).json({ message: "Error removing cart item", error: err.message });
+  }
+});
+
+// --- WISHLIST ROUTES ---
+
+// View wishlist
+router.get('/wishlist', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate('wishlist.product');
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({ wishlist: user.wishlist });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching wishlist", error: err.message });
+  }
+});
+
+// Add to wishlist
+router.post('/wishlist', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
+  const { productId } = req.body;
+  if (!isValidObjectId(productId))
+    return res.status(400).json({ message: "Valid productId required." });
+
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Defensive: ensure wishlist is always array
+    if (!Array.isArray(user.wishlist)) user.wishlist = [];
+
+    if (!user.wishlist.some(wi => wi.product && wi.product.equals(productId))) {
+      user.wishlist.push({ product: productId });
+      await user.save();
+    }
+    res.json({ wishlist: user.wishlist });
+  } catch (err) {
+    res.status(500).json({ message: "Error updating wishlist", error: err.message });
+  }
+});
+
+// Remove from wishlist
+router.delete('/wishlist/:productId', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
+  const { productId } = req.params;
+  if (!isValidObjectId(productId))
+    return res.status(400).json({ message: "Valid productId required." });
+
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.wishlist = user.wishlist.filter(wi => wi.product && !wi.product.equals(productId));
+    await user.save();
+    res.json({ wishlist: user.wishlist });
+  } catch (err) {
+    res.status(500).json({ message: "Error removing wishlist item", error: err.message });
+  }
+});
 
 module.exports = router;

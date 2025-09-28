@@ -8,6 +8,7 @@ const sidebarItems = [
   { icon: "mdi:food-apple-outline", label: "Categories", path: "/categories" },
   { icon: "mdi:clipboard-list-outline", label: "Orders", path: "/orders" },
   { icon: "mdi:cart-outline", label: "Cart", path: "/cart" },
+  { icon: "mdi:cart-outline", label: "Wishlist", path: "/wishlist" },
   { icon: "mdi:account-outline", label: "Account", path: "/MyAccount" },
   // { icon: "mdi:help-circle-outline", label: "Support", path: "/support" },
   { icon: "mdi:card-account-phone-outline", label: "Contact", path: "/contact" },

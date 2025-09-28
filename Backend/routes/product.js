@@ -49,6 +49,7 @@ router.get("/categories", async (req, res) => {
     products.forEach((p) => {
       const cat = p.category || "Others";
       const formattedProduct = {
+        _id: p._id,
         name: p.name,
         desc: p.description,
         img: p.image,

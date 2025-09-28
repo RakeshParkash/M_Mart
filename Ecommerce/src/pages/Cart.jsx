@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
 
-function CartItem({ item, onRemove, onUpdateQuantity }) {
+function CartItem({ item, onRemove, onUpdateQuantity, updating }) {
   const { product, quantity } = item;
   return (
     <div className="flex flex-col sm:flex-row items-center gap-4 bg-white rounded-xl shadow p-4 mb-4 border">
@@ -22,6 +22,8 @@ function CartItem({ item, onRemove, onUpdateQuantity }) {
         <button
           className="px-2 py-1 bg-blue-100 rounded hover:bg-blue-300 text-lg font-bold"
           onClick={() => onUpdateQuantity(item, Math.max(1, quantity - 1))}
+          disabled={updating || quantity <= 1}
+          aria-label="Decrease"
         >
           -
         </button>
@@ -29,6 +31,8 @@ function CartItem({ item, onRemove, onUpdateQuantity }) {
         <button
           className="px-2 py-1 bg-blue-100 rounded hover:bg-blue-300 text-lg font-bold"
           onClick={() => onUpdateQuantity(item, quantity + 1)}
+          disabled={updating}
+          aria-label="Increase"
         >
           +
         </button>
@@ -37,6 +41,7 @@ function CartItem({ item, onRemove, onUpdateQuantity }) {
         <button
           onClick={() => onRemove(item)}
           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700 transition"
+          disabled={updating}
         >
           Remove
         </button>
@@ -52,7 +57,6 @@ function Cart() {
   const [updating, setUpdating] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch cart data
   useEffect(() => {
     async function fetchCart() {
       setLoading(true);
@@ -69,7 +73,6 @@ function Cart() {
     fetchCart();
   }, []);
 
-  // Remove item from cart
   const handleRemove = async (item) => {
     setUpdating(true);
     try {
@@ -81,25 +84,34 @@ function Cart() {
     setUpdating(false);
   };
 
-  // Update quantity
   const handleUpdateQuantity = async (item, newQuantity) => {
-    setUpdating(true);
-    try {
-      await api.patch(`/cart/${item.product._id}`, { quantity: newQuantity });
-      setCart((prev) =>
-        prev.map(ci =>
-          ci.product._id === item.product._id
-            ? { ...ci, quantity: newQuantity }
-            : ci
-        )
-      );
-    } catch {
-      setError('Failed to update quantity.');
+  if (newQuantity < 1) return;
+  if (!item?.product?._id) {
+    setError("Invalid product ID.");
+    return;
+  }
+  setUpdating(true);
+  try {
+    await api.patch(`/cart/${item.product._id}`, { quantity: newQuantity });
+    setCart((prev) =>
+      prev.map(ci =>
+        ci.product._id === item.product._id
+          ? { ...ci, quantity: newQuantity }
+          : ci
+      )
+    );
+  } catch (err) {
+    setError('Failed to update quantity.');
+    // Log full error response
+    if (err.response) {
+      console.error('PATCH /cart/:id error:', err.response.status, err.response.data);
+    } else {
+      console.error('PATCH /cart/:id error:', err);
     }
-    setUpdating(false);
-  };
+  }
+  setUpdating(false);
+};
 
-  // Calculate total
   const total = cart.reduce(
     (sum, item) =>
       sum +
@@ -148,6 +160,7 @@ function Cart() {
                 item={item}
                 onRemove={handleRemove}
                 onUpdateQuantity={handleUpdateQuantity}
+                updating={updating}
               />
             ))}
           </div>
