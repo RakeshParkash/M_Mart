@@ -12,40 +12,59 @@ const getColors = (accentColor) => {
     case "purple": return { heading: "#4a148c", accent: "#8e24aa", border: "#8e24aa", text: "#222" };
     case "red": return { heading: "#b71c1c", accent: "#d32f2f", border: "#d32f2f", text: "#222" };
     case "gray":
-    return {
-    heading: "#424242",   // Dark gray
-    accent: "#616161",    // Mid gray
-    border: "#757575",    // Light border gray
-    text: "#212121"       // Very dark for contrast
-  };
-  default:
-    return { heading: "#b71c1c", accent: "#d32f2f", border: "#d32f2f", text: "#222" };
+      return {
+        heading: "#424242",
+        accent: "#616161",
+        border: "#757575",
+        text: "#212121"
+      };
+    default:
+      return { heading: "#b71c1c", accent: "#d32f2f", border: "#d32f2f", text: "#222" };
   }
 };
-
-
-
 
 // Generalized Section
 const ProductSection = ({ id, title, products, accentColor = "red" }) => {
   const { heading, accent, border, text } = getColors(accentColor);
   return (
-    <section id={id} className="rounded-xl shadow-lg p-4 flex flex-col items-center border-t-4 transition hover:scale-105 animate-fade-in " >
-      <h2 className="text-2xl font-extrabold mb-8 border-l-4 pl-4 rounded-full" style={{ color: heading, borderColor: border }}>{title}</h2>
-      <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
+    <section
+      id={id}
+      className="rounded-xl shadow-lg p-4 flex flex-col items-center border-t-4 transition hover:scale-105 animate-fade-in mb-12 w-full"
+      style={{ borderColor: border, background: "linear-gradient(90deg,#fff,#f1f1f1 92%,#f9f9f9)" }}
+    >
+      <h2
+        className="text-2xl font-extrabold mb-8 border-l-4 pl-4 rounded-full"
+        style={{ color: heading, borderColor: border, background: "#fff", boxShadow: "0 2px 12px 0 rgba(0,0,0,0.08)" }}
+      >
+        {title}
+      </h2>
+      <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 w-full">
+        {products.length === 0 && <div className="text-gray-500 text-lg p-8 w-full text-center">No products available.</div>}
         {products.map((item, idx) => (
           <div
             key={idx}
-            className="rounded-xl shadow-lg p-4 flex flex-col items-center border-t-4 transition hover:scale-105"
-            style={{ background: "#fff", borderColor: border }}
+            className="rounded-xl shadow-lg p-4 flex flex-col items-center border-t-4 transition hover:scale-105 bg-white"
+            style={{ borderColor: border }}
           >
-            <img src={item.img} alt={item.name} className="w-24 h-24 object-cover rounded-full border-4 mb-4" style={{ borderColor: accent }} />
+            <img
+              src={item.img}
+              alt={item.name}
+              className="w-24 h-24 object-cover rounded-full border-4 mb-4"
+              style={{ borderColor: accent }}
+              loading="lazy"
+            />
             <h3 className="text-lg font-bold mb-2" style={{ color: heading }}>{item.name}</h3>
             <p className="text-sm mb-1 text-center" style={{ color: text }}>{item.desc}</p>
-            {item.price && <p className="text-md font-semibold mb-3" style={{ color: accent }}>{item.price}</p>}
+            {item.price && (
+              <p className="text-md font-semibold mb-3" style={{ color: accent }}>
+                {item.price}
+              </p>
+            )}
             {item.cta && (
-              <button className="mt-auto px-4 py-1 rounded-full font-medium transition hover:brightness-110 cursor-pointer"
-                style={{ background: accent, color: "#fff", boxShadow: "0 2px 8px 0 rgba(0,0,0,0.10)" }}>
+              <button
+                className="mt-auto px-4 py-1 rounded-full font-medium transition hover:brightness-110 cursor-pointer shadow"
+                style={{ background: accent, color: "#fff", boxShadow: "0 2px 8px 0 rgba(0,0,0,0.10)" }}
+              >
                 {item.cta}
               </button>
             )}
@@ -56,25 +75,40 @@ const ProductSection = ({ id, title, products, accentColor = "red" }) => {
   );
 };
 
-
-
-const ContactSection = ({ id = "contact" } ) => (
+const ContactSection = ({ id = "contact" }) => (
   <section id={id} className="max-w-6xl mx-auto px-4 py-16 text-black rounded">
-    <h2 className="text-2xl font-extrabold mb-8 border-l-4 pl-4" style={{ color: "#4a148c", borderColor: "#8e24aa" }}>Contact Us</h2>
+    <h2
+      className="text-2xl font-extrabold mb-8 border-l-4 pl-4"
+      style={{ color: "#4a148c", borderColor: "#8e24aa" }}
+    >
+      Contact Us
+    </h2>
     <div className="bg-white rounded-xl shadow p-6 md:p-12 flex flex-col items-center gap-4">
-      <p>Have questions? We’d love to hear from you. Reach us at <a href="mailto:support@grocerease.com" className="text-[#1976d2] underline">support@example.com</a></p>
-      <p>Or call: <span className="font-bold text-[#1976d2]">+91 to be there</span></p>
+      <p>
+        Have questions? We’d love to hear from you. Reach us at{" "}
+        <a href="mailto:support@grocerease.com" className="text-[#1976d2] underline">
+          support@example.com
+        </a>
+      </p>
+      <p>
+        Or call: <span className="font-bold text-[#1976d2]">+91 9876543210</span>
+      </p>
     </div>
   </section>
 );
 
 // "Home" banner/hero
 const HeroBanner = ({ perishables }) => (
-  <section id="home" className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between py-12 px-4 mb-8 scroll-mt-20">
+  <section
+    id="home"
+    className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between py-12 px-4 mb-8 scroll-mt-20"
+  >
     {/* Left: Headline */}
     <div className="flex-1 text-center md:text-left mb-8 md:mb-0">
-      <h1 className="text-4xl md:text-5xl font-extrabold mb-4" style={{ color: "#1976d2" }}>Fresh Perishables, Delivered Daily</h1>
-      <p className="text-lg mb-6" style={{ color: "black" }}>
+      <h1 className="text-4xl md:text-5xl font-extrabold mb-4" style={{ color: "#1976d2" }}>
+        Fresh Perishables, Delivered Daily
+      </h1>
+      <p className="text-lg mb-6 text-gray-700">
         Discover the best dairy, bakery, and plant-based perishables for your healthy vegetarian lifestyle.
       </p>
       <a href="#perishables">
@@ -86,11 +120,18 @@ const HeroBanner = ({ perishables }) => (
     {/* Right: Perishables Showcase */}
     <div className="flex-1 grid grid-cols-2 gap-4">
       {perishables.map((item, idx) => (
-        <div key={idx}
-          className="bg-white rounded-xl shadow hover:shadow-lg p-3 flex flex-col items-center transition">
-          <img src={item.img} alt={item.name} className="w-24 h-24 object-cover rounded-full border-2 border-[#1976d2] mb-2" />
-          <div className="font-bold" style={{ color: "#1976d2" }}>{item.name}</div>
-          <div className="text-xs text-center" style={{ color: "#b71c1c" }}>{item.desc}</div>
+        <div
+          key={idx}
+          className="bg-white rounded-xl shadow hover:shadow-lg p-3 flex flex-col items-center transition"
+        >
+          <img
+            src={item.img}
+            alt={item.name}
+            className="w-20 h-20 object-cover rounded-full border-2 border-[#1976d2] mb-2"
+            loading="lazy"
+          />
+          <div className="font-bold text-[#1976d2]">{item.name}</div>
+          <div className="text-xs text-center text-[#b71c1c]">{item.desc}</div>
         </div>
       ))}
     </div>
@@ -114,7 +155,8 @@ export default function HeroSection() {
 
   // Placeholder: implement as you wish.
   const handleSearch = () => alert("search");
-    const [allProducts, setAllProducts] = useState({
+
+  const [allProducts, setAllProducts] = useState({
     Perishables: [],
     Snacks: [],
     Beverages: [],
@@ -124,7 +166,7 @@ export default function HeroSection() {
     Offers: [],
     Others: []
   });
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -140,57 +182,44 @@ export default function HeroSection() {
       .finally(() => setLoading(false));
   }, []);
 
-
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-[#fff3e0] via-white to-[#e3f2fd] rounded-full">
-      
-      <div className="
-        fixed top-0 
-        left-[56px] md:left-[260px] 
-        w-[calc(100%-56px)] md:w-[calc(100%-260px)] 
-        z-50 bg-white shadow-md
-      ">
-
-
-            <MiniNavbar
-              isAuthenticated={isAuthenticated}
-              onLogin={handleLogin}
-              onSignup={handleSignup}
-              onLogout={handleLogout}
-              searchValue={searchValue}
-              setSearchValue={setSearchValue}
-              onSearch={handleSearch}
-              Account={handleAccount}
-            />
+    <div className=" relative min-h-screen bg-gradient-to-br from-[#fff3e0] via-white to-[#e3f2fd]">
+      {/* Navbar */}
+      <div className="fixed lg:top-10 sm:top-0 lg:left-70 z-50 bg-white shadow-md">
+        <MiniNavbar
+          isAuthenticated={isAuthenticated}
+          onLogin={handleLogin}
+          onSignup={handleSignup}
+          onLogout={handleLogout}
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+          onSearch={handleSearch}
+          Account={handleAccount}
+        />
       </div>
+
       {/* Hero/Home Section */}
-      <HeroBanner perishables={allProducts.Perishables.slice(0, 4)} />
+      <div className="pt-20">
+        <HeroBanner perishables={allProducts.Perishables.slice(0, 4)} />
+      </div>
 
       {loading ? (
-          <div className="text-center text-lg py-12">Loading products...</div>
-        ) : error ? (
-          <div className="text-center text-red-600 py-12">Failed to load products. Please try again.</div>
-        ) : (
-          <>
-             {/* All other product sections, ids must match MiniNavbar! */}
-      <ProductSection id="perishables" title="Perishables" products={allProducts.Perishables || []} accentColor="red" />
-      <ProductSection id="snacks" title="Snacks" products={allProducts.Snacks || []} accentColor="yellow" />
-      <ProductSection id="beverages" title="Beverages" products={allProducts.Beverages || []} accentColor="blue" />
-      <ProductSection id="grains" title="Grains & Staples" products={allProducts.Grains || []} accentColor="green" />
-      <ProductSection id="bakery" title="Bakery" products={allProducts.Bakery || []} accentColor="purple" />
-      <ProductSection id="dairy" title="Dairy" products={allProducts.Dairy || []} accentColor="red" />
-      <ProductSection id="offers" title="Offers" products={allProducts.Offers || []} accentColor="blue" />
-      <ProductSection id="others" title="Others" products={allProducts.Others || []} accentColor="gray" />
-
-
-
-      <ContactSection id="contact" />
-          </>
-        )}
-
-     
-
-      
+        <div className="text-center text-lg py-12">Loading products...</div>
+      ) : error ? (
+        <div className="text-center text-red-600 py-12">Failed to load products. Please try again.</div>
+      ) : (
+        <>
+          <ProductSection id="perishables" title="Perishables" products={allProducts.Perishables || []} accentColor="red" />
+          <ProductSection id="snacks" title="Snacks" products={allProducts.Snacks || []} accentColor="yellow" />
+          <ProductSection id="beverages" title="Beverages" products={allProducts.Beverages || []} accentColor="blue" />
+          <ProductSection id="grains" title="Grains & Staples" products={allProducts.Grains || []} accentColor="green" />
+          <ProductSection id="bakery" title="Bakery" products={allProducts.Bakery || []} accentColor="purple" />
+          <ProductSection id="dairy" title="Dairy" products={allProducts.Dairy || []} accentColor="red" />
+          <ProductSection id="offers" title="Offers" products={allProducts.Offers || []} accentColor="blue" />
+          <ProductSection id="others" title="Others" products={allProducts.Others || []} accentColor="gray" />
+          <ContactSection id="contact" />
+        </>
+      )}
     </div>
   );
 }

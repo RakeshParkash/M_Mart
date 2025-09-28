@@ -115,10 +115,10 @@ export default function AdminDetails() {
   if (!product) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-white text-black p-8">
-      <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl p-10">
-        <div className="flex items-start gap-8 mb-8">
-          <div className="w-64 h-64 bg-gray-50 rounded-2xl flex items-center justify-center overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white text-black p-4 md:p-8">
+      <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl p-6 md:p-10">
+        <div className="flex flex-col md:flex-row items-start gap-8 mb-8">
+          <div className="w-full md:w-64 h-64 bg-gray-50 rounded-2xl flex items-center justify-center overflow-hidden">
             <img
               src={product.image}
               alt={product.name}
@@ -126,14 +126,14 @@ export default function AdminDetails() {
             />
           </div>
           <div className="flex-1">
-            <h1 className="text-4xl font-extrabold text-blue-900 mb-2">{product.name}</h1>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-blue-900 mb-2">{product.name}</h1>
             <p className="text-lg text-gray-600 mb-2">{product.description}</p>
-            <div className="flex gap-3 mb-2 items-center">
+            <div className="flex flex-wrap gap-2 mb-2 items-center">
               <StockUnit stock={product.stock} />
               <span className="text-base text-gray-600">{product.quantity_Unit}</span>
               <span className="bg-indigo-100 text-blue-700 px-3 rounded-xl text-base ml-auto">{product.category}</span>
             </div>
-            <div className="flex gap-6 my-3 text-lg items-center">
+            <div className="flex flex-wrap gap-6 my-3 text-lg items-center">
               <span className="flex items-center gap-2">
                 <span className="text-gray-400">Sells:</span>
                 <PriceUnit priceObj={product.selling_Price} highlight />
@@ -146,7 +146,7 @@ export default function AdminDetails() {
           </div>
         </div>
 
-        <div className="flex gap-4 mb-8">
+        <div className="flex flex-wrap gap-4 mb-8 justify-center">
           <button
             onClick={() => setEditMode(true)}
             className="px-6 py-2 rounded-2xl bg-blue-600 text-white text-lg font-bold hover:bg-blue-700 transition shadow"

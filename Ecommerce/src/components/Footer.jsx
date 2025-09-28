@@ -16,66 +16,60 @@ const socialLinks = [
 ];
 
 const Footer = () => (
-  <footer
-    className="w-full border-t"
-    style={{
-      background: "linear-gradient(90deg, #1976d2 0%, #b71c1c 100%)",
-      color: "#fff",
-      borderColor: "#d32f2f"
-    }}
-  >
-    <div className="max-w-6xl mx-auto px-4 py-10 flex flex-col md:flex-row justify-between items-center gap-8">
-      {/* Logo and tagline */}
+  <footer className="w-full border-t bg-gradient-to-r from-blue-700 via-red-800 to-red-500 text-white">
+    <div className="max-w-6xl mx-auto px-4 py-10 flex flex-col md:flex-row md:justify-between md:items-center gap-10">
+      {/* Logo and Tagline */}
       <div className="flex flex-col items-center md:items-start">
-        <span className="text-2xl font-extrabold tracking-wider" style={{ color: "#fff" }}>
-          M.<span style={{ color: "#ffd600" }}> Mart</span>
+        <span className="text-3xl font-extrabold tracking-wider drop-shadow">
+          M.<span className="text-yellow-400"> Mart</span>
         </span>
-        <span className="text-sm mt-2 opacity-90" style={{ color: "#ffd600" }}>
+        <span className="text-sm mt-2 text-yellow-300 font-medium">
           Fresh. Local. Vegetarian.
         </span>
       </div>
 
-      {/* Navigation links */}
-      <nav className="flex flex-wrap gap-6 justify-center">
+      {/* Navigation Links */}
+      <nav className="flex flex-wrap gap-6 justify-center md:justify-start">
         {footerLinks.map(link => (
           <NavLink
             key={link.label}
             to={link.to}
-            className="text-base font-semibold opacity-90 hover:opacity-100 hover:underline transition"
-            style={{ color: "#fff" }}
+            className="text-base font-semibold hover:text-yellow-400 transition duration-150"
+            style={{ color: "inherit" }}
+            aria-label={link.label}
           >
             {link.label}
           </NavLink>
         ))}
       </nav>
 
-      {/* Socials and contact */}
+      {/* Socials and Contact */}
       <div className="flex flex-col items-center md:items-end gap-2">
-        <div className="flex gap-4 mb-1">
-          {socialLinks.map(s => (
-            <a
-              key={s.label}
-              href={s.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:scale-110 transition"
-              title={s.label}
-              style={{ color: "#ffd600", fontSize: "1.5rem" }}
-            >
-              <span aria-label={s.label}>{s.icon}</span>
-            </a>
-          ))}
-        </div>
-        <span className="text-xs opacity-80" style={{ color: "#fff" }}>
-          example@.com
-        </span>
-        <span className="text-xs opacity-80" style={{ color: "#fff" }}>
-          +91 to be there
-        </span>
+        {/* Socials */}
+        {socialLinks.length > 0 && (
+          <div className="flex gap-4 mb-1">
+            {socialLinks.map(s => (
+              <a
+                key={s.label}
+                href={s.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:scale-110 transition"
+                aria-label={s.label}
+                style={{ color: "#ffd600", fontSize: "1.5rem" }}
+              >
+                {s.icon}
+              </a>
+            ))}
+          </div>
+        )}
+        {/* Contact Info */}
+        <span className="text-xs opacity-80">example@mart.com</span>
+        <span className="text-xs opacity-80">+91 1234567890</span>
       </div>
     </div>
-    <div className="w-full text-center py-4 text-xs" style={{ background: "rgba(0,0,0,0.08)", color: "#fff" }}>
-      &copy; {new Date().getFullYear()} M. Mart. All rights reserved.
+    <div className="w-full text-center py-4 text-xs bg-black bg-opacity-10 text-white">
+      &copy; {new Date().getFullYear()} <span className="font-bold">M. Mart</span>. All rights reserved.
     </div>
   </footer>
 );

@@ -6,8 +6,8 @@ import SettingsPopover from "../pages/SettingsPage";
 const sidebarItems = [
   { icon: "ic:baseline-home", label: "Home", path: "/" },
   { icon: "mdi:food-apple-outline", label: "Categories", path: "/categories" },
-  // { icon: "mdi:clipboard-list-outline", label: "Orders", path: "/orders" },
-  // { icon: "mdi:cart-outline", label: "Cart", path: "/cart" },
+  { icon: "mdi:clipboard-list-outline", label: "Orders", path: "/orders" },
+  { icon: "mdi:cart-outline", label: "Cart", path: "/cart" },
   { icon: "mdi:account-outline", label: "Account", path: "/MyAccount" },
   // { icon: "mdi:help-circle-outline", label: "Support", path: "/support" },
   { icon: "mdi:card-account-phone-outline", label: "Contact", path: "/contact" },

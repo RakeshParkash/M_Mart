@@ -295,4 +295,39 @@ router.post('/change-password', authenticate, async (req, res) => {
     });
 
 
+    // Get all orders (purchase history) for logged-in user
+router.get('/orders', passport.authenticate('user-jwt', { session: false }), async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  // Return purchase history; you can filter or process as needed
+  res.json({ orders: user.purchased_history || [] });
+});
+
+router.get('/orders/current', passport.authenticate('user-jwt', { session: false }), async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  // Example: filter for items with status 'Pending'
+  const currentOrders = [];
+  for (const purchase of user.purchased_history || []) {
+    const pendingItems = (purchase.items || []).filter(item => item.status === 'Pending');
+    if (pendingItems.length)
+      currentOrders.push({ date: purchase.date, items: pendingItems });
+  }
+  res.json({ orders: currentOrders });
+});
+
+router.get('/orders/history', passport.authenticate('user-jwt', { session: false }), async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  // Example: filter for items with status 'Delivered' or 'Cancelled'
+  const historyOrders = [];
+  for (const purchase of user.purchased_history || []) {
+    const deliveredItems = (purchase.items || []).filter(item => item.status !== 'Pending');
+    if (deliveredItems.length)
+      historyOrders.push({ date: purchase.date, items: deliveredItems });
+  }
+  res.json({ orders: historyOrders });
+});
+
+
 module.exports = router;
