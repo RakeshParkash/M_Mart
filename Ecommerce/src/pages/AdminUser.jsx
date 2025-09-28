@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../utils/api";
+import { HistoryEntry } from "../components/Admin/HistoryEntry";
 
 function UserStatusBadge({ isActive }) {
   return (
@@ -13,46 +14,46 @@ function UserStatusBadge({ isActive }) {
   );
 }
 
-function HistoryEntry({ entry, onDelete, type }) {
-  return (
-    <div className="border rounded-xl p-4 my-4 bg-gray-50 shadow">
-      <div className="flex justify-between items-center mb-2">
-        <h4 className="font-bold text-lg text-blue-900">{entry.date}</h4>
-        <button
-          onClick={() => onDelete(type, entry.date)}
-          className="text-red-600 hover:text-red-800 px-3 py-1 rounded-lg bg-red-100 font-semibold text-sm"
-          title="Delete This Date's Entries"
-        >
-          🗑 Delete
-        </button>
-      </div>
-      <div className="space-y-2">
-        {entry.items.map((item, i) => (
-          <div key={i} className="text-base flex justify-between">
-            <div>
-              <strong>{item.name}</strong> × {item.quantity}
-            </div>
-            {type === "purchased_history" && (
-              <div>
-                ₹{item.totalPrice} <span className="text-gray-500">(Adv ₹{item.advancePaid})</span>
-              </div>
-            )}
-            {type === "dues" && (
-              <div>
-                ₹{item.dueAmount} –{" "}
-                {item.fullyPaid ? (
-                  <span className="text-green-700 font-bold">Paid</span>
-                ) : (
-                  <span className="text-red-700 font-bold">Due</span>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+// function HistoryEntry({ entry, onDelete, type }) {
+//   return (
+//     <div className="border rounded-xl p-4 my-4 bg-gray-50 shadow">
+//       <div className="flex justify-between items-center mb-2">
+//         <h4 className="font-bold text-lg text-blue-900">{entry.date}</h4>
+//         <button
+//           onClick={() => onDelete(type, entry.date)}
+//           className="text-red-600 hover:text-red-800 px-3 py-1 rounded-lg bg-red-100 font-semibold text-sm"
+//           title="Delete This Date's Entries"
+//         >
+//           🗑 Delete
+//         </button>
+//       </div>
+//       <div className="space-y-2">
+//         {entry.items.map((item, i) => (
+//           <div key={i} className="text-base flex justify-between">
+//             <div>
+//               <strong>{item.name}</strong> × {item.quantity}
+//             </div>
+//             {type === "purchased_history" && (
+//               <div>
+//                 ₹{item.totalPrice} <span className="text-gray-500">(Adv ₹{item.advancePaid})</span>
+//               </div>
+//             )}
+//             {type === "dues" && (
+//               <div>
+//                 ₹{item.dueAmount} –{" "}
+//                 {item.fullyPaid ? (
+//                   <span className="text-green-700 font-bold">Paid</span>
+//                 ) : (
+//                   <span className="text-red-700 font-bold">Due</span>
+//                 )}
+//               </div>
+//             )}
+//           </div>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// }
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -317,19 +318,19 @@ export default function AdminUsers() {
   //
   // Delete history entry by date
   //
-  const deleteHistoryEntry = async (type, date) => {
-    if (!viewHistoryUser) return;
-    if (!window.confirm(`Delete ${type} entry for date ${date}?`)) return;
-    try {
-      await api.delete(
-        `/admin/user/${viewHistoryUser._id}/history/${type}/${date}`
-      );
-      alert(`${type} entry deleted`);
-      getUsers();
-    } catch (err) {
-      alert("Failed to delete history entry");
-    }
-  };
+ const deleteHistoryItem = async (type, date, itemName) => {
+  if (!viewHistoryUser) return;
+  if (!window.confirm(`Delete ${type} item "${itemName}" for date ${date}?`)) return;
+  try {
+    await api.delete(
+      `/admin/user/${viewHistoryUser._id}/history/${type}/${date}/${itemName}` // Ensure your backend supports this
+    );
+    alert(`${type} item deleted`);
+    getUsers();
+  } catch (err) {
+    alert("Failed to delete history item");
+  }
+};
 
   //
   // Render
@@ -545,18 +546,18 @@ export default function AdminUsers() {
               {historyTab === "purchase" && (
                 <>
                   {(!viewHistoryUser.purchased_history || viewHistoryUser.purchased_history.length === 0) && (
-                    <p className="text-lg text-gray-600 mb-3">No purchase history.</p>
-                  )}
-                  {(viewHistoryUser?.purchased_history ?? [])
-                    .slice()
-                    .sort((a, b) => b.date.localeCompare(a.date))
-                    .map((entry, idx) => (
-                      <HistoryEntry
-                        key={`${entry.date}-${idx}`}
-                        entry={entry}
-                        onDelete={deleteHistoryEntry}
-                        type="purchased_history"
-                      />
+                      <p className="text-lg text-gray-600 mb-3">No purchase history.</p>
+                    )}
+                    {(viewHistoryUser?.purchased_history ?? [])
+                      .slice()
+                      .sort((a, b) => b.date.localeCompare(a.date))
+                      .map((entry, idx) => (
+                        <HistoryEntry
+                          key={`${entry.date}-${idx}`}
+                          entry={entry}
+                          onDelete={deleteHistoryItem}
+                          type="purchased_history"
+                        />
                     ))}
 
                   {/* Add Purchase Form */}
@@ -677,19 +678,20 @@ export default function AdminUsers() {
               {historyTab === "due" && (
                 <>
                   {(!viewHistoryUser.dues || viewHistoryUser.dues.length === 0) && (
-                    <p className="text-lg text-gray-600 mb-3">No due history.</p>
-                  )}
-                  {(viewHistoryUser?.dues ?? [])
-                    .slice()
-                    .sort((a, b) => b.date.localeCompare(a.date))
-                    .map((entry, idx) => (
-                      <HistoryEntry
-                        key={`${entry.date}-${idx}`}
-                        entry={entry}
-                        onDelete={deleteHistoryEntry}
-                        type="dues"
-                      />
+                      <p className="text-lg text-gray-600 mb-3">No due history.</p>
+                    )}
+                    {(viewHistoryUser?.dues ?? [])
+                      .slice()
+                      .sort((a, b) => b.date.localeCompare(a.date))
+                      .map((entry, idx) => (
+                        <HistoryEntry
+                          key={`${entry.date}-${idx}`}
+                          entry={entry}
+                          onDelete={deleteHistoryItem}
+                          type="dues"
+                        />
                     ))}
+                    
                   {/* Add Due Form */}
                   <div className="mt-8 border-t pt-7">
                     <h4 className="font-bold mb-4 text-xl text-purple-800">

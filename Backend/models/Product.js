@@ -29,7 +29,10 @@ const productSchema = new mongoose.Schema({
   stock: { type: stockSchema, required: true },  // uses sub-schema here
   selling_Price: { type: priceSchema, required: true },
   buying_Price: { type: priceSchema, required: true },
-  category: { type: String, required: true }
+  category: { type: String, required: true },
+  // --- NEW FIELDS ---
+  totalSold: { type: Number, default: 0 },      // Cumulative sold
+  totalDelivered: { type: Number, default: 0 }, // Cumulative delivered
 }, {
   timestamps: true
 });

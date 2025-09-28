@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const purchaseSchema = new mongoose.Schema({
-  date: { type: String, required: true }, // e.g., "2025-07-19"
+  date: { type: String, required: true },
   items: [
     {
       name: { type: String, required: true },
@@ -24,6 +24,18 @@ const dueSchema = new mongoose.Schema({
   ]
 }, { _id: false });
 
+// New: Cart item schema
+const cartItemSchema = new mongoose.Schema({
+  product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+  quantity: { type: Number, required: true, default: 1 }
+}, { _id: false });
+
+// New: Wishlist item schema
+const wishlistItemSchema = new mongoose.Schema({
+  product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+  addedAt: { type: Date, default: Date.now }
+}, { _id: false });
+
 const UserSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName: { type: String },
@@ -38,6 +50,10 @@ const UserSchema = new mongoose.Schema({
     type: [dueSchema],
     default: [],
   },
+  // --- NEW FIELDS ---
+  cart: { type: [cartItemSchema], default: [] },          // User's cart
+  wishlist: { type: [wishlistItemSchema], default: [] },  // User's wishlist
+  totalAmountSpent: { type: Number, default: 0 },         // Total spent by user, can be updated on purchases
 }, {
   timestamps: true,
 });

@@ -174,5 +174,125 @@ router.post('/change-password', authenticate, async (req, res) => {
     }
     });
 
+    // View cart
+    router.get('/cart', authenticate, async (req, res) => {
+        const user = await User.findById(req.user.id).populate('cart.product');
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json({ cart: user.cart });
+    });
+
+    // Add/update item in cart
+    router.post('/cart', authenticate, async (req, res) => {
+        const { productId, quantity } = req.body;
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        let cartItem = user.cart.find(ci => ci.product.equals(productId));
+        if (cartItem) {
+            cartItem.quantity += quantity;
+            if (cartItem.quantity < 1) cartItem.quantity = 1;
+        } else {
+            user.cart.push({ product: productId, quantity: Math.max(1, quantity) });
+        }
+        await user.save();
+        res.json({ cart: user.cart });
+    });
+
+    // Set quantity for an item in cart
+    router.patch('/cart/:productId', authenticate, async (req, res) => {
+        const { quantity } = req.body;
+        if (!quantity || quantity < 1) return res.status(400).json({ message: "Invalid quantity" });
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        let cartItem = user.cart.find(ci => ci.product.equals(req.params.productId));
+        if (!cartItem) return res.status(404).json({ message: "Cart item not found" });
+        cartItem.quantity = quantity;
+        await user.save();
+        res.json({ cart: user.cart });
+    });
+
+    // Remove item from cart
+    router.delete('/cart/:productId', authenticate, async (req, res) => {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        user.cart = user.cart.filter(ci => !ci.product.equals(req.params.productId));
+        await user.save();
+        res.json({ cart: user.cart });
+    });
+
+    // View wishlist
+    router.get('/wishlist', authenticate, async (req, res) => {
+        const user = await User.findById(req.user.id).populate('wishlist.product');
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json({ wishlist: user.wishlist });
+    });
+
+    // Add to wishlist
+    router.post('/wishlist', authenticate, async (req, res) => {
+        const { productId } = req.body;
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user.wishlist.some(wi => wi.product.equals(productId))) {
+            user.wishlist.push({ product: productId });
+            await user.save();
+        }
+        res.json({ wishlist: user.wishlist });
+    });
+
+    // Remove from wishlist
+    router.delete('/wishlist/:productId', authenticate, async (req, res) => {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        user.wishlist = user.wishlist.filter(wi => !wi.product.equals(req.params.productId));
+        await user.save();
+        res.json({ wishlist: user.wishlist });
+    });
+
+    // View total amount spent
+    router.get('/total-amount', authenticate, async (req, res) => {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json({ totalAmountSpent: user.totalAmountSpent || 0 });
+    });
+
+    // PATCH purchase/dues item quantity
+    router.patch('/history/:type/:date/:itemName', authenticate, async (req, res) => {
+        const { type, date, itemName } = req.params;
+        const { quantity } = req.body;
+        if (!["purchased_history", "dues"].includes(type)) {
+            return res.status(400).json({ message: "Invalid history type" });
+        }
+        if (typeof quantity !== 'number' || quantity < 1) {
+            return res.status(400).json({ message: "Invalid quantity" });
+        }
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        const entry = user[type].find(entry => entry.date === date);
+        if (!entry) return res.status(404).json({ message: "Date entry not found" });
+        const item = entry.items.find(item => item.name === itemName);
+        if (!item) return res.status(404).json({ message: "Item not found" });
+        item.quantity = quantity;
+        await user.save();
+        res.json({ message: "Item quantity updated", user });
+    });
+
+    // DELETE purchase/dues item (per-item)
+    router.delete('/history/:type/:date/:itemName', authenticate, async (req, res) => {
+        const { type, date, itemName } = req.params;
+        if (!["purchased_history", "dues"].includes(type)) {
+            return res.status(400).json({ message: "Invalid history type" });
+        }
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        const entry = user[type].find(entry => entry.date === date);
+        if (!entry) return res.status(404).json({ message: "Date entry not found" });
+        entry.items = entry.items.filter(item => item.name !== itemName);
+        // Remove the entry if no items left for that date
+        if (entry.items.length === 0) {
+            user[type] = user[type].filter(entry => entry.date !== date);
+        }
+        await user.save();
+        res.json({ message: "History item deleted", user });
+    });
+
 
 module.exports = router;
