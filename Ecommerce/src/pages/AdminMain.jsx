@@ -43,7 +43,7 @@ export default function AdminDashboard() {
         ]);
 
         setRecentUsers(usersRes.data.users || []);
-        setRecentProducts(productsRes.data.products || []);
+        setRecentProducts((productsRes.data.products || []).slice(0, 5));
 
         setCounts({
           users: usersRes.data.totalCount || usersRes.data.users?.length || 0,
