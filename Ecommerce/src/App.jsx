@@ -17,6 +17,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminSignup from "./pages/AdminSignup";
 import MyAccount from "./pages/MyAccount";
 import AdminProduct from "./pages/AdminProduct";
+import AdminDetails from "./pages/AdminDetails"; // <-- Correct import!
 import CategoryBrowser from "./pages/Categories";
 import ContactSection from "./pages/Contact";
 import Order from "./pages/Order";
@@ -25,7 +26,7 @@ import AdminUser from "./pages/AdminUser";
 import AdminUserHistory from './pages/AdminUserHistory';
 
 function App() {
-  const [theme, setTheme] = useState("red"); // "red" or "blue"
+  const [theme, setTheme] = useState("red");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cookie] = useCookies(["token"]);
@@ -99,9 +100,8 @@ function App() {
                 <Route path="/admin/main" element={<AdminMain />} />
                 <Route path="/admin/users" element={<AdminUser />} />
                 <Route path="/orders" element={<Order />} />
-                {/* <Route path="/cart" element={<Cart />} /> */}
-                {/* <Route path="/support" element={<Support />} /> */}
                 <Route path="/admin/history" element={<AdminUserHistory />} />
+                <Route path="/admin/product/:id" element={<AdminDetails />} /> {/* <-- Dynamic details page */}
                 <Route path="/admin/messages" element={<AdminMessages />} />
                 <Route path="/admin/products" element={<AdminProduct />} />
                 <Route path="/categories" element={<CategoryBrowser />} />

@@ -4,7 +4,7 @@ import api from "../utils/api";
 function UserStatusBadge({ isActive }) {
   return (
     <span
-      className={`px-2 py-0.5 rounded text-xs font-bold ${
+      className={`px-3 py-1 rounded text-sm font-bold ${
         isActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
       }`}
     >
@@ -15,35 +15,35 @@ function UserStatusBadge({ isActive }) {
 
 function HistoryEntry({ entry, onDelete, type }) {
   return (
-    <div className="border rounded-lg p-3 my-2 bg-gray-50">
+    <div className="border rounded-xl p-4 my-4 bg-gray-50 shadow">
       <div className="flex justify-between items-center mb-2">
-        <h4 className="font-semibold">{entry.date}</h4>
+        <h4 className="font-bold text-lg text-blue-900">{entry.date}</h4>
         <button
           onClick={() => onDelete(type, entry.date)}
-          className="text-red-600 hover:text-red-800 cursor-pointer text-sm"
+          className="text-red-600 hover:text-red-800 px-3 py-1 rounded-lg bg-red-100 font-semibold text-sm"
           title="Delete This Date's Entries"
         >
           🗑 Delete
         </button>
       </div>
-      <div className="space-y-1">
+      <div className="space-y-2">
         {entry.items.map((item, i) => (
-          <div key={i} className="text-sm flex justify-between">
+          <div key={i} className="text-base flex justify-between">
             <div>
               <strong>{item.name}</strong> × {item.quantity}
             </div>
             {type === "purchased_history" && (
               <div>
-                ₹{item.totalPrice} (Adv ₹{item.advancePaid})
+                ₹{item.totalPrice} <span className="text-gray-500">(Adv ₹{item.advancePaid})</span>
               </div>
             )}
             {type === "dues" && (
               <div>
                 ₹{item.dueAmount} –{" "}
                 {item.fullyPaid ? (
-                  <span className="text-green-600 font-semibold">Paid</span>
+                  <span className="text-green-700 font-bold">Paid</span>
                 ) : (
-                  <span className="text-red-600 font-semibold">Due</span>
+                  <span className="text-red-700 font-bold">Due</span>
                 )}
               </div>
             )}
@@ -164,14 +164,12 @@ export default function AdminUsers() {
         lastName: userForm.lastName,
         email: userForm.email || "",
         phone: userForm.phone,
-        // Only send password if creating new user or if updated password (you might want to improve logic)
         ...(userForm.password ? { password: userForm.password } : {}),
       };
 
       if (editing) {
         await api.put(`/admin/user/${editing._id}`, payload);
       } else {
-        
         await api.post("/admin/add-user", payload);
       }
 
@@ -217,7 +215,7 @@ export default function AdminUsers() {
   // Purchase/Due Forms Handlers
   //
   const handlePurchaseFormChange = (e, index) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
 
     setPurchaseForm((prev) => {
       const newItems = [...prev.items];
@@ -231,7 +229,7 @@ export default function AdminUsers() {
   };
 
   const handleDueFormChange = (e, index) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, checked } = e.target;
 
     setDueForm((prev) => {
       const newItems = [...prev.items];
@@ -298,7 +296,6 @@ export default function AdminUsers() {
     e.preventDefault();
     if (!viewHistoryUser) return;
     try {
-      // Prepare due items - fullyPaid must be boolean
       const payload = {
         date: dueForm.date,
         items: dueForm.items.map(({ name, quantity, dueAmount, fullyPaid }) => ({
@@ -338,62 +335,62 @@ export default function AdminUsers() {
   // Render
   //
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-white p-5 text-black">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-white p-8 text-black">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-4xl font-bold text-blue-900 tracking-tight">
+        <div className="flex justify-between items-center mb-10">
+          <h2 className="text-4xl font-extrabold text-blue-900 tracking-tight">
             User Management
           </h2>
           <button
             onClick={openAddUserModal}
-            className="flex gap-1 items-center px-5 py-2 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 text-white font-bold shadow hover:from-blue-700 hover:to-blue-600 active:scale-95 transition cursor-pointer"
+            className="flex gap-2 items-center px-6 py-3 rounded-2xl bg-gradient-to-tr from-blue-700 to-blue-400 text-white text-lg font-bold shadow-lg hover:from-blue-800 hover:to-blue-600 active:scale-95 transition cursor-pointer"
           >
-            <span className="text-lg">+</span> Add New User
+            <span className="text-2xl">+</span> Add New User
           </button>
         </div>
 
         {error && (
-          <div className="bg-red-100 text-red-700 rounded-md p-3 mb-4">{error}</div>
+          <div className="bg-red-100 text-red-700 rounded-xl p-4 mb-6 text-lg font-semibold">{error}</div>
         )}
 
         {fetching ? (
-          <div className="text-center text-xl text-blue-700">Loading users...</div>
+          <div className="text-center text-2xl text-blue-700 py-10">Loading users...</div>
         ) : users.length === 0 ? (
-          <div className="text-center text-gray-500">No users found.</div>
+          <div className="text-center text-gray-500 text-xl py-10">No users found.</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {users.map((user) => (
               <div
                 key={user._id}
-                className="bg-white shadow-xl hover:shadow-2xl rounded-2xl p-6 flex flex-col"
+                className="bg-white shadow-2xl hover:shadow-3xl rounded-3xl p-7 flex flex-col transition-transform duration-150 hover:scale-[1.03]"
               >
-                <h3 className="text-xl font-semibold text-blue-900 mb-1 truncate">
+                <h3 className="text-2xl font-bold text-blue-900 mb-2 truncate">
                   {user.firstName} {user.lastName || ""}
                 </h3>
-                <p className="text-gray-600 text-sm mb-1">{user.email}</p>
-                <p className="text-gray-600 text-sm mb-1 font-mono">{user.phone}</p>
-                <div className="mt-2 flex flex-wrap gap-2 items-center">
+                <p className="text-gray-600 text-base mb-2 font-mono">{user.email}</p>
+                <p className="text-gray-600 text-base mb-2 font-mono">{user.phone}</p>
+                <div className="mt-3 flex flex-wrap gap-3 items-center">
                   <button
                     onClick={() => openEditUserModal(user)}
-                    className="px-3 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition text-xs"
+                    className="px-4 py-2 rounded-xl bg-blue-200 text-blue-700 hover:bg-blue-300 transition text-base font-bold"
                   >
                     ✏️ Edit
                   </button>
                   <button
                     onClick={() => deleteUser(user._id)}
-                    className="px-3 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition text-xs"
+                    className="px-4 py-2 rounded-xl bg-red-200 text-red-700 hover:bg-red-300 transition text-base font-bold"
                   >
                     🗑 Delete
                   </button>
                   <button
                     onClick={() => openHistoryModal(user, "purchase")}
-                    className="px-3 py-1 rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition text-xs"
+                    className="px-4 py-2 rounded-xl bg-indigo-200 text-indigo-700 hover:bg-indigo-300 transition text-base font-bold"
                   >
                     🛒 Purchases
                   </button>
                   <button
                     onClick={() => openHistoryModal(user, "due")}
-                    className="px-3 py-1 rounded bg-purple-100 text-purple-700 hover:bg-purple-200 transition text-xs"
+                    className="px-4 py-2 rounded-xl bg-purple-200 text-purple-700 hover:bg-purple-300 transition text-base font-bold"
                   >
                     💰 Dues
                   </button>
@@ -406,77 +403,77 @@ export default function AdminUsers() {
         {/* User Add/Edit Modal */}
         {modalOpen && (
           <div
-            className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center"
+            className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center"
             style={{ backdropFilter: "blur(3px)" }}
             onClick={() => setModalOpen(false)}
           >
             <div
-              className="w-full max-w-lg bg-white rounded-2xl p-8 shadow-2xl relative max-h-[90vh] overflow-auto"
+              className="w-full max-w-xl bg-white rounded-3xl p-10 shadow-3xl relative max-h-[90vh] overflow-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-2xl font-semibold mb-4 text-blue-800 flex items-center gap-2">
+              <h3 className="text-3xl font-bold mb-6 text-blue-800 flex items-center gap-3">
                 {editing ? "✏️ Edit User" : "➕ Add New User"}
               </h3>
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="absolute right-5 top-4 text-gray-400 hover:text-gray-600 text-2xl leading-tight font-bold cursor-pointer"
+                className="absolute right-8 top-6 text-gray-400 hover:text-gray-600 text-3xl leading-tight font-bold cursor-pointer"
                 title="Close"
                 aria-label="Close"
               >
                 ✕
               </button>
-              <form onSubmit={submitUserForm} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form onSubmit={submitUserForm} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-semibold mb-1">First Name</label>
+                    <label className="block text-sm font-semibold mb-2">First Name</label>
                     <input
                       name="firstName"
                       value={userForm.firstName}
                       onChange={handleUserForm}
                       required
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Last Name</label>
+                    <label className="block text-sm font-semibold mb-2">Last Name</label>
                     <input
                       name="lastName"
                       value={userForm.lastName}
                       onChange={handleUserForm}
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Email</label>
+                    <label className="block text-sm font-semibold mb-2">Email</label>
                     <input
                       type="email"
                       name="email"
                       value={userForm.email}
                       onChange={handleUserForm}
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1">Phone</label>
+                    <label className="block text-sm font-semibold mb-2">Phone</label>
                     <input
                       name="phone"
                       value={userForm.phone}
                       onChange={handleUserForm}
                       required
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                   </div>
                   {!editing && (
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-semibold mb-1">Password</label>
+                      <label className="block text-sm font-semibold mb-2">Password</label>
                       <input
                         type="password"
                         name="password"
                         value={userForm.password}
                         onChange={handleUserForm}
                         required={!editing}
-                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                       />
                     </div>
                   )}
@@ -484,13 +481,13 @@ export default function AdminUsers() {
 
                 <button
                   type="submit"
-                  className="w-full mt-4 bg-gradient-to-tr from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-600 text-white py-2 rounded-xl text-lg font-bold active:scale-95 transition cursor-pointer"
+                  className="w-full mt-6 bg-gradient-to-tr from-blue-700 to-blue-400 hover:from-blue-800 hover:to-blue-600 text-white py-3 rounded-2xl text-xl font-bold active:scale-95 transition cursor-pointer"
                 >
                   {editing ? "Update User" : "Add User"}
                 </button>
 
                 {error && (
-                  <p className="text-red-500 text-center mt-2 font-semibold">{error}</p>
+                  <p className="text-red-500 text-center mt-3 font-semibold">{error}</p>
                 )}
               </form>
             </div>
@@ -500,32 +497,32 @@ export default function AdminUsers() {
         {/* User History Modal */}
         {viewHistoryUser && (
           <div
-            className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-10 pb-10 overflow-auto"
+            className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center pt-10 pb-10 overflow-auto"
             style={{ backdropFilter: "blur(3px)" }}
             onClick={closeHistoryModal}
           >
             <div
-              className="w-full max-w-4xl bg-white rounded-2xl p-6 shadow-2xl relative max-h-[85vh] overflow-auto"
+              className="w-full max-w-3xl bg-white rounded-3xl p-8 shadow-3xl relative max-h-[85vh] overflow-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 type="button"
                 onClick={closeHistoryModal}
-                className="absolute right-6 top-4 text-gray-400 hover:text-gray-700 text-3xl font-bold cursor-pointer"
+                className="absolute right-8 top-6 text-gray-400 hover:text-gray-700 text-4xl font-bold cursor-pointer"
                 title="Close"
                 aria-label="Close"
               >
                 ✕
               </button>
 
-              <h3 className="text-3xl font-semibold text-blue-900 mb-4">
+              <h3 className="text-3xl font-bold text-blue-900 mb-6">
                 {viewHistoryUser.firstName} {viewHistoryUser.lastName || ""}
               </h3>
-              <div className="flex gap-4 mb-4">
+              <div className="flex gap-5 mb-8">
                 <button
-                  className={`px-4 py-2 rounded-md font-semibold transition ${
+                  className={`px-6 py-3 rounded-2xl font-bold text-lg transition ${
                     historyTab === "purchase"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-blue-600 text-white shadow-md"
                       : "bg-gray-200 text-gray-700"
                   }`}
                   onClick={() => setHistoryTab("purchase")}
@@ -533,9 +530,9 @@ export default function AdminUsers() {
                   Purchase History
                 </button>
                 <button
-                  className={`px-4 py-2 rounded-md font-semibold transition ${
+                  className={`px-6 py-3 rounded-2xl font-bold text-lg transition ${
                     historyTab === "due"
-                      ? "bg-purple-600 text-white"
+                      ? "bg-purple-600 text-white shadow-md"
                       : "bg-gray-200 text-gray-700"
                   }`}
                   onClick={() => setHistoryTab("due")}
@@ -548,30 +545,28 @@ export default function AdminUsers() {
               {historyTab === "purchase" && (
                 <>
                   {(!viewHistoryUser.purchased_history || viewHistoryUser.purchased_history.length === 0) && (
-  <p>No purchase history</p>
-)}
-
-              {(viewHistoryUser?.purchased_history ?? [])
-                .slice()
-                .sort((a, b) => b.date.localeCompare(a.date))
-                .map((entry, idx) => (
-                  <HistoryEntry
-                    key={`${entry.date}-${idx}`}
-                    entry={entry}
-                    onDelete={deleteHistoryEntry}
-                    type="purchased_history"
-                  />
-              ))}
-
+                    <p className="text-lg text-gray-600 mb-3">No purchase history.</p>
+                  )}
+                  {(viewHistoryUser?.purchased_history ?? [])
+                    .slice()
+                    .sort((a, b) => b.date.localeCompare(a.date))
+                    .map((entry, idx) => (
+                      <HistoryEntry
+                        key={`${entry.date}-${idx}`}
+                        entry={entry}
+                        onDelete={deleteHistoryEntry}
+                        type="purchased_history"
+                      />
+                    ))}
 
                   {/* Add Purchase Form */}
-                  <div className="mt-6 border-t pt-5">
-                    <h4 className="font-semibold mb-3 text-lg text-blue-800">
+                  <div className="mt-8 border-t pt-7">
+                    <h4 className="font-bold mb-4 text-xl text-blue-800">
                       Add Purchase Entry
                     </h4>
-                    <form onSubmit={submitPurchase} className="space-y-4">
+                    <form onSubmit={submitPurchase} className="space-y-6">
                       <div>
-                        <label className="block text-xs font-semibold mb-1">
+                        <label className="block text-sm font-bold mb-2">
                           Date (YYYY-MM-DD)
                         </label>
                         <input
@@ -585,16 +580,16 @@ export default function AdminUsers() {
                             }))
                           }
                           required
-                          className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500"
+                          className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                       {purchaseForm.items.map((item, idx) => (
                         <div
                           key={idx}
-                          className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end"
+                          className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end"
                         >
                           <div>
-                            <label className="block text-xs font-semibold mb-1">
+                            <label className="block text-sm font-bold mb-2">
                               Item Name
                             </label>
                             <input
@@ -603,11 +598,11 @@ export default function AdminUsers() {
                               value={item.name}
                               onChange={(e) => handlePurchaseFormChange(e, idx)}
                               required
-                              className="w-full border p-2 rounded"
+                              className="w-full border p-3 rounded-xl"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-semibold mb-1">
+                            <label className="block text-sm font-bold mb-2">
                               Quantity
                             </label>
                             <input
@@ -617,11 +612,11 @@ export default function AdminUsers() {
                               value={item.quantity}
                               onChange={(e) => handlePurchaseFormChange(e, idx)}
                               required
-                              className="w-full border p-2 rounded"
+                              className="w-full border p-3 rounded-xl"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-semibold mb-1">
+                            <label className="block text-sm font-bold mb-2">
                               Advance Paid
                             </label>
                             <input
@@ -632,11 +627,11 @@ export default function AdminUsers() {
                               value={item.advancePaid}
                               onChange={(e) => handlePurchaseFormChange(e, idx)}
                               required
-                              className="w-full border p-2 rounded"
+                              className="w-full border p-3 rounded-xl"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-semibold mb-1">
+                            <label className="block text-sm font-bold mb-2">
                               Total Price
                             </label>
                             <input
@@ -647,13 +642,13 @@ export default function AdminUsers() {
                               value={item.totalPrice}
                               onChange={(e) => handlePurchaseFormChange(e, idx)}
                               required
-                              className="w-full border p-2 rounded"
+                              className="w-full border p-3 rounded-xl"
                             />
                           </div>
                           <button
                             type="button"
                             onClick={() => removePurchaseItem(idx)}
-                            className="text-red-600 hover:text-red-900 font-bold"
+                            className="text-red-600 hover:text-red-900 font-bold text-xl"
                             title="Remove item"
                           >
                             ✕
@@ -663,13 +658,13 @@ export default function AdminUsers() {
                       <button
                         type="button"
                         onClick={addPurchaseItem}
-                        className="text-blue-600 hover:text-blue-900 font-bold"
+                        className="text-blue-600 hover:text-blue-900 font-bold text-lg"
                       >
                         + Add Item
                       </button>
                       <button
                         type="submit"
-                        className="block mt-4 w-full bg-blue-600 text-white py-2 rounded"
+                        className="block mt-5 w-full bg-blue-600 text-white py-3 rounded-2xl text-lg font-bold"
                       >
                         Save Purchase Entry
                       </button>
@@ -682,13 +677,12 @@ export default function AdminUsers() {
               {historyTab === "due" && (
                 <>
                   {(!viewHistoryUser.dues || viewHistoryUser.dues.length === 0) && (
-  <p>No purchase history</p>
-)}
-
+                    <p className="text-lg text-gray-600 mb-3">No due history.</p>
+                  )}
                   {(viewHistoryUser?.dues ?? [])
                     .slice()
                     .sort((a, b) => b.date.localeCompare(a.date))
-                    .map((entry , idx) => (
+                    .map((entry, idx) => (
                       <HistoryEntry
                         key={`${entry.date}-${idx}`}
                         entry={entry}
@@ -697,13 +691,13 @@ export default function AdminUsers() {
                       />
                     ))}
                   {/* Add Due Form */}
-                  <div className="mt-6 border-t pt-5">
-                    <h4 className="font-semibold mb-3 text-lg text-purple-800">
+                  <div className="mt-8 border-t pt-7">
+                    <h4 className="font-bold mb-4 text-xl text-purple-800">
                       Add Due Entry
                     </h4>
-                    <form onSubmit={submitDue} className="space-y-4">
+                    <form onSubmit={submitDue} className="space-y-6">
                       <div>
-                        <label className="block text-xs font-semibold mb-1">
+                        <label className="block text-sm font-bold mb-2">
                           Date (YYYY-MM-DD)
                         </label>
                         <input
@@ -717,17 +711,17 @@ export default function AdminUsers() {
                             }))
                           }
                           required
-                          className="w-full border p-2 rounded focus:ring-2 focus:ring-purple-500"
+                          className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-purple-500"
                         />
                       </div>
 
                       {dueForm.items.map((item, idx) => (
                         <div
                           key={idx}
-                          className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end"
+                          className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end"
                         >
                           <div>
-                            <label className="block text-xs font-semibold mb-1">
+                            <label className="block text-sm font-bold mb-2">
                               Item Name
                             </label>
                             <input
@@ -736,11 +730,11 @@ export default function AdminUsers() {
                               value={item.name}
                               onChange={(e) => handleDueFormChange(e, idx)}
                               required
-                              className="w-full border p-2 rounded"
+                              className="w-full border p-3 rounded-xl"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-semibold mb-1">
+                            <label className="block text-sm font-bold mb-2">
                               Quantity
                             </label>
                             <input
@@ -750,11 +744,11 @@ export default function AdminUsers() {
                               value={item.quantity}
                               onChange={(e) => handleDueFormChange(e, idx)}
                               required
-                              className="w-full border p-2 rounded"
+                              className="w-full border p-3 rounded-xl"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-semibold mb-1">
+                            <label className="block text-sm font-bold mb-2">
                               Due Amount
                             </label>
                             <input
@@ -765,11 +759,11 @@ export default function AdminUsers() {
                               value={item.dueAmount}
                               onChange={(e) => handleDueFormChange(e, idx)}
                               required
-                              className="w-full border p-2 rounded"
+                              className="w-full border p-3 rounded-xl"
                             />
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <label className="block text-xs font-semibold mb-1">
+                          <div className="flex items-center space-x-2 pt-4">
+                            <label className="block text-sm font-bold mb-2">
                               Fully Paid
                             </label>
                             <input
@@ -777,13 +771,13 @@ export default function AdminUsers() {
                               name="fullyPaid"
                               checked={item.fullyPaid}
                               onChange={(e) => handleDueFormChange(e, idx)}
-                              className="accent-purple-600 w-5 h-5"
+                              className="accent-purple-600 w-6 h-6"
                             />
                           </div>
                           <button
                             type="button"
                             onClick={() => removeDueItem(idx)}
-                            className="text-red-600 hover:text-red-900 font-bold"
+                            className="text-red-600 hover:text-red-900 font-bold text-xl"
                             title="Remove item"
                           >
                             ✕
@@ -793,13 +787,13 @@ export default function AdminUsers() {
                       <button
                         type="button"
                         onClick={addDueItem}
-                        className="text-purple-600 hover:text-purple-900 font-bold"
+                        className="text-purple-600 hover:text-purple-900 font-bold text-lg"
                       >
                         + Add Item
                       </button>
                       <button
                         type="submit"
-                        className="block mt-4 w-full bg-purple-600 text-white py-2 rounded"
+                        className="block mt-5 w-full bg-purple-600 text-white py-3 rounded-2xl text-lg font-bold"
                       >
                         Save Due Entry
                       </button>

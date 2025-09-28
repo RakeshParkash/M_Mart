@@ -149,26 +149,26 @@ export default function AdminProducts() {
           <h2 className="text-4xl font-bold text-blue-900 tracking-tight">Product Catalogue</h2>
           <button
             onClick={startAdd}
-            className="flex gap-1 items-center px-5 py-2 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 text-white font-bold shadow hover:from-blue-700 hover:to-blue-600 active:scale-95 transition cursor-pointer"
+            className="flex gap-2 items-center px-6 py-3 rounded-2xl bg-gradient-to-tr from-blue-700 to-blue-400 text-white text-lg font-bold shadow-lg hover:from-blue-800 hover:to-blue-600 active:scale-95 transition cursor-pointer"
           >
-            <span className="text-lg">+</span> Add New Product
+            <span className="text-2xl">+</span> Add New Product
           </button>
         </div>
 
         {error && (
-          <div className="bg-red-100 text-red-700 rounded-md p-3 mb-4">{error}</div>
+          <div className="bg-red-100 text-red-700 rounded-xl p-4 mb-6 text-lg font-semibold">{error}</div>
         )}
 
         {fetching ? (
-          <div className="text-center text-xl text-blue-700">Loading products...</div>
+          <div className="text-center text-2xl text-blue-700 py-10">Loading products...</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
             {products.map((prod) => (
               <div
                 key={prod._id}
-                className="bg-white shadow-xl hover:shadow-2xl rounded-2xl p-5 transition-all hover:-translate-y-1 overflow-hidden flex flex-col"
+                className="bg-white shadow-2xl hover:shadow-3xl rounded-3xl p-7 flex flex-col transition-transform duration-150 hover:scale-[1.03]"
               >
-                <div className="bg-gray-50 rounded-xl flex items-center justify-center mb-3 overflow-hidden max-h-32 sm:max-h-40">
+                <div className="bg-gray-50 rounded-xl flex items-center justify-center mb-4 overflow-hidden max-h-32 sm:max-h-40">
                   <img
                     src={prod.image}
                     className="max-h-32 sm:max-h-40 max-w-full object-contain mx-auto"
@@ -176,42 +176,42 @@ export default function AdminProducts() {
                   />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-blue-900 mb-1 truncate">{prod.name}</h3>
-                  <p className="text-gray-600 text-sm mb-1 line-clamp-2">{prod.description}</p>
+                  <h3 className="text-2xl font-bold text-blue-900 mb-2 truncate">{prod.name}</h3>
+                  <p className="text-gray-600 text-base mb-2 line-clamp-2">{prod.description}</p>
                 </div>
                 <div className="flex gap-2 mb-2 mt-1 items-center">
                   <StockUnit stock={prod.stock} />
                   <span className="text-sm text-gray-600">{prod.quantity_Unit}</span>
                   <span className="bg-indigo-100 text-blue-700 px-2 rounded text-xs ml-auto">{prod.category}</span>
                 </div>
-                <div className="flex gap-4 my-2 text-sm items-center">
-                  <span className="flex items-center gap-1">
+                <div className="flex gap-4 my-2 text-base items-center">
+                  <span className="flex items-center gap-2">
                     <span className="text-gray-400">Sells:</span>
                     <PriceUnit priceObj={prod.selling_Price} highlight />
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-2">
                     <span className="text-gray-400">Buys:</span>
                     <PriceUnit priceObj={prod.buying_Price} />
                   </span>
                 </div>
-                <div className="mt-auto flex gap-2 pt-2 border-t border-gray-50">
+                <div className="mt-auto flex gap-3 pt-3 border-t border-gray-100">
                   <button
                     onClick={() => startEdit(prod)}
-                    className="cursor-pointer px-2 text-sky-600 hover:bg-sky-50 hover:text-sky-800 rounded transition"
+                    className="cursor-pointer px-4 py-2 text-sky-600 hover:bg-sky-50 hover:text-sky-800 rounded-xl transition text-base font-bold"
                     aria-label="Edit Product"
                   >
                     ✏️ Edit
                   </button>
                   <button
                     onClick={() => deleteProduct(prod._id)}
-                    className="cursor-pointer px-2 text-red-600 hover:bg-red-50 hover:text-red-800 rounded transition"
+                    className="cursor-pointer px-4 py-2 text-red-600 hover:bg-red-50 hover:text-red-800 rounded-xl transition text-base font-bold"
                     aria-label="Delete Product"
                   >
                     🗑 Delete
                   </button>
                   <button
                     onClick={() => window.open(`/admin/product/${prod._id}`, "_blank")}
-                    className="ml-auto cursor-pointer px-2 text-indigo-500 hover:text-indigo-800 hover:bg-indigo-50 rounded transition"
+                    className="ml-auto cursor-pointer px-4 py-2 text-indigo-500 hover:text-indigo-800 hover:bg-indigo-50 rounded-xl transition text-base font-bold"
                   >
                     ℹ️ Details
                   </button>
@@ -229,32 +229,32 @@ export default function AdminProducts() {
               onClick={() => { setModalOpen(false); setEditing(null); }}
             >
               <div
-                className="w-full max-w-md sm:max-w-lg lg:max-w-xl bg-white rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl space-y-4 relative max-h-[92vh] overflow-y-auto"
+                className="w-full max-w-xl bg-white rounded-3xl p-10 shadow-3xl relative max-h-[92vh] overflow-y-auto"
                 onClick={e => e.stopPropagation()}
               >
                 {/* Header */}
-                <h3 className="text-2xl font-semibold mb-2 text-blue-800 flex items-center gap-2">
+                <h3 className="text-3xl font-bold mb-6 text-blue-800 flex items-center gap-3">
                   {editing ? <span>✏️</span> : <span>➕</span>}
                   {editing ? "Edit Product" : "Add New Product"}
                 </h3>
                 <button
                   type="button"
                   onClick={() => { setModalOpen(false); setEditing(null); }}
-                  className="absolute right-5 top-4 text-gray-400 hover:text-gray-600 text-2xl leading-tight font-bold cursor-pointer"
+                  className="absolute right-8 top-6 text-gray-400 hover:text-gray-600 text-3xl leading-tight font-bold cursor-pointer"
                   title="Close"
                   tabIndex={0}
                   aria-label="Close"
                 >✕</button>
 
                 {/* Form */}
-                <form onSubmit={submitForm} className="space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={submitForm} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Product Name */}
                     <div>
-                      <label className="block text-xs font-semibold mb-1" htmlFor="name">Product Name</label>
+                      <label className="block text-sm font-bold mb-2" htmlFor="name">Product Name</label>
                       <input
                         id="name"
-                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         name="name"
                         value={form.name}
                         onChange={handleForm}
@@ -265,10 +265,10 @@ export default function AdminProducts() {
 
                     {/* Category */}
                     <div>
-                      <label className="block text-xs font-semibold mb-1" htmlFor="category">Category</label>
+                      <label className="block text-sm font-bold mb-2" htmlFor="category">Category</label>
                       <input
                         id="category"
-                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         name="category"
                         value={form.category}
                         onChange={handleForm}
@@ -279,10 +279,10 @@ export default function AdminProducts() {
 
                     {/* Description (full width) */}
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-semibold mb-1" htmlFor="description">Description</label>
+                      <label className="block text-sm font-bold mb-2" htmlFor="description">Description</label>
                       <textarea
                         id="description"
-                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         name="description"
                         value={form.description}
                         onChange={handleForm}
@@ -293,10 +293,10 @@ export default function AdminProducts() {
 
                     {/* Image URL */}
                     <div>
-                      <label className="block text-xs font-semibold mb-1" htmlFor="image">Image URL</label>
+                      <label className="block text-sm font-bold mb-2" htmlFor="image">Image URL</label>
                       <input
                         id="image"
-                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         name="image"
                         value={form.image}
                         onChange={handleForm}
@@ -304,16 +304,16 @@ export default function AdminProducts() {
                         required
                       />
                       {form.image && (
-                        <img src={form.image} alt="Preview" className="h-20 mt-2 mx-auto rounded shadow border" />
+                        <img src={form.image} alt="Preview" className="h-20 mt-3 mx-auto rounded-xl shadow border" />
                       )}
                     </div>
 
                     {/* Quantity Unit */}
                     <div>
-                      <label className="block text-xs font-semibold mb-1" htmlFor="quantity_Unit">Quantity Unit</label>
+                      <label className="block text-sm font-bold mb-2" htmlFor="quantity_Unit">Quantity Unit</label>
                       <input
                         id="quantity_Unit"
-                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         name="quantity_Unit"
                         value={form.quantity_Unit}
                         onChange={handleForm}
@@ -324,11 +324,11 @@ export default function AdminProducts() {
 
                     {/* Stock Type */}
                     <div>
-                      <label className="block text-xs font-semibold mb-1" htmlFor="stock.type">Stock Type</label>
+                      <label className="block text-sm font-bold mb-2" htmlFor="stock.type">Stock Type</label>
                       <select
                         id="stock.type"
                         name="stock.type"
-                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         value={form.stock.type}
                         onChange={handleForm}
                       >
@@ -339,10 +339,10 @@ export default function AdminProducts() {
 
                     {/* Stock Value */}
                     <div>
-                      <label className="block text-xs font-semibold mb-1" htmlFor="stock.value">Stock Value</label>
+                      <label className="block text-sm font-bold mb-2" htmlFor="stock.value">Stock Value</label>
                       <input
                         id="stock.value"
-                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         name="stock.value"
                         value={form.stock.value}
                         onChange={handleForm}
@@ -354,10 +354,10 @@ export default function AdminProducts() {
 
                     {/* Stock Unit */}
                     <div>
-                      <label className="block text-xs font-semibold mb-1" htmlFor="stock.unit">Stock Unit</label>
+                      <label className="block text-sm font-bold mb-2" htmlFor="stock.unit">Stock Unit</label>
                       <input
                         id="stock.unit"
-                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         name="stock.unit"
                         value={form.stock.unit}
                         onChange={handleForm}
@@ -367,10 +367,10 @@ export default function AdminProducts() {
 
                     {/* Selling Price */}
                     <div>
-                      <label className="block text-xs font-semibold mb-1" htmlFor="selling_Price.price">Selling Price</label>
+                      <label className="block text-sm font-bold mb-2" htmlFor="selling_Price.price">Selling Price</label>
                       <input
                         id="selling_Price.price"
-                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         name="selling_Price.price"
                         value={form.selling_Price.price}
                         onChange={handleForm}
@@ -380,7 +380,7 @@ export default function AdminProducts() {
                       />
                       <input
                         id="selling_Price.unit"
-                        className="w-full border mt-2 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border mt-3 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         name="selling_Price.unit"
                         value={form.selling_Price.unit}
                         onChange={handleForm}
@@ -391,10 +391,10 @@ export default function AdminProducts() {
 
                     {/* Buying Price */}
                     <div>
-                      <label className="block text-xs font-semibold mb-1" htmlFor="buying_Price.price">Buying Price</label>
+                      <label className="block text-sm font-bold mb-2" htmlFor="buying_Price.price">Buying Price</label>
                       <input
                         id="buying_Price.price"
-                        className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         name="buying_Price.price"
                         value={form.buying_Price.price}
                         onChange={handleForm}
@@ -404,7 +404,7 @@ export default function AdminProducts() {
                       />
                       <input
                         id="buying_Price.unit"
-                        className="w-full border mt-2 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border mt-3 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         name="buying_Price.unit"
                         value={form.buying_Price.unit}
                         onChange={handleForm}
@@ -417,18 +417,17 @@ export default function AdminProducts() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full mt-3 bg-gradient-to-tr from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-600 text-white py-2 rounded-xl text-lg font-bold active:scale-95 transition cursor-pointer"
+                    className="w-full mt-6 bg-gradient-to-tr from-blue-700 to-blue-400 hover:from-blue-800 hover:to-blue-600 text-white py-3 rounded-2xl text-xl font-bold active:scale-95 transition cursor-pointer"
                   >
                     {editing ? "Update Product" : "Add Product"}
                   </button>
 
                   {/* Error Message */}
-                  {error && <div className="text-red-500 mt-2 text-center">{error}</div>}
+                  {error && <div className="text-red-500 mt-3 text-center">{error}</div>}
                 </form>
               </div>
             </div>
           )}
-
       </div>
     </div>
   );
