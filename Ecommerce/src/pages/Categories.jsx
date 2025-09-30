@@ -103,12 +103,12 @@ export default function CategoryBrowser() {
                         <h3 className="text-lg font-bold text-blue-900 mb-1">{product.name}</h3>
                         <p className="text-gray-600 text-sm mb-2">{product.desc}</p>
                         <div className="text-green-700 font-bold text-xl mb-1">
-                          ₹{product.price?.toLocaleString()}{" "}
+                          {product.price?.toLocaleString()}{" "}
                           <span className="text-xs font-normal text-gray-500">{product.quantity_Unit}</span>
                         </div>
                         {product.selling_Price && (
                           <div className="text-sm text-gray-500">
-                            Selling Price: ₹{product.selling_Price.price} / {product.selling_Price.unit}
+                            Selling Price: {product.selling_Price.price} / {product.selling_Price.unit}
                           </div>
                         )}
                       </div>

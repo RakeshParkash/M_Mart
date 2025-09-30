@@ -51,11 +51,11 @@ router.get("/categories", async (req, res) => {
       const formattedProduct = {
         _id: p._id,
         name: p.name,
-        desc: p.description,
+        desc: p.description || p.desc,
         img: p.image,
-        price: `₹${p.selling_Price?.price || 0}/${p.quantity_Unit}`,
-        cta: "Add to Cart",
-        stock: p.stock.value
+        price: p.selling_Price?.price || 0,
+        quantity_Unit: p.quantity_Unit,
+        stock: p.stock?.value
       };
       if (!grouped[cat]) grouped[cat] = [];
       grouped[cat].push(formattedProduct);
