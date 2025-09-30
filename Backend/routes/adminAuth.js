@@ -389,10 +389,11 @@ router.post("/product", verifyToken, isAdmin, validateBody, async (req, res) => 
 });
 
 // Get all products
+// Get all products (admin only)
 router.get("/products", verifyToken, isAdmin, async (req, res) => {
     try {
         const products = await Product.find();
-        res.json(products);
+        res.json({ products }); 
     } catch (err) {
         res.status(500).json({ message: "Failed to fetch products" });
     }

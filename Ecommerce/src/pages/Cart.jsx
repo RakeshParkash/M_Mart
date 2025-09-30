@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
@@ -55,6 +56,9 @@ function Cart() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -111,6 +115,7 @@ function Cart() {
   }
   setUpdating(false);
 };
+  
 
   const total = cart.reduce(
     (sum, item) =>
@@ -118,6 +123,25 @@ function Cart() {
       (item.quantity * (item.product?.selling_Price?.price || item.product?.price || 0)),
     0
   );
+
+  // --- Order placement handler ---
+  const handlePlaceOrder = async () => {
+    setPlacingOrder(true);
+    try {
+      // You can add address/payment info here if needed
+      const { data } = await api.post('/order', { method: "COD" });
+      setOrderPlaced(true);
+      setShowConfirm(false);
+      // Optionally clear cart in frontend
+      setCart([]);
+      // Optionally redirect to orders page after a delay
+      setTimeout(() => navigate('/orders'), 1500);
+    } catch (err) {
+      setError('Failed to place order.');
+      setShowConfirm(false);
+    }
+    setPlacingOrder(false);
+  };
 
   if (loading) {
     return (
@@ -136,12 +160,7 @@ function Cart() {
   }
 
   return (
-    <div className="
-      max-w-[900px] mx-auto min-h-screen
-      px-4 md:px-8 py-12 md:py-16
-      font-montserrat text-[#333]
-      bg-gradient-to-br from-[#f9f9f9] to-[#fff]
-    ">
+    <div className="max-w-[900px] mx-auto min-h-screen px-4 md:px-8 py-12 md:py-16 font-montserrat text-[#333] bg-gradient-to-br from-[#f9f9f9] to-[#fff]">
       <h1 className="text-3xl font-bold text-blue-900 mb-10 text-center">Your Cart</h1>
       {cart.length === 0 ? (
         <div className="text-center text-lg text-gray-600 py-16">
@@ -170,13 +189,56 @@ function Cart() {
             </div>
             <button
               className="bg-blue-600 hover:bg-blue-800 text-white px-8 py-3 rounded-full font-semibold text-lg shadow transition"
-              disabled={updating}
-              onClick={() => navigate('/checkout')}
+              disabled={updating || placingOrder}
+              onClick={() => setShowConfirm(true)}
             >
               Proceed to Checkout
             </button>
           </div>
         </>
+      )}
+
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 shadow-lg min-w-[300px] max-w-[90vw]">
+            <h2 className="text-2xl font-bold mb-4 text-blue-900">Confirm Order</h2>
+            <p className="mb-2">Total Amount: <span className="font-bold text-green-700">₹{total.toLocaleString()}</span></p>
+            <p className="mb-6 text-gray-600">Do you want to place this order for your cart items?</p>
+            <div className="flex justify-end gap-4">
+              <button
+                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold"
+                onClick={() => setShowConfirm(false)}
+                disabled={placingOrder}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-800 text-white font-semibold"
+                onClick={handlePlaceOrder}
+                disabled={placingOrder}
+              >
+                {placingOrder ? "Placing..." : "Confirm Order"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Popup */}
+      {orderPlaced && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 shadow-lg text-center min-w-[300px] max-w-[90vw]">
+            <h2 className="text-2xl font-bold mb-4 text-green-700">Order Placed!</h2>
+            <p className="mb-4 text-gray-700">Your order has been placed successfully.</p>
+            <button
+              className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-800 text-white font-semibold"
+              onClick={() => navigate('/orders')}
+            >
+              View Orders
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

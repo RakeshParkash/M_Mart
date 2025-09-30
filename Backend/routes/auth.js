@@ -320,4 +320,82 @@ router.delete('/wishlist/:productId', passport.authenticate("user-jwt", { sessio
   }
 });
 
+
+// order 
+// Place an order using cart contents
+// Place an order using cart contents and optional payment method/address
+router.post('/order', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
+  try {
+    const { method, address, paymentDetails } = req.body; // add other info as needed
+    const user = await User.findById(req.user._id).populate('cart.product');
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user.cart || user.cart.length === 0) {
+      return res.status(400).json({ message: "Cart is empty" });
+    }
+
+    // Build order items from cart
+    const items = user.cart.map(ci => ({
+      product: ci.product._id,
+      name: ci.product.name,
+      quantity: ci.quantity,
+      price: ci.product.selling_Price?.price || ci.product.price,
+      total: ci.quantity * (ci.product.selling_Price?.price || ci.product.price),
+    }));
+
+    const totalAmount = items.reduce((sum, i) => sum + i.total, 0);
+
+    const order = {
+      date: new Date(),
+      items,
+      status: "Placed",
+      payment: {
+        method: method || "COD",
+        status: "Pending",
+        totalAmount,
+        paidAmount: 0,
+        // You can add paymentDetails, address, etc
+      },
+      address: address || user.address, // if you store address
+    };
+
+    user.orders.push(order);
+    user.cart = []; // Clear cart after placing order
+    await user.save();
+
+    res.json({ message: "Order placed successfully", order });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error placing order", error: err.message });
+  }
+});
+
+router.get('/orders', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ orders: user.orders });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching orders", error: err.message });
+  }
+});
+
+
+router.get('/order/:orderId', passport.authenticate("user-jwt", { session: false }), async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const order = user.orders.id(req.params.orderId);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    res.json({ order });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching order", error: err.message });
+  }
+});
+
+
+
+
 module.exports = router;
