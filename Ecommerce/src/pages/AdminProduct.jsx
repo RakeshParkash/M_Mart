@@ -45,10 +45,18 @@ export default function AdminProducts() {
     setFetching(true);
     try {
       const { data } = await api.get("/admin/products");
-      setProducts(data);
+      // Defensive assignment: always set to array, even if response is object
+      if (Array.isArray(data)) {
+        setProducts(data);
+      } else if (Array.isArray(data.products)) {
+        setProducts(data.products);
+      } else {
+        setProducts([]);
+      }
       setFetching(false);
     } catch (err) {
       setError("Could not load products");
+      setProducts([]); // fallback to empty array to avoid .map error
       setFetching(false);
     }
   };
@@ -163,7 +171,7 @@ export default function AdminProducts() {
           <div className="text-center text-2xl text-blue-700 py-10">Loading products...</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {products.map((prod) => (
+            {Array.isArray(products) && products.map((prod) => (
               <div
                 key={prod._id}
                 className="bg-white shadow-2xl hover:shadow-3xl rounded-3xl p-7 flex flex-col transition-transform duration-150 hover:scale-[1.03]"
