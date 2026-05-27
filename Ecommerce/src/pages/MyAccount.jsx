@@ -4,6 +4,19 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { Line } from 'react-chartjs-2';
 import { Chart, LineController, LineElement, PointElement, LinearScale, Title, CategoryScale } from 'chart.js';
+import { clearAuthToken, getAuthToken } from '../utils/token';
+import { FALLBACK_IMAGE, getSafeImageUrl } from '../utils/image';
+
+const toNumber = (value) => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = parseFloat(value.replace(/[^\d.-]/g, ''));
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+};
+
+const API_BASE = import.meta.env.VITE_API || "https://m-mart-ad2q.onrender.com";
 
 // Register necessary Chart.js components
 Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale);
@@ -91,8 +104,8 @@ function PurchaseCard({ purchase }) {
                 <tr key={item.name + idx} className="odd:bg-[#f9f6ef]/50 even:bg-white border-b last:border-0">
                   <td className="py-2 px-3 font-semibold text-[#273042]">{item.name}</td>
                   <td className="py-2 px-3 text-center">{item.quantity}</td>
-                  <td className="py-2 px-3 text-right text-green-700 font-semibold">₹{item.advancePaid?.toLocaleString()}</td>
-                  <td className="py-2 px-3 text-right font-semibold">₹{item.totalPrice?.toLocaleString()}</td>
+                  <td className="py-2 px-3 text-right text-green-700 font-semibold">₹{toNumber(item.advancePaid).toLocaleString()}</td>
+                  <td className="py-2 px-3 text-right font-semibold">₹{toNumber(item.totalPrice).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -121,9 +134,9 @@ function Account() {
     async function fetchUserData() {
       setLoading(true);
       try {
-        const token = cookies.token;
+        const token = getAuthToken() || cookies.token;
         if (!token) throw new Error('No authentication token found');
-        const meResponse = await fetch(`${import.meta.env.VITE_API}/me`, {
+        const meResponse = await fetch(`${API_BASE}/me`, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           credentials: 'include',
           signal: controller.signal,
@@ -131,29 +144,32 @@ function Account() {
         if (!meResponse.ok) throw new Error(meResponse.status === 401 ? 'Session expired' : 'Failed to fetch user data');
         const meData = await meResponse.json();
 
-        const userResponse = await fetch(`${import.meta.env.VITE_API}/get/user/${meData._id}`, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          credentials: 'include',
-          signal: controller.signal,
-        });
+        const [userResponse, cartRes, wishlistRes] = await Promise.all([
+          fetch(`${API_BASE}/get/user/${meData._id}`, {
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            credentials: 'include',
+            signal: controller.signal,
+          }),
+          fetch(`${API_BASE}/cart`, {
+            headers: { Authorization: `Bearer ${token}` },
+            credentials: 'include',
+            signal: controller.signal,
+          }),
+          fetch(`${API_BASE}/wishlist`, {
+            headers: { Authorization: `Bearer ${token}` },
+            credentials: 'include',
+            signal: controller.signal,
+          })
+        ]);
+
         if (!userResponse.ok) throw new Error('Failed to fetch user details');
         const user = await userResponse.json();
 
-        const cartRes = await fetch(`${import.meta.env.VITE_API}/cart`, {
-          headers: { Authorization: `Bearer ${token}` },
-          credentials: 'include',
-          signal: controller.signal,
-        });
         const cartData = cartRes.ok ? await cartRes.json() : { cart: [] };
-        setCart(cartData.cart || []);
+        setCart((cartData.cart || []).filter((item) => item?.product?._id));
 
-        const wishlistRes = await fetch(`${import.meta.env.VITE_API}/wishlist`, {
-          headers: { Authorization: `Bearer ${token}` },
-          credentials: 'include',
-          signal: controller.signal,
-        });
         const wishlistData = wishlistRes.ok ? await wishlistRes.json() : { wishlist: [] };
-        setWishlist(wishlistData.wishlist || []);
+        setWishlist((wishlistData.wishlist || []).filter((item) => item?.product?._id));
 
         setUserData({
           _id: user._id,
@@ -183,8 +199,9 @@ function Account() {
           err.message.toLowerCase().includes('authentication') ||
           err.message.toLowerCase().includes('session')
         ) {
+          clearAuthToken();
           removeCookie('token', { path: '/' });
-          navigate('/auth/login');
+          navigate('/login');
         }
       } finally {
         setLoading(false);
@@ -211,8 +228,8 @@ function Account() {
     }
     setPwLoading(true);
     try {
-      const token = cookies.token;
-      const response = await fetch(`${import.meta.env.VITE_API}/change-password`, {
+      const token = getAuthToken() || cookies.token;
+      const response = await fetch(`${API_BASE}/change-password`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -238,19 +255,20 @@ function Account() {
   };
 
   const handleLogout = () => {
+    clearAuthToken();
     removeCookie('token', { path: '/' });
-    navigate('/auth/login');
+    navigate('/login');
   };
 
   // --- Graph Data ---
   const purchaseGraphData = (() => {
     if (!userData?.purchased_history?.length) return null;
     // Group by month
-    const byMonth = {};
+      const byMonth = {};
     userData.purchased_history.forEach(ph => {
       const d = new Date(ph.date);
       const key = `${d.getFullYear()}-${d.getMonth()+1}`;
-      byMonth[key] = (byMonth[key] || 0) + ph.items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+        byMonth[key] = (byMonth[key] || 0) + ph.items.reduce((sum, item) => sum + toNumber(item.totalPrice), 0);
     });
     const months = Object.keys(byMonth).sort();
     return {
@@ -388,7 +406,15 @@ function Account() {
           <ul className="divide-y divide-pink-100">
             {wishlist.slice(0, 4).map((item, idx) => (
               <li key={idx} className="py-3 flex items-center gap-4">
-                <img src={item.product?.image || item.product?.img} alt={item.product?.name} className="w-12 h-12 object-contain rounded-xl border border-pink-200" />
+                <img
+                  src={getSafeImageUrl(item.product?.image || item.product?.img)}
+                  alt={item.product?.name}
+                  className="w-12 h-12 object-contain rounded-xl border border-pink-200"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = FALLBACK_IMAGE;
+                  }}
+                />
                 <span className="flex-1 font-semibold">{item.product?.name}</span>
                 <Link to={`/product/${item.product?._id}`} className="text-pink-600 underline">View</Link>
               </li>
@@ -409,7 +435,15 @@ function Account() {
           <ul className="divide-y divide-green-100">
             {cart.slice(0, 4).map((item, idx) => (
               <li key={idx} className="py-3 flex items-center gap-4">
-                <img src={item.product?.image || item.product?.img} alt={item.product?.name} className="w-12 h-12 object-contain rounded-xl border border-green-200" />
+                <img
+                  src={getSafeImageUrl(item.product?.image || item.product?.img)}
+                  alt={item.product?.name}
+                  className="w-12 h-12 object-contain rounded-xl border border-green-200"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = FALLBACK_IMAGE;
+                  }}
+                />
                 <span className="flex-1 font-semibold">{item.product?.name}</span>
                 <span className="text-green-700 font-bold">x{item.quantity}</span>
                 <span className="text-gray-600">
