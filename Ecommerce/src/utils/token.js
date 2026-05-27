@@ -17,7 +17,9 @@ function readCookie(name) {
 
 function writeCookie(name, value, days = 30) {
   if (!isBrowser()) return;
-  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+  const expires = new Date(
+    Date.now() + days * 24 * 60 * 60 * 1000,
+  ).toUTCString();
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
   document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; path=/; expires=${expires}; SameSite=Lax${secure}`;
 }
