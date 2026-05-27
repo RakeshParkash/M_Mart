@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import {useCookies} from 'react-cookie';
 import { useNavigate, Link } from 'react-router-dom';
 import {Icon} from "@iconify/react";
 import TextInput from '../components/shared/TextInput';
 import PasswordInput from '../components/shared/PasswordInput';
 import { makeUnauthenticatedPOSTRequest } from '../utils/server';
+import { persistAuthToken } from '../utils/token';
 
 const SignupComponent = () => {
     const [email, setEmail] = useState("");
@@ -12,7 +12,6 @@ const SignupComponent = () => {
     const [phone, setPhone] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
-    const [cookie, setCookie] = useCookies(["token"]);
     const navigate = useNavigate();
 
 
@@ -33,12 +32,8 @@ const SignupComponent = () => {
         );
 
         if (response && response.token) {
-            const token = response.token;
-            const date = new Date();
-            date.setDate(date.getDate() + 30);
-            setCookie("token", token, { path: "/", expires: date });
-            localStorage.setItem("accessToken", token); 
-            navigate("/home");
+            persistAuthToken(response.token);
+            navigate("/");
         } else {
             
             const errorMsg = response?.err || 
