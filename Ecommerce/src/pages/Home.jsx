@@ -1,5 +1,5 @@
 
-import React, { useContext } from "react";
+import React from "react";
 import HeroSection from "../components/Herosection";
 
 // Utility: get headline color based on theme
@@ -74,7 +74,6 @@ const Home = ({ theme = "red" }) => (
   >
     <HeroSection theme={theme} />
     <Newsletter theme={theme} />
-
   </div>
 );
 
