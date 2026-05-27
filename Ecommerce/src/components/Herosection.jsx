@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import MiniNavbar from './MiniNavbar';
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
+import { FALLBACK_IMAGE, getSafeImageUrl } from "../utils/image";
 
 // Utility to get colors
 const getColors = (accentColor) => {
@@ -47,11 +49,15 @@ const ProductSection = ({ id, title, products, accentColor = "red" }) => {
             style={{ borderColor: border }}
           >
             <img
-              src={item.img}
+              src={getSafeImageUrl(item.img)}
               alt={item.name}
               className="w-24 h-24 object-cover rounded-full border-4 mb-4"
               style={{ borderColor: accent }}
               loading="lazy"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = FALLBACK_IMAGE;
+              }}
             />
             <h3 className="text-lg font-bold mb-2" style={{ color: heading }}>{item.name}</h3>
             <p className="text-sm mb-1 text-center" style={{ color: text }}>{item.desc}</p>
@@ -125,10 +131,14 @@ const HeroBanner = ({ perishables }) => (
           className="bg-white rounded-xl shadow hover:shadow-lg p-3 flex flex-col items-center transition"
         >
           <img
-            src={item.img}
+            src={getSafeImageUrl(item.img)}
             alt={item.name}
             className="w-20 h-20 object-cover rounded-full border-2 border-[#1976d2] mb-2"
             loading="lazy"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = FALLBACK_IMAGE;
+            }}
           />
           <div className="font-bold text-[#1976d2]">{item.name}</div>
           <div className="text-xs text-center text-[#b71c1c]">{item.desc}</div>
@@ -150,7 +160,7 @@ export default function HeroSection() {
 
   const handleLogin = () => navigate("/login");
   const handleSignup = () => navigate("/signup");
-  const handleAccount = () => navigate("/Myaccount");
+  const handleAccount = () => navigate("/MyAccount");
   const handleLogout = () => removeCookie("token", { path: "/" });
 
   // Placeholder: implement as you wish.
@@ -172,9 +182,19 @@ export default function HeroSection() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${import.meta.env.VITE_API}/products/get`)
-      .then(res => res.json())
-      .then(data => setAllProducts(data))
+    api.get("/products/get")
+      .then(({ data }) => {
+        setAllProducts(data || {
+          Perishables: [],
+          Snacks: [],
+          Beverages: [],
+          Grains: [],
+          Bakery: [],
+          Dairy: [],
+          Offers: [],
+          Others: []
+        });
+      })
       .catch(err => {
         console.error("Failed to fetch products", err);
         setError(true);
