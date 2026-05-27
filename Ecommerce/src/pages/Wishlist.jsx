@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../utils/api';
+import { FALLBACK_IMAGE, getSafeImageUrl } from '../utils/image';
 
-function WishlistItem({ item, onRemove, onAddToCart, updating }) {
+function WishlistItem({ item, onRemove, onAddToCart, pendingById }) {
   const { product } = item;
+  const isPending = !!pendingById[product?._id];
   return (
     <div className="flex flex-col sm:flex-row items-center gap-4 bg-white rounded-xl shadow p-4 mb-4 border">
       <img
-        src={product?.image || product?.img}
+        src={getSafeImageUrl(product?.image || product?.img)}
         alt={product?.name}
         className="w-24 h-24 object-contain rounded-lg bg-gray-50"
+        onError={(e) => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = FALLBACK_IMAGE;
+        }}
       />
       <div className="flex-1 min-w-[150px]">
         <h3 className="text-lg font-bold text-pink-900">{product?.name}</h3>
@@ -22,14 +28,14 @@ function WishlistItem({ item, onRemove, onAddToCart, updating }) {
         <button
           onClick={() => onAddToCart(item)}
           className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-800 transition font-semibold"
-          disabled={updating}
+          disabled={isPending}
         >
           Add to Cart
         </button>
         <button
           onClick={() => onRemove(item)}
           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700 transition"
-          disabled={updating}
+          disabled={isPending}
         >
           Remove
         </button>
@@ -42,8 +48,7 @@ function Wishlist() {
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [updating, setUpdating] = useState(false);
-  const navigate = useNavigate();
+  const [pendingById, setPendingById] = useState({});
 
   useEffect(() => {
     async function fetchWishlist() {
@@ -51,7 +56,7 @@ function Wishlist() {
       setError('');
       try {
         const { data } = await api.get('/wishlist');
-        setWishlist(data.wishlist || []);
+        setWishlist((data.wishlist || []).filter((item) => item?.product?._id));
       } catch (err) {
         setError('Failed to load wishlist.');
         setWishlist([]);
@@ -62,26 +67,30 @@ function Wishlist() {
   }, []);
 
   const handleRemove = async (item) => {
-    setUpdating(true);
+    const productId = item?.product?._id;
+    if (!productId) return;
+    setPendingById((prev) => ({ ...prev, [productId]: true }));
     try {
-      await api.delete(`/wishlist/${item.product._id}`);
-      setWishlist((prev) => prev.filter(wi => wi.product._id !== item.product._id));
+      await api.delete(`/wishlist/${productId}`);
+      setWishlist((prev) => prev.filter(wi => wi.product?._id !== productId));
     } catch {
       setError('Failed to remove item.');
     }
-    setUpdating(false);
+    setPendingById((prev) => ({ ...prev, [productId]: false }));
   };
 
   const handleAddToCart = async (item) => {
-    setUpdating(true);
+    const productId = item?.product?._id;
+    if (!productId) return;
+    setPendingById((prev) => ({ ...prev, [productId]: true }));
     try {
-      await api.post('/cart', { productId: item.product._id, quantity: 1 });
-      await api.delete(`/wishlist/${item.product._id}`); // Optionally remove from wishlist after adding
-      setWishlist((prev) => prev.filter(wi => wi.product._id !== item.product._id));
+      await api.post('/cart', { productId, quantity: 1 });
+      await api.delete(`/wishlist/${productId}`);
+      setWishlist((prev) => prev.filter(wi => wi.product?._id !== productId));
     } catch {
       setError('Failed to add to cart.');
     }
-    setUpdating(false);
+    setPendingById((prev) => ({ ...prev, [productId]: false }));
   };
 
   if (loading) {
@@ -125,7 +134,7 @@ function Wishlist() {
                 item={item}
                 onRemove={handleRemove}
                 onAddToCart={handleAddToCart}
-                updating={updating}
+                pendingById={pendingById}
               />
             ))}
           </div>
