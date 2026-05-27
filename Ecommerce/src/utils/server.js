@@ -1,9 +1,11 @@
+import { getAuthToken } from './token';
+
 
 
 // helpers.js
 const API_BASE = import.meta.env.VITE_API || "https://m-mart-ad2q.onrender.com";
 // Uses localStorage for token, keep in sync with where you actually store it!
-const getToken = () => localStorage.getItem('accessToken');
+const getToken = () => getAuthToken();
 
 const handleResponse = async (response) => {
   const data = await response.json().catch(() => ({}));
@@ -57,7 +59,7 @@ export const makeAuthenticatedPOSTRequest = async (route, { method = 'GET', body
 
 export const makeAuthenticatedGETRequest = async (route) => {
   const token = getToken();
-  const response = await fetch(import.meta.env.VITE_API + route, {
+  const response = await fetch(API_BASE + route, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
