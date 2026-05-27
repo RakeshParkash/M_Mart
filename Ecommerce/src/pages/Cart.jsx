@@ -2,28 +2,43 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
+import { FALLBACK_IMAGE, getSafeImageUrl } from '../utils/image';
 
-function CartItem({ item, onRemove, onUpdateQuantity, updating }) {
+const toNumber = (value) => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = parseFloat(value.replace(/[^\d.-]/g, ''));
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+};
+
+function CartItem({ item, onRemove, onUpdateQuantity, pendingById }) {
   const { product, quantity } = item;
+  const isPending = !!pendingById[product?._id];
   return (
     <div className="flex flex-col sm:flex-row items-center gap-4 bg-white rounded-xl shadow p-4 mb-4 border">
       <img
-        src={product?.image || product?.img}
+        src={getSafeImageUrl(product?.image || product?.img)}
         alt={product?.name}
         className="w-24 h-24 object-contain rounded-lg bg-gray-50"
+        onError={(e) => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = FALLBACK_IMAGE;
+        }}
       />
       <div className="flex-1 min-w-[150px]">
         <h3 className="text-lg font-bold text-blue-900">{product?.name}</h3>
         <p className="text-sm text-gray-500">{product?.description || product?.desc}</p>
         <div className="mt-1 text-base text-green-700 font-semibold">
-          ₹{product?.selling_Price?.price || product?.price} / {product?.selling_Price?.unit || product?.quantity_Unit}
+          ₹{toNumber(product?.selling_Price?.price || product?.price)} / {product?.selling_Price?.unit || product?.quantity_Unit}
         </div>
       </div>
       <div className="flex items-center gap-2">
         <button
           className="px-2 py-1 bg-blue-100 rounded hover:bg-blue-300 text-lg font-bold"
           onClick={() => onUpdateQuantity(item, Math.max(1, quantity - 1))}
-          disabled={updating || quantity <= 1}
+          disabled={isPending || quantity <= 1}
           aria-label="Decrease"
         >
           -
@@ -32,7 +47,7 @@ function CartItem({ item, onRemove, onUpdateQuantity, updating }) {
         <button
           className="px-2 py-1 bg-blue-100 rounded hover:bg-blue-300 text-lg font-bold"
           onClick={() => onUpdateQuantity(item, quantity + 1)}
-          disabled={updating}
+          disabled={isPending}
           aria-label="Increase"
         >
           +
@@ -42,7 +57,7 @@ function CartItem({ item, onRemove, onUpdateQuantity, updating }) {
         <button
           onClick={() => onRemove(item)}
           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700 transition"
-          disabled={updating}
+          disabled={isPending}
         >
           Remove
         </button>
@@ -55,7 +70,7 @@ function Cart() {
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [updating, setUpdating] = useState(false);
+  const [pendingById, setPendingById] = useState({});
   const [showConfirm, setShowConfirm] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -67,7 +82,7 @@ function Cart() {
       setError('');
       try {
         const { data } = await api.get('/cart');
-        setCart(data.cart || []);
+        setCart((data.cart || []).filter((item) => item?.product?._id));
       } catch (err) {
         setError('Failed to load cart.');
         setCart([]);
@@ -78,14 +93,16 @@ function Cart() {
   }, []);
 
   const handleRemove = async (item) => {
-    setUpdating(true);
+    const productId = item?.product?._id;
+    if (!productId) return;
+    setPendingById((prev) => ({ ...prev, [productId]: true }));
     try {
-      await api.delete(`/cart/${item.product._id}`);
-      setCart((prev) => prev.filter(ci => ci.product._id !== item.product._id));
+      await api.delete(`/cart/${productId}`);
+      setCart((prev) => prev.filter(ci => ci.product?._id !== productId));
     } catch {
       setError('Failed to remove item.');
     }
-    setUpdating(false);
+    setPendingById((prev) => ({ ...prev, [productId]: false }));
   };
 
   const handleUpdateQuantity = async (item, newQuantity) => {
@@ -94,7 +111,7 @@ function Cart() {
     setError("Invalid product ID.");
     return;
   }
-  setUpdating(true);
+  setPendingById((prev) => ({ ...prev, [item.product._id]: true }));
   try {
     await api.patch(`/cart/${item.product._id}`, { quantity: newQuantity });
     setCart((prev) =>
@@ -113,16 +130,14 @@ function Cart() {
       console.error('PATCH /cart/:id error:', err);
     }
   }
-  setUpdating(false);
+  setPendingById((prev) => ({ ...prev, [item.product._id]: false }));
 };
   
 
-  const total = cart.reduce(
-    (sum, item) =>
-      sum +
-      (item.quantity * (item.product?.selling_Price?.price || item.product?.price || 0)),
-    0
-  );
+  const total = cart.reduce((sum, item) => {
+    const unitPrice = toNumber(item.product?.selling_Price?.price || item.product?.price);
+    return sum + item.quantity * unitPrice;
+  }, 0);
 
   // --- Order placement handler ---
   const handlePlaceOrder = async () => {
@@ -179,7 +194,7 @@ function Cart() {
                 item={item}
                 onRemove={handleRemove}
                 onUpdateQuantity={handleUpdateQuantity}
-                updating={updating}
+                pendingById={pendingById}
               />
             ))}
           </div>
@@ -189,7 +204,7 @@ function Cart() {
             </div>
             <button
               className="bg-blue-600 hover:bg-blue-800 text-white px-8 py-3 rounded-full font-semibold text-lg shadow transition"
-              disabled={updating || placingOrder}
+              disabled={placingOrder}
               onClick={() => setShowConfirm(true)}
             >
               Proceed to Checkout
