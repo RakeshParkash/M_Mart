@@ -1,6 +1,4 @@
-import { getAuthToken } from './token';
-
-
+import { getAuthToken } from "./token";
 
 // helpers.js
 const API_BASE = import.meta.env.VITE_API || "https://m-mart-ad2q.onrender.com";
@@ -9,14 +7,16 @@ const getToken = () => getAuthToken();
 
 const handleResponse = async (response) => {
   const data = await response.json().catch(() => ({}));
-  
+
   if (!response.ok) {
-    const error = new Error(data.message || `HTTP error! status: ${response.status}`);
+    const error = new Error(
+      data.message || `HTTP error! status: ${response.status}`,
+    );
     error.status = response.status;
     error.data = data;
     throw error;
   }
-  
+
   return data;
 };
 
@@ -24,12 +24,12 @@ export const makeUnauthenticatedPOSTRequest = async (route, body) => {
   try {
     const response = await fetch(`${API_BASE}${route}`, {
       method: "POST",
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json"
+        Accept: "application/json",
       },
       body: JSON.stringify(body),
-      credentials: 'include' // Crucial for cookies/JWT
+      credentials: "include", // Crucial for cookies/JWT
     });
 
     return await handleResponse(response);
@@ -40,7 +40,10 @@ export const makeUnauthenticatedPOSTRequest = async (route, body) => {
 };
 
 // For authenticated requests
-export const makeAuthenticatedPOSTRequest = async (route, { method = 'GET', body }) => {
+export const makeAuthenticatedPOSTRequest = async (
+  route,
+  { method = "GET", body },
+) => {
   const token = getToken();
   if (!token) throw new Error("No authentication token found");
 
@@ -48,10 +51,10 @@ export const makeAuthenticatedPOSTRequest = async (route, { method = 'GET', body
     method,
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     },
     body: body ? JSON.stringify(body) : undefined,
-    credentials: 'include'
+    credentials: "include",
   });
 
   return await handleResponse(response);
