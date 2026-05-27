@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-
-html, body {
+html,
+body {
   overflow-x: hidden;
 }
 
@@ -11,7 +11,12 @@ body.theme-red {
   --bg-secondary: #b91c1c;
   --text-main: #fff;
   --accent: #f87171;
-  background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 50%, #f87171 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #7f1d1d 0%,
+    #b91c1c 50%,
+    #f87171 100%
+  ) !important;
   color: var(--text-main);
   transition: background 0.4s;
 }
@@ -22,32 +27,43 @@ body.theme-blue {
   --bg-secondary: #60a5fa;
   --text-main: #fff;
   --accent: #dbeafe;
-  background: linear-gradient(135deg, #1e40af 0%, #60a5fa 50%, #dbeafe 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #1e40af 0%,
+    #60a5fa 50%,
+    #dbeafe 100%
+  ) !important;
   color: var(--text-main);
   transition: background 0.4s;
 }
 
 /* Fade-in animation for popovers */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(-10px);}
-  to { opacity: 1; transform: translateY(0);}
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .animate-fade-in {
   animation: fade-in 0.15s ease;
 }
 body.theme-red {
   --heading-color: #fff;
-  --heading-accent: #ff1744;      /* Vivid Red */
-  --bg-main: #b71c1c;             /* Deep Red */
-  --bg-secondary: #ff8a65;        /* Soft Orange */
-  --card-bg: #fff3e0;             /* Warm Light */
+  --heading-accent: #ff1744; /* Vivid Red */
+  --bg-main: #b71c1c; /* Deep Red */
+  --bg-secondary: #ff8a65; /* Soft Orange */
+  --card-bg: #fff3e0; /* Warm Light */
   --card-border: #ff1744;
 }
 body.theme-blue {
   --heading-color: #0d47a1;
-  --heading-accent: #1e88e5;      /* Vivid Blue */
-  --bg-main: #e3f2fd;             /* Light Blue */
-  --bg-secondary: #90caf9;        /* Soft Blue */
+  --heading-accent: #1e88e5; /* Vivid Blue */
+  --bg-main: #e3f2fd; /* Light Blue */
+  --bg-secondary: #90caf9; /* Soft Blue */
   --card-bg: #ffffff;
   --card-border: #1e88e5;
 }
