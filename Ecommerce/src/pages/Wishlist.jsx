@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import api from '../utils/api';
-import { FALLBACK_IMAGE, getSafeImageUrl } from '../utils/image';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import api from "../utils/api";
+import { FALLBACK_IMAGE, getSafeImageUrl } from "../utils/image";
 
 function WishlistItem({ item, onRemove, onAddToCart, pendingById }) {
   const { product } = item;
@@ -19,9 +19,12 @@ function WishlistItem({ item, onRemove, onAddToCart, pendingById }) {
       />
       <div className="flex-1 min-w-[150px]">
         <h3 className="text-lg font-bold text-pink-900">{product?.name}</h3>
-        <p className="text-sm text-gray-500">{product?.description || product?.desc}</p>
+        <p className="text-sm text-gray-500">
+          {product?.description || product?.desc}
+        </p>
         <div className="mt-1 text-base text-green-700 font-semibold">
-          ₹{product?.selling_Price?.price || product?.price} / {product?.selling_Price?.unit || product?.quantity_Unit}
+          ₹{product?.selling_Price?.price || product?.price} /{" "}
+          {product?.selling_Price?.unit || product?.quantity_Unit}
         </div>
       </div>
       <div className="flex flex-col gap-2 items-center">
@@ -47,18 +50,18 @@ function WishlistItem({ item, onRemove, onAddToCart, pendingById }) {
 function Wishlist() {
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [pendingById, setPendingById] = useState({});
 
   useEffect(() => {
     async function fetchWishlist() {
       setLoading(true);
-      setError('');
+      setError("");
       try {
-        const { data } = await api.get('/wishlist');
+        const { data } = await api.get("/wishlist");
         setWishlist((data.wishlist || []).filter((item) => item?.product?._id));
       } catch (err) {
-        setError('Failed to load wishlist.');
+        setError("Failed to load wishlist.");
         setWishlist([]);
       }
       setLoading(false);
@@ -72,9 +75,9 @@ function Wishlist() {
     setPendingById((prev) => ({ ...prev, [productId]: true }));
     try {
       await api.delete(`/wishlist/${productId}`);
-      setWishlist((prev) => prev.filter(wi => wi.product?._id !== productId));
+      setWishlist((prev) => prev.filter((wi) => wi.product?._id !== productId));
     } catch {
-      setError('Failed to remove item.');
+      setError("Failed to remove item.");
     }
     setPendingById((prev) => ({ ...prev, [productId]: false }));
   };
@@ -84,11 +87,11 @@ function Wishlist() {
     if (!productId) return;
     setPendingById((prev) => ({ ...prev, [productId]: true }));
     try {
-      await api.post('/cart', { productId, quantity: 1 });
+      await api.post("/cart", { productId, quantity: 1 });
       await api.delete(`/wishlist/${productId}`);
-      setWishlist((prev) => prev.filter(wi => wi.product?._id !== productId));
+      setWishlist((prev) => prev.filter((wi) => wi.product?._id !== productId));
     } catch {
-      setError('Failed to add to cart.');
+      setError("Failed to add to cart.");
     }
     setPendingById((prev) => ({ ...prev, [productId]: false }));
   };
@@ -110,18 +113,26 @@ function Wishlist() {
   }
 
   return (
-    <div className="
+    <div
+      className="
       max-w-[900px] mx-auto min-h-screen
       px-4 md:px-8 py-12 md:py-16
       font-montserrat text-[#333]
       bg-gradient-to-br from-[#f9f9f9] to-[#fff]
-    ">
-      <h1 className="text-3xl font-bold text-pink-900 mb-10 text-center">Your Wishlist</h1>
+    "
+    >
+      <h1 className="text-3xl font-bold text-pink-900 mb-10 text-center">
+        Your Wishlist
+      </h1>
       {wishlist.length === 0 ? (
         <div className="text-center text-lg text-gray-600 py-16">
           <div className="mb-4 text-4xl">💖</div>
-          Your wishlist is empty.<br />
-          <Link to="/categories" className="text-pink-600 underline font-semibold">
+          Your wishlist is empty.
+          <br />
+          <Link
+            to="/categories"
+            className="text-pink-600 underline font-semibold"
+          >
             Browse products
           </Link>
         </div>
