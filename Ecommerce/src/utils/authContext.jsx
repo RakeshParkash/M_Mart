@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { getAuthToken } from './token';
 
 const AuthContext = createContext();
 
@@ -9,8 +10,18 @@ export function setAuthFromOutside(value) {
 }
 
 export function AuthProvider({ children }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
+  const [isAuthenticated, setIsAuthenticated] = useState(!!getAuthToken());
   externalSetAuth = setIsAuthenticated;
+
+  useEffect(() => {
+    const onStorage = (event) => {
+      if (event.key === 'accessToken') {
+        setIsAuthenticated(!!getAuthToken());
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
