@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { setAuthFromOutside } from '../utils/authContext';
+import { clearAuthToken, getAuthToken } from './token';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API || "https://m-mart-ad2q.onrender.com",
@@ -7,7 +8,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
+  const token = getAuthToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -34,17 +35,19 @@ api.interceptors.response.use(
       if (role === 'admin' || role === 'webappAdmin') {
         try {
           const { data } = await api.post('/admin/token');
-          localStorage.setItem('accessToken', data.accessToken);
+          if (data?.accessToken) {
+            localStorage.setItem('accessToken', data.accessToken);
+          }
           setAuthFromOutside(true);
           return api(original);
         } catch {
-          localStorage.removeItem('accessToken');
+          clearAuthToken();
           setAuthFromOutside(false);
           window.location.href = '/login';
         }
       } else {
         // For normal users, just log out and redirect
-        localStorage.removeItem('accessToken');
+        clearAuthToken();
         setAuthFromOutside(false);
         window.location.href = '/login';
       }
