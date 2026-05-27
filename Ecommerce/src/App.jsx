@@ -64,7 +64,7 @@ function App() {
         {/* Hamburger Icon for Mobile */}
         {isMobile && (
           <button
-            className="fixed top-4 left-4 z-50 bg-red-600 text-white p-2 rounded-full shadow-md"
+            className="fixed top-4 left-4 z-[95] bg-red-600 text-white p-2 rounded-full shadow-md"
             onClick={() => setMobileMenuOpen(true)}
           >
             <Icon icon="mdi:menu" width={24} height={24} />
@@ -74,11 +74,11 @@ function App() {
         {/* Mobile Sidebar Overlay */}
         {isMobile && mobileMenuOpen && (
           <div
-            className="fixed inset-0 z-[60] bg-black bg-opacity-50"
+            className="fixed inset-0 z-[90] bg-black bg-opacity-50"
             onClick={() => setMobileMenuOpen(false)}
           >
             <div
-              className="absolute left-0 top-0 h-full bg-black shadow-lg z-50"
+              className="absolute left-0 top-0 h-full bg-black shadow-lg z-[95]"
               onClick={(e) => e.stopPropagation()}
             >
               <Sidebar
@@ -93,7 +93,7 @@ function App() {
 
         {/* Main Content */}
         <div
-          className={`flex-1 overflow-auto ${!isMobile ? "ml-64" : "mt-27"}`}
+          className={`flex-1 overflow-auto ${!isMobile ? "ml-64" : "pt-16"}`}
         >
           <main className="px-2 py-8">
             {isAuthenticated ? (
