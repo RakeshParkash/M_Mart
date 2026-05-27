@@ -98,7 +98,7 @@ router.post("/login", async (req, res) => {
     }
 });
 
-router.get("/me", verifyToken, passport.authenticate("user-jwt", { session: false }), async (req, res) => {
+router.get("/me", passport.authenticate("user-jwt", { session: false }), async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('-password');
         if (!user) {
