@@ -14,10 +14,12 @@ export default function CategoryBrowser() {
       setLoading(true);
       try {
         const res = await api.get("/products/categories");
-        const catArray = Object.entries(res.data).map(([category, products]) => ({
-          category,
-          products,
-        }));
+        const catArray = Object.entries(res.data).map(
+          ([category, products]) => ({
+            category,
+            products,
+          }),
+        );
         setCategoryData(catArray);
       } catch (e) {
         console.error("Failed to fetch:", e);
@@ -72,16 +74,25 @@ export default function CategoryBrowser() {
         </h1>
         <div className="space-y-14">
           {categoryData.map(({ category, products }) => (
-            <section key={category} className="bg-white rounded-3xl shadow-lg border border-blue-100 p-5 sm:p-8">
+            <section
+              key={category}
+              className="bg-white rounded-3xl shadow-lg border border-blue-100 p-5 sm:p-8"
+            >
               {/* Category Header */}
               <div className="mb-6 sm:mb-8 border-b pb-3 flex items-center justify-between flex-wrap gap-2">
-                <span className="text-xl sm:text-2xl font-bold text-blue-900">{category}</span>
-                <span className="text-gray-500 text-sm sm:text-base">({products.length} items)</span>
+                <span className="text-xl sm:text-2xl font-bold text-blue-900">
+                  {category}
+                </span>
+                <span className="text-gray-500 text-sm sm:text-base">
+                  ({products.length} items)
+                </span>
               </div>
 
               {/* Product Cards */}
               {products.length === 0 ? (
-                <div className="text-gray-400 italic text-center py-10">No products in this category.</div>
+                <div className="text-gray-400 italic text-center py-10">
+                  No products in this category.
+                </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-8">
                   {products.map((product, index) => (
@@ -103,17 +114,24 @@ export default function CategoryBrowser() {
                       </div>
                       {/* Product Info */}
                       <div className="flex-1 text-center min-w-0">
-                        <h3 className="text-lg font-bold text-blue-900 mb-1 truncate">{product.name}</h3>
+                        <h3 className="text-lg font-bold text-blue-900 mb-1 truncate">
+                          {product.name}
+                        </h3>
                         <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-                          {product.desc || product.description || "No description"}
+                          {product.desc ||
+                            product.description ||
+                            "No description"}
                         </p>
                         <div className="text-green-700 font-bold text-xl mb-1">
                           {product.price?.toLocaleString()}{" "}
-                          <span className="text-xs font-normal text-gray-500">{product.quantity_Unit}</span>
+                          <span className="text-xs font-normal text-gray-500">
+                            {product.quantity_Unit}
+                          </span>
                         </div>
                         {product.selling_Price && (
                           <div className="text-sm text-gray-500">
-                            Selling Price: {product.selling_Price.price} / {product.selling_Price.unit}
+                            Selling Price: {product.selling_Price.price} /{" "}
+                            {product.selling_Price.unit}
                           </div>
                         )}
                       </div>
