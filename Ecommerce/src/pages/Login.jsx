@@ -4,14 +4,13 @@ import TextInput from '../components/shared/TextInput';
 import PasswordInput from '../components/shared/PasswordInput';
 import { Link, useNavigate } from 'react-router-dom';
 import { makeUnauthenticatedPOSTRequest } from '../utils/server';
-import { useCookies } from 'react-cookie';
+import { persistAuthToken } from '../utils/token';
 
 const LoginComponent = () => {
     const [phone, setPhone] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const [cookies, setCookie] = useCookies(["token"]);
     const navigate = useNavigate();
 
     const login = async (e) => {
@@ -33,18 +32,8 @@ const LoginComponent = () => {
             });
 
             if (response && response.token) {
-                const expirationDate = new Date();
-                expirationDate.setDate(expirationDate.getDate() + 30);
-                
-                setCookie("token", response.token, {
-                    path: "/",
-                    expires: expirationDate,
-                    secure: true,
-                    sameSite: 'strict'
-                });
-                localStorage.setItem("accessToken", response.token); 
-                
-                navigate("/home");
+                persistAuthToken(response.token);
+                navigate("/");
             } else {
                 setError(response?.message || "Login failed. Please try again.");
             }
