@@ -1,4 +1,3 @@
-
 import React from "react";
 import HeroSection from "../components/Herosection";
 
@@ -8,14 +7,14 @@ const getHeadlineColors = (theme) => {
   // If red theme (dark), use blue for headlines; if blue theme (light), use red.
   if (theme === "red") {
     return {
-      headline: "#1976d2",         // vivid blue
-      accent: "#0d47a1",           // dark blue
+      headline: "#1976d2", // vivid blue
+      accent: "#0d47a1", // dark blue
       border: "#1976d2",
     };
   } else {
     return {
-      headline: "#d32f2f",         // vivid red
-      accent: "#b71c1c",           // dark red
+      headline: "#d32f2f", // vivid red
+      accent: "#b71c1c", // dark red
       border: "#d32f2f",
     };
   }
@@ -67,7 +66,8 @@ const Home = ({ theme = "red" }) => (
   <div
     className="min-h-screen w-full"
     style={{
-      background: "linear-gradient(135deg, var(--bg-main, #fff) 0%, var(--bg-secondary, #f3f3f3) 100%)",
+      background:
+        "linear-gradient(135deg, var(--bg-main, #fff) 0%, var(--bg-secondary, #f3f3f3) 100%)",
       color: "var(--text-main, #222)",
       transition: "background 0.4s",
     }}
