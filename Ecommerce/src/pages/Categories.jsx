@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
 import api from "../utils/api";
 import { Icon } from "@iconify/react";
-import { useNavigate } from "react-router-dom";
+import { FALLBACK_IMAGE, getSafeImageUrl } from "../utils/image";
 
 export default function CategoryBrowser() {
   const [categoryData, setCategoryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState({});
   const [wishlisting, setWishlisting] = useState({});
-  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchCategories() {
@@ -66,25 +65,25 @@ export default function CategoryBrowser() {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8fafc] to-[#eef2f7] py-10 px-2 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#f8fafc] to-[#eef2f7] py-8 px-3 sm:px-6 lg:px-8">
       <div className="max-w-[1200px] mx-auto">
-        <h1 className="text-4xl font-extrabold text-center mb-12 text-blue-900 tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-center mb-8 sm:mb-12 text-blue-900 tracking-tight">
           Shop by Category
         </h1>
         <div className="space-y-14">
           {categoryData.map(({ category, products }) => (
-            <section key={category} className="bg-white rounded-3xl shadow-lg border border-blue-100 p-8">
+            <section key={category} className="bg-white rounded-3xl shadow-lg border border-blue-100 p-5 sm:p-8">
               {/* Category Header */}
-              <div className="mb-8 border-b pb-3 flex items-center justify-between flex-wrap gap-2">
-                <span className="text-2xl font-bold text-blue-900">{category}</span>
-                <span className="text-gray-500 text-base">({products.length} items)</span>
+              <div className="mb-6 sm:mb-8 border-b pb-3 flex items-center justify-between flex-wrap gap-2">
+                <span className="text-xl sm:text-2xl font-bold text-blue-900">{category}</span>
+                <span className="text-gray-500 text-sm sm:text-base">({products.length} items)</span>
               </div>
 
               {/* Product Cards */}
               {products.length === 0 ? (
                 <div className="text-gray-400 italic text-center py-10">No products in this category.</div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-8">
                   {products.map((product, index) => (
                     <div
                       key={product._id || `${product.name}-${index}`}
@@ -93,15 +92,21 @@ export default function CategoryBrowser() {
                       {/* Product Image */}
                       <div className="flex justify-center items-center mb-3">
                         <img
-                          src={product.img || product.image}
+                          src={getSafeImageUrl(product.img || product.image)}
                           alt={product.name}
                           className="w-36 h-36 object-contain rounded-xl bg-white shadow"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = FALLBACK_IMAGE;
+                          }}
                         />
                       </div>
                       {/* Product Info */}
-                      <div className="flex-1 text-center">
-                        <h3 className="text-lg font-bold text-blue-900 mb-1">{product.name}</h3>
-                        <p className="text-gray-600 text-sm mb-2">{product.desc}</p>
+                      <div className="flex-1 text-center min-w-0">
+                        <h3 className="text-lg font-bold text-blue-900 mb-1 truncate">{product.name}</h3>
+                        <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                          {product.desc || product.description || "No description"}
+                        </p>
                         <div className="text-green-700 font-bold text-xl mb-1">
                           {product.price?.toLocaleString()}{" "}
                           <span className="text-xs font-normal text-gray-500">{product.quantity_Unit}</span>
