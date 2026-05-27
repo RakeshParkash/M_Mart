@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
 import { Icon } from "@iconify/react";
+import { getAuthToken } from "./utils/token";
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -31,7 +31,7 @@ function App() {
   const [theme, setTheme] = useState("red");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [cookie] = useCookies(["token"]);
+  const isAuthenticated = !!getAuthToken();
 
   useEffect(() => {
     document.body.classList.remove("theme-red", "theme-blue");
@@ -93,9 +93,10 @@ function App() {
         {/* Main Content */}
         <div className={`flex-1 overflow-auto ${!isMobile ? "ml-64" : "mt-27"}`}>
           <main className="px-2 py-8">
-            {cookie.token ? (
+            {isAuthenticated ? (
               <Routes>
                 <Route path="/" element={<Home theme={theme} />} />
+                <Route path="/home" element={<Home theme={theme} />} />
                 <Route path="/MyAccount" element={<MyAccount />} />
                 <Route path="/orders" element={<Order />} />
                 <Route path="/cart" element={<Cart />} />
@@ -115,6 +116,7 @@ function App() {
               </Routes>
             ) : (
               <Routes>
+                <Route path="/" element={<Navigate to="/login" />} />
                 <Route path="/home" element={<Home theme={theme} />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
