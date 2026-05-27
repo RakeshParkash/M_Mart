@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { Icon } from "@iconify/react";
 import { getAuthToken } from "./utils/token";
 
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
 
 import Home from "./pages/Home";
-import Login from './pages/Login';
+import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import AdminMain from "./pages/AdminMain";
-import AdminLogin from './pages/AdminLogin';
+import AdminLogin from "./pages/AdminLogin";
 import AdminSignup from "./pages/AdminSignup";
 import MyAccount from "./pages/MyAccount";
 import AdminProduct from "./pages/AdminProduct";
@@ -23,7 +28,7 @@ import ContactSection from "./pages/Contact";
 import Order from "./pages/Order";
 import AdminMessages from "./pages/AdminMessages";
 import AdminUser from "./pages/AdminUser";
-import AdminUserHistory from './pages/AdminUserHistory';
+import AdminUserHistory from "./pages/AdminUserHistory";
 import Cart from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
 
@@ -53,11 +58,7 @@ function App() {
         <ToastContainer position="bottom-right" />
         {/* Sidebar for Desktop */}
         {!isMobile && (
-          <Sidebar
-            theme={theme}
-            setTheme={setTheme}
-            isMobile={false}
-          />
+          <Sidebar theme={theme} setTheme={setTheme} isMobile={false} />
         )}
 
         {/* Hamburger Icon for Mobile */}
@@ -91,7 +92,9 @@ function App() {
         )}
 
         {/* Main Content */}
-        <div className={`flex-1 overflow-auto ${!isMobile ? "ml-64" : "mt-27"}`}>
+        <div
+          className={`flex-1 overflow-auto ${!isMobile ? "ml-64" : "mt-27"}`}
+        >
           <main className="px-2 py-8">
             {isAuthenticated ? (
               <Routes>
@@ -107,7 +110,11 @@ function App() {
                 <Route path="/admin/users" element={<AdminUser />} />
                 <Route path="/orders" element={<Order />} />
                 <Route path="/admin/history" element={<AdminUserHistory />} />
-                <Route path="/admin/product/:id" element={<AdminDetails />} /> {/* <-- Dynamic details page */}
+                <Route
+                  path="/admin/product/:id"
+                  element={<AdminDetails />}
+                />{" "}
+                {/* <-- Dynamic details page */}
                 <Route path="/admin/messages" element={<AdminMessages />} />
                 <Route path="/admin/products" element={<AdminProduct />} />
                 <Route path="/categories" element={<CategoryBrowser />} />
