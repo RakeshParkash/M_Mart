@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { getAuthToken } from './token';
+import { createContext, useContext, useEffect, useState } from "react";
+import { getAuthToken } from "./token";
 
 const AuthContext = createContext();
 
@@ -15,12 +15,12 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const onStorage = (event) => {
-      if (event.key === 'accessToken') {
+      if (event.key === "accessToken") {
         setIsAuthenticated(!!getAuthToken());
       }
     };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   return (
