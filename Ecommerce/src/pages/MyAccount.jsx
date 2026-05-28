@@ -235,11 +235,15 @@ function Account() {
           credentials: "include",
           signal: controller.signal,
         });
-          if (!meResponse.ok) {
-            const error = new Error(meResponse.status === 401 ? 'Session expired' : 'Failed to fetch user data');
-            error.status = meResponse.status;
-            throw error;
-          }
+        if (!meResponse.ok) {
+          const error = new Error(
+            meResponse.status === 401
+              ? "Session expired"
+              : "Failed to fetch user data",
+          );
+          error.status = meResponse.status;
+          throw error;
+        }
         const meData = await meResponse.json();
 
         const [userResponse, cartRes, wishlistRes] = await Promise.all([
@@ -302,15 +306,15 @@ function Account() {
       } catch (err) {
         if (err.name === "AbortError") return;
         setFetchError(err.message);
-          if (err.status === 401) {
-            if (retryAttempt < 1) {
-              setRetryAttempt((prev) => prev + 1);
-              return;
-            }
-            clearAuthToken();
-            removeCookie("token", { path: "/" });
-            navigate("/login");
+        if (err.status === 401) {
+          if (retryAttempt < 1) {
+            setRetryAttempt((prev) => prev + 1);
+            return;
           }
+          clearAuthToken();
+          removeCookie("token", { path: "/" });
+          navigate("/login");
+        }
       } finally {
         clearTimeout(timeoutId);
         setLoading(false);
@@ -427,8 +431,13 @@ function Account() {
   if (fetchError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] bg-gradient-to-br from-[#fff8ee] to-[#f9f9f9]">
-        <Icon icon="mdi:loading" className="w-14 h-14 text-yellow-400 animate-spin mb-6" />
-        <div className="text-lg text-[#bfa544] tracking-wide mb-3">Still loading your dashboard...</div>
+        <Icon
+          icon="mdi:loading"
+          className="w-14 h-14 text-yellow-400 animate-spin mb-6"
+        />
+        <div className="text-lg text-[#bfa544] tracking-wide mb-3">
+          Still loading your dashboard...
+        </div>
         <div className="text-sm text-gray-500 mb-6">{fetchError}</div>
         <button
           onClick={() => window.location.reload()}
