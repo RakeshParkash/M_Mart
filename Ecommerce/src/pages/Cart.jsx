@@ -2,15 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../utils/api";
 import { FALLBACK_IMAGE, getSafeImageUrl } from "../utils/image";
+import { getPriceDisplay, toSafeNumber } from "../utils/priceFormatter";
 
-const toNumber = (value) => {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string") {
-    const parsed = parseFloat(value.replace(/[^\d.-]/g, ""));
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
-  return 0;
-};
+const toNumber = toSafeNumber;
 
 function CartItem({ item, onRemove, onUpdateQuantity, pendingById }) {
   const { product, quantity } = item;
@@ -32,8 +26,7 @@ function CartItem({ item, onRemove, onUpdateQuantity, pendingById }) {
           {product?.description || product?.desc}
         </p>
         <div className="mt-1 text-base text-green-700 font-semibold">
-          ₹{toNumber(product?.selling_Price?.price || product?.price)} /{" "}
-          {product?.selling_Price?.unit || product?.quantity_Unit}
+          {getPriceDisplay(product)}
         </div>
       </div>
       <div className="flex items-center gap-2">
