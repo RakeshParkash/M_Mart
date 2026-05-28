@@ -14,13 +14,21 @@ export function AuthProvider({ children }) {
   externalSetAuth = setIsAuthenticated;
 
   useEffect(() => {
+    const syncAuth = () => setIsAuthenticated(!!getAuthToken());
     const onStorage = (event) => {
-      if (event.key === "accessToken") {
-        setIsAuthenticated(!!getAuthToken());
-      }
+      if (event.key === "accessToken") syncAuth();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") syncAuth();
     };
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    window.addEventListener("focus", syncAuth);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("focus", syncAuth);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, []);
 
   return (
