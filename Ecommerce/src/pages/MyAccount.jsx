@@ -14,15 +14,9 @@ import {
 } from "chart.js";
 import { clearAuthToken, getAuthToken } from "../utils/token";
 import { FALLBACK_IMAGE, getSafeImageUrl } from "../utils/image";
+import { toSafeNumber } from "../utils/priceFormatter";
 
-const toNumber = (value) => {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string") {
-    const parsed = parseFloat(value.replace(/[^\d.-]/g, ""));
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
-  return 0;
-};
+const toNumber = toSafeNumber;
 
 const API_BASE = import.meta.env.VITE_API || "https://m-mart-ad2q.onrender.com";
 
