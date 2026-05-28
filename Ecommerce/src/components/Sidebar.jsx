@@ -11,7 +11,11 @@ const sidebarItems = [
   { icon: "mdi:cart-outline", label: "Wishlist", path: "/wishlist" },
   { icon: "mdi:account-outline", label: "Account", path: "/MyAccount" },
   // { icon: "mdi:help-circle-outline", label: "Support", path: "/support" },
-  { icon: "mdi:card-account-phone-outline", label: "Contact", path: "/contact" },
+  {
+    icon: "mdi:card-account-phone-outline",
+    label: "Contact",
+    path: "/contact",
+  },
 ];
 
 const Sidebar = ({
@@ -36,12 +40,21 @@ const Sidebar = ({
     >
       <div>
         {/* Logo/Header */}
-        <div className={`${isMobile ? "p-6" : isCollapsed ? "p-4" : "p-6"} flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
+        <div
+          className={`${isMobile ? "p-6" : isCollapsed ? "p-4" : "p-6"} flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}
+        >
           <div className="flex items-center">
-            <Icon icon="mdi:food-apple" className="text-red-500" width={30} height={30} />
+            <Icon
+              icon="mdi:food-apple"
+              className="text-red-500"
+              width={30}
+              height={30}
+            />
             {(!isCollapsed || isMobile) && (
-              <Link to='/' >
-                <span className="ml-2 text-xl font-bold text-white">M. Mart</span>
+              <Link to="/">
+                <span className="ml-2 text-xl font-bold text-white">
+                  M. Mart
+                </span>
               </Link>
             )}
           </div>
@@ -66,9 +79,11 @@ const Sidebar = ({
                 onClick={isMobile ? onClose : undefined}
                 title={isCollapsed && !isMobile ? item.label : ""}
                 className={`mb-2 flex items-center ${isCollapsed && !isMobile ? "justify-center" : ""} px-4 py-2 rounded transition-all
-                  ${isActive
-                    ? "bg-red-700 text-white font-bold border-l-4 border-yellow-400"
-                    : "text-white hover:bg-red-700"}
+                  ${
+                    isActive
+                      ? "bg-red-700 text-white font-bold border-l-4 border-yellow-400"
+                      : "text-white hover:bg-red-700"
+                  }
                 `}
               >
                 <Icon
@@ -85,7 +100,9 @@ const Sidebar = ({
           })}
 
           {/* Settings Button */}
-          <div className={`mt-4 ${isCollapsed && !isMobile ? "px-2" : "px-4"} relative`}>
+          <div
+            className={`mt-4 ${isCollapsed && !isMobile ? "px-2" : "px-4"} relative`}
+          >
             <button
               ref={btnRef}
               onClick={() => setShowPopover((v) => !v)}
@@ -112,7 +129,9 @@ const Sidebar = ({
       {/* Language Selector */}
       {(!isCollapsed || isMobile) && (
         <div className={`${isCollapsed && !isMobile ? "px-2" : "px-5"} mt-4`}>
-          <div className={`border border-gray-500 rounded-full text-white flex ${isCollapsed && !isMobile ? "justify-center" : "w-2/3"} px-2 py-2 items-center justify-center hover:border-white cursor-pointer`}>
+          <div
+            className={`border border-gray-500 rounded-full text-white flex ${isCollapsed && !isMobile ? "justify-center" : "w-2/3"} px-2 py-2 items-center justify-center hover:border-white cursor-pointer`}
+          >
             <Icon icon="mynaui:globe" />
             {(!isCollapsed || isMobile) && (
               <div className="mx-2 text-sm font-semibold">English</div>
