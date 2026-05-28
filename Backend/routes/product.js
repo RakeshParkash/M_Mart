@@ -20,13 +20,20 @@ router.get("/get", async (req, res) => {
     products.forEach((p) => {
       const cat = p.category || "Others";
       const formattedProduct = {
+        _id: p._id,
         name: p.name,
         desc: p.description,
+        description: p.description,
         img: p.image,
-        price: `₹${p.selling_Price?.price || 0}/${p.quantity_Unit}`,
-        cta: "Add to Cart",
-        // For users, you may choose to show stock or not:
-        stock: p.stock.value
+        image: p.image,
+        price: p.selling_Price?.price || 0,
+        selling_Price: {
+          price: p.selling_Price?.price || 0,
+          unit: p.selling_Price?.unit || "pcs"
+        },
+        quantity_Unit: p.quantity_Unit,
+        stock: p.stock.value,
+        totalSold: p.totalSold || 0
       };
       if (knownCategories.includes(cat)) {
         grouped[cat].push(formattedProduct);
@@ -52,10 +59,17 @@ router.get("/categories", async (req, res) => {
         _id: p._id,
         name: p.name,
         desc: p.description || p.desc,
+        description: p.description,
         img: p.image,
+        image: p.image,
         price: p.selling_Price?.price || 0,
+        selling_Price: {
+          price: p.selling_Price?.price || 0,
+          unit: p.selling_Price?.unit || "pcs"
+        },
         quantity_Unit: p.quantity_Unit,
-        stock: p.stock?.value
+        stock: p.stock?.value || 0,
+        totalSold: p.totalSold || 0
       };
       if (!grouped[cat]) grouped[cat] = [];
       grouped[cat].push(formattedProduct);
