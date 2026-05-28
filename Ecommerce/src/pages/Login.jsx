@@ -5,7 +5,7 @@ import PasswordInput from "../components/shared/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
 import { makeUnauthenticatedPOSTRequest } from "../utils/server";
 import { persistAuthToken } from "../utils/token";
-import { setAuthFromOutside } from '../utils/authContext';
+import { setAuthFromOutside } from "../utils/authContext";
 
 const LoginComponent = () => {
   const [phone, setPhone] = useState("");
@@ -34,7 +34,7 @@ const LoginComponent = () => {
 
       if (response && response.token) {
         persistAuthToken(response.token);
-            setAuthFromOutside(true);
+        setAuthFromOutside(true);
         navigate("/");
       } else {
         setError(response?.message || "Login failed. Please try again.");
