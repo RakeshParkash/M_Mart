@@ -209,6 +209,7 @@ function Account() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
+  const [retryAttempt, setRetryAttempt] = useState(0);
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [changeOpen, setChangeOpen] = useState(false);
@@ -220,6 +221,7 @@ function Account() {
 
   useEffect(() => {
     const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
     async function fetchUserData() {
       setLoading(true);
       try {
@@ -233,12 +235,11 @@ function Account() {
           credentials: "include",
           signal: controller.signal,
         });
-        if (!meResponse.ok)
-          throw new Error(
-            meResponse.status === 401
-              ? "Session expired"
-              : "Failed to fetch user data",
-          );
+          if (!meResponse.ok) {
+            const error = new Error(meResponse.status === 401 ? 'Session expired' : 'Failed to fetch user data');
+            error.status = meResponse.status;
+            throw error;
+          }
         const meData = await meResponse.json();
 
         const [userResponse, cartRes, wishlistRes] = await Promise.all([
@@ -301,21 +302,26 @@ function Account() {
       } catch (err) {
         if (err.name === "AbortError") return;
         setFetchError(err.message);
-        if (
-          err.message.toLowerCase().includes("authentication") ||
-          err.message.toLowerCase().includes("session")
-        ) {
-          clearAuthToken();
-          removeCookie("token", { path: "/" });
-          navigate("/login");
-        }
+          if (err.status === 401) {
+            if (retryAttempt < 1) {
+              setRetryAttempt((prev) => prev + 1);
+              return;
+            }
+            clearAuthToken();
+            removeCookie("token", { path: "/" });
+            navigate("/login");
+          }
       } finally {
+        clearTimeout(timeoutId);
         setLoading(false);
       }
     }
     fetchUserData();
-    return () => controller.abort();
-  }, [cookies.token, navigate, removeCookie]);
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [cookies.token, navigate, removeCookie, retryAttempt]);
 
   const handlePassword = async (oldPassword, newPassword, repeat) => {
     setPwError("");
@@ -404,7 +410,8 @@ function Account() {
   })();
 
   // --- Render states
-  if (loading) {
+  const showLoading = loading || (!userData && !fetchError);
+  if (showLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] bg-gradient-to-br from-[#fff8ee] to-[#f9f9f9]">
         <Icon
@@ -419,42 +426,29 @@ function Account() {
   }
   if (fetchError) {
     return (
-      <div className="text-center p-8 max-w-xl mx-auto bg-white rounded-2xl shadow-lg mt-8 border border-yellow-200">
-        <h2 className="text-2xl text-[#d4af37] font-light mb-4">
-          Something went wrong
-        </h2>
-        <p className="text-red-600 bg-red-50 rounded-lg border-l-4 border-red-400 p-4 font-medium mb-6">
-          {fetchError}
-        </p>
-        <div className="flex gap-4 justify-center">
-          <button
-            onClick={() => window.location.reload()}
-            className="px-6 py-3 rounded-full font-semibold bg-gradient-to-r from-[#3498db] to-[#2980b9] text-white shadow-lg transition hover:-translate-y-1"
-          >
-            Retry
-          </button>
-          <button
-            onClick={handleLogout}
-            className="px-6 py-3 rounded-full font-semibold bg-white text-[#2c3e50] border border-gray-100 shadow hover:bg-gray-100"
-          >
-            Back to Login
-          </button>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-gradient-to-br from-[#fff8ee] to-[#f9f9f9]">
+        <Icon icon="mdi:loading" className="w-14 h-14 text-yellow-400 animate-spin mb-6" />
+        <div className="text-lg text-[#bfa544] tracking-wide mb-3">Still loading your dashboard...</div>
+        <div className="text-sm text-gray-500 mb-6">{fetchError}</div>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-6 py-2 rounded-full font-semibold bg-gradient-to-r from-[#3498db] to-[#2980b9] text-white shadow-lg transition hover:-translate-y-1"
+        >
+          Retry
+        </button>
       </div>
     );
   }
   if (!userData) {
     return (
-      <div className="text-center p-8 bg-white rounded-2xl shadow-lg max-w-xl mx-auto mt-8 border border-yellow-200">
-        <h2 className="text-2xl text-[#d4af37] font-light mb-4">
-          No account data available
-        </h2>
-        <button
-          onClick={handleLogout}
-          className="px-6 py-3 rounded-full font-semibold bg-gradient-to-r from-[#3498db] to-[#2980b9] text-white shadow-lg transition hover:-translate-y-1"
-        >
-          Please login again
-        </button>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-gradient-to-br from-[#fff8ee] to-[#f9f9f9]">
+        <Icon
+          icon="mdi:loading"
+          className="w-16 h-16 text-yellow-400 animate-spin mb-8"
+        />
+        <div className="text-lg text-[#bfa544] tracking-wide">
+          Loading your dashboard...
+        </div>
       </div>
     );
   }
