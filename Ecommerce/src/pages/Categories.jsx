@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../utils/api";
 import { Icon } from "@iconify/react";
 import { FALLBACK_IMAGE, getSafeImageUrl } from "../utils/image";
+import { getPriceDisplay, getPrice, toSafeNumber } from "../utils/priceFormatter";
 
 export default function CategoryBrowser() {
   const [categoryData, setCategoryData] = useState([]);
@@ -123,15 +124,16 @@ export default function CategoryBrowser() {
                             "No description"}
                         </p>
                         <div className="text-green-700 font-bold text-xl mb-1">
-                          {product.price?.toLocaleString()}{" "}
-                          <span className="text-xs font-normal text-gray-500">
-                            {product.quantity_Unit}
-                          </span>
+                          {getPriceDisplay(product)}
                         </div>
-                        {product.selling_Price && (
+                        {product.stock && product.stock > 0 && (
                           <div className="text-sm text-gray-500">
-                            Selling Price: {product.selling_Price.price} /{" "}
-                            {product.selling_Price.unit}
+                            Stock: {product.stock} items
+                          </div>
+                        )}
+                        {product.totalSold && product.totalSold > 0 && (
+                          <div className="text-xs text-yellow-600">
+                            {product.totalSold} sold
                           </div>
                         )}
                       </div>
