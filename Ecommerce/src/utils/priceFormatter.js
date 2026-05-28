@@ -10,12 +10,12 @@
  */
 export const getPrice = (product) => {
   if (!product) return 0;
-  
+
   // Try different possible price locations
-  if (typeof product.price === 'number') return product.price;
+  if (typeof product.price === "number") return product.price;
   if (product.selling_Price?.price) return product.selling_Price.price;
   if (product.price) return parseFloat(product.price) || 0;
-  
+
   return 0;
 };
 
@@ -26,12 +26,12 @@ export const getPrice = (product) => {
  */
 export const getUnit = (product) => {
   if (!product) return "pcs";
-  
+
   // Try different possible unit locations
   if (product.selling_Price?.unit) return product.selling_Price.unit;
   if (product.quantity_Unit) return product.quantity_Unit;
   if (product.unit) return product.unit;
-  
+
   return "pcs";
 };
 
