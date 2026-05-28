@@ -5,6 +5,7 @@ import TextInput from "../components/shared/TextInput";
 import PasswordInput from "../components/shared/PasswordInput";
 import { makeUnauthenticatedPOSTRequest } from "../utils/server";
 import { persistAuthToken } from "../utils/token";
+import { setAuthFromOutside } from "../utils/authContext";
 
 const SignupComponent = () => {
   const [email, setEmail] = useState("");
@@ -27,6 +28,7 @@ const SignupComponent = () => {
 
       if (response && response.token) {
         persistAuthToken(response.token);
+        setAuthFromOutside(true);
         navigate("/");
       } else {
         const errorMsg =
