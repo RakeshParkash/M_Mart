@@ -29,10 +29,11 @@ api.interceptors.response.use(
     const original = err.config;
     if (err.response?.status === 401 && !original._retry) {
       original._retry = true;
-        const token = getAuthToken();
-        const pathname = window.location?.pathname || '';
-        const protectedRoutes = ['/MyAccount', '/cart', '/wishlist', '/orders'];
-        const shouldRedirect = token && protectedRoutes.some((route) => pathname.startsWith(route));
+      const token = getAuthToken();
+      const pathname = window.location?.pathname || "";
+      const protectedRoutes = ["/MyAccount", "/cart", "/wishlist", "/orders"];
+      const shouldRedirect =
+        token && protectedRoutes.some((route) => pathname.startsWith(route));
 
       // Only attempt /admin/token if user is admin
       const role = getUserRole();
@@ -50,10 +51,10 @@ api.interceptors.response.use(
           window.location.href = "/login";
         }
       } else {
-          // For normal users, clear auth and only redirect if on protected routes
-          clearAuthToken();
-          setAuthFromOutside(false);
-          if (shouldRedirect) window.location.href = '/login';
+        // For normal users, clear auth and only redirect if on protected routes
+        clearAuthToken();
+        setAuthFromOutside(false);
+        if (shouldRedirect) window.location.href = "/login";
       }
     }
     return Promise.reject(err);
