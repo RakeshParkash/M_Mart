@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../utils/api";
 import { FALLBACK_IMAGE, getSafeImageUrl } from "../utils/image";
+import { getPriceDisplay } from "../utils/priceFormatter";
 
 function WishlistItem({ item, onRemove, onAddToCart, pendingById }) {
   const { product } = item;
@@ -23,8 +24,7 @@ function WishlistItem({ item, onRemove, onAddToCart, pendingById }) {
           {product?.description || product?.desc}
         </p>
         <div className="mt-1 text-base text-green-700 font-semibold">
-          ₹{product?.selling_Price?.price || product?.price} /{" "}
-          {product?.selling_Price?.unit || product?.quantity_Unit}
+          {getPriceDisplay(product)}
         </div>
       </div>
       <div className="flex flex-col gap-2 items-center">
