@@ -75,10 +75,14 @@ function App() {
               desktopSidebarOpen ? "left-56" : "left-4"
             }`}
             onClick={() => setDesktopSidebarOpen((prev) => !prev)}
-            aria-label={desktopSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+            aria-label={
+              desktopSidebarOpen ? "Collapse sidebar" : "Expand sidebar"
+            }
           >
             <Icon
-              icon={desktopSidebarOpen ? "mdi:chevron-left" : "mdi:chevron-right"}
+              icon={
+                desktopSidebarOpen ? "mdi:chevron-left" : "mdi:chevron-right"
+              }
               width={24}
               height={24}
             />
