@@ -6,7 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { Icon } from "@iconify/react";
-import { getAuthToken } from "./utils/token";
+import { useAuth } from "./utils/authContext";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -36,15 +36,17 @@ function App() {
   const [theme, setTheme] = useState("red");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const isAuthenticated = !!getAuthToken();
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     document.body.classList.remove("theme-red", "theme-blue");
     document.body.classList.add(theme === "red" ? "theme-red" : "theme-blue");
 
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (window.innerWidth >= 768) setMobileMenuOpen(false);
+      const nowMobile = window.innerWidth < 768;
+      setIsMobile(nowMobile);
+      if (!nowMobile) setMobileMenuOpen(false);
     };
 
     window.addEventListener("resize", handleResize);
@@ -58,7 +60,29 @@ function App() {
         <ToastContainer position="bottom-right" />
         {/* Sidebar for Desktop */}
         {!isMobile && (
-          <Sidebar theme={theme} setTheme={setTheme} isMobile={false} />
+          <Sidebar
+            theme={theme}
+            setTheme={setTheme}
+            isMobile={false}
+            isCollapsed={!desktopSidebarOpen}
+          />
+        )}
+
+        {/* Toggle Button for Desktop Sidebar */}
+        {!isMobile && (
+          <button
+            className={`fixed top-4 z-[95] bg-red-600 text-white p-2 rounded-full shadow-md transition-all ${
+              desktopSidebarOpen ? "left-56" : "left-4"
+            }`}
+            onClick={() => setDesktopSidebarOpen((prev) => !prev)}
+            aria-label={desktopSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            <Icon
+              icon={desktopSidebarOpen ? "mdi:chevron-left" : "mdi:chevron-right"}
+              width={24}
+              height={24}
+            />
+          </button>
         )}
 
         {/* Hamburger Icon for Mobile */}
@@ -93,13 +117,15 @@ function App() {
 
         {/* Main Content */}
         <div
-          className={`flex-1 overflow-auto ${!isMobile ? "ml-64" : "pt-16"}`}
+          className={`flex-1 overflow-auto ${!isMobile ? (desktopSidebarOpen ? "ml-64" : "ml-20") : "pt-16"} transition-all duration-300 ease-in-out`}
         >
           <main className="px-2 py-8">
             {isAuthenticated ? (
               <Routes>
                 <Route path="/" element={<Home theme={theme} />} />
                 <Route path="/home" element={<Home theme={theme} />} />
+                <Route path="/login" element={<Navigate to="/" />} />
+                <Route path="/signup" element={<Navigate to="/" />} />
                 <Route path="/MyAccount" element={<MyAccount />} />
                 <Route path="/orders" element={<Order />} />
                 <Route path="/cart" element={<Cart />} />
