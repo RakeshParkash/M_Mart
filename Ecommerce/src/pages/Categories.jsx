@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react";
 import api from "../utils/api";
 import { Icon } from "@iconify/react";
 import { FALLBACK_IMAGE, getSafeImageUrl } from "../utils/image";
-import { getPriceDisplay, getPrice, toSafeNumber } from "../utils/priceFormatter";
+import {
+  getPriceDisplay,
+  getPrice,
+  toSafeNumber,
+} from "../utils/priceFormatter";
 
 export default function CategoryBrowser() {
   const [categoryData, setCategoryData] = useState([]);
