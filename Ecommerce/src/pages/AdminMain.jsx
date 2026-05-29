@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
 import Button from '../components/shared/AdminButton';
+import { setAuthFromOutside } from '../utils/authContext';
+import { clearAuthToken } from '../utils/token';
 
 export default function AdminDashboard() {
   const [admin, setAdmin] = useState(null);
@@ -66,7 +68,8 @@ export default function AdminDashboard() {
   const logout = async () => {
     try {
       await api.post('/admin/logout', {}, { headers: { 'X-CSRF-Token': csrf } });
-      localStorage.removeItem('accessToken');
+      clearAuthToken();
+      setAuthFromOutside(false);
       navigate('/admin/login');
     } catch (err) {
       console.error('Logout failed:', err);
