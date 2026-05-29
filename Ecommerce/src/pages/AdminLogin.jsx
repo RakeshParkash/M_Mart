@@ -4,14 +4,13 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import Input from "../components/shared/AdminInputs";
 import Button from "../components/shared/AdminButton";
-import { useCookies } from "react-cookie";
+import { persistAuthToken } from "../utils/token";
 
 export default function AdminLogin() {
   const [form, setForm] = useState({ phone: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
-  const [, setCookie] = useCookies(["token"]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value.trim() });
@@ -25,10 +24,11 @@ export default function AdminLogin() {
     setErrorMsg("");
 
     try {
-      const { data } = await api.post("/admin/login", form);
+      const response = await api.post("/admin/login", form);
+      const data = response?.data;
 
       if (!data?.accessToken) {
-        throw new Error("Invalid response from server");
+        throw new Error("Invalid response from server - no access token");
       }
 
       // Store accessToken in localStorage for API calls
@@ -39,19 +39,33 @@ export default function AdminLogin() {
         localStorage.setItem("user", JSON.stringify({ ...data.admin, role: 'admin' }));
       }
       
-      // Set token cookie for routing (matches normal login pattern)
-      const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + 30);
-      setCookie("token", data.accessToken, {
-        path: "/",
-        expires: expirationDate,
-        secure: true,
-        sameSite: 'lax'  // Changed from 'strict' to 'lax' for better mobile support
-      });
+      // Persist token in both localStorage and cookie (for routing)
+      persistAuthToken(data.accessToken);
       
       navigate("/admin/main");
     } catch (err) {
-      setErrorMsg(err.response?.data?.err || err.message || "Login failed");
+      console.error("[AdminLogin] Error:", {
+        message: err.message,
+        status: err.response?.status,
+        responseData: err.response?.data
+      });
+
+      // Provide specific error messages based on response
+      let errorMessage = "Login failed";
+      
+      if (err.response?.status === 401) {
+        errorMessage = err.response?.data?.err || "Invalid phone or password";
+      } else if (err.response?.status === 400) {
+        errorMessage = err.response?.data?.error || err.response?.data?.err || "Invalid input";
+      } else if (err.response?.status === 500) {
+        errorMessage = "Server error - please try again";
+      } else if (!err.response) {
+        errorMessage = "Network error - check your connection";
+      } else {
+        errorMessage = err.response?.data?.err || err.response?.data?.error || err.message || errorMessage;
+      }
+      
+      setErrorMsg(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -73,6 +87,7 @@ export default function AdminLogin() {
             label="Phone"
             name="phone"
             type="tel"
+            autoComplete="tel"
             required
             onChange={handleChange}
           />
