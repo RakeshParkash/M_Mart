@@ -14,6 +14,7 @@ const PasswordInput = ({label, placeholder, className, value, setValue }) =>{
             id ={label}
             value={value}
             onChange={(e)=>{setValue(e.target.value)}}
+            autoComplete="current-password"
             />
 
         </div> 
