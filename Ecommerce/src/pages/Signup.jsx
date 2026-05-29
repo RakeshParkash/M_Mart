@@ -61,13 +61,15 @@ const SignupComponent = () => {
               className="my-6"
               value={firstName}
               setValue={setFirstName}
+                autoComplete="given-name"
             />
-            <TextInput
-              label="Last Name"
-              placeholder="Enter your Last Name"
-              className="my-6"
-              value={lastName}
-              setValue={setLastName}
+            <TextInput 
+                label="Last Name" 
+                placeholder="Enter your Last Name"
+                className="my-6"
+                value={lastName}
+                setValue={setLastName}
+                autoComplete="family-name"
             />
           </div>
           <TextInput
@@ -76,6 +78,7 @@ const SignupComponent = () => {
             className="my-6"
             value={email}
             setValue={setEmail}
+            autoComplete="email"
           />
           <TextInput
             label="phone"
@@ -83,6 +86,7 @@ const SignupComponent = () => {
             className="my-6"
             value={phone}
             setValue={setPhone}
+            autoComplete="tel"
           />
           <PasswordInput
             label="Create Password"
