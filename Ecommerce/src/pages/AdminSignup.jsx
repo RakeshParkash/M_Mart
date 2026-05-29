@@ -42,11 +42,11 @@ export default function AdminSignup() {
           Admin Sign Up
         </h2>
         <form onSubmit={submit} className="space-y-4 text-black">
-            <Input label="First Name" name="firstName" required onChange={handleChange} />
-            <Input label="Last Name" name="lastName" required onChange={handleChange} />
-            <Input label="Email" name="email" required onChange={handleChange} />
-            <Input label="Phone" name="phone" required onChange={handleChange} />
-            <Input label="Master Key" name="masterKey" type="password" required onChange={handleChange} />
+            <Input label="First Name" name="firstName" autoComplete="given-name" required onChange={handleChange} />
+            <Input label="Last Name" name="lastName" autoComplete="family-name" required onChange={handleChange} />
+            <Input label="Email" name="email" type="email" autoComplete="email" required onChange={handleChange} />
+            <Input label="Phone" name="phone" type="tel" autoComplete="tel" required onChange={handleChange} />
+            <Input label="Master Key" name="masterKey" type="password" autoComplete="off" required onChange={handleChange} />
             <Input label="Password" name="password" type="password" autoComplete="new-password" required onChange={handleChange} />
             <Button disabled={loading} className="w-full">
                 {loading ? 'Creating…' : 'Sign Up'}
