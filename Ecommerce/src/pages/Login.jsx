@@ -69,12 +69,7 @@ const LoginComponent = () => {
             className="my-2"
             value={phone}
             setValue={setPhone}
-            required
-          />
-
-          <PasswordInput
-            label="Password"
-            placeholder="Password"
+                        autoComplete="tel"
             className="my-2"
             value={password}
             setValue={setPassword}
