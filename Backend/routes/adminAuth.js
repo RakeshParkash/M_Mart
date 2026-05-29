@@ -66,26 +66,19 @@ router.post('/login',
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                console.error("[Admin Login] Validation errors:", errors.array());
                 return res.status(400).json({ err: 'Invalid phone format', errors: errors.array() });
             }
             
             const { phone, password } = req.body;
-            console.log("[Admin Login] Login attempt for phone:", phone);
-            
             const admin = await Admin.findOne({ phone });
             if (!admin) {
-                console.warn("[Admin Login] Admin not found for phone:", phone);
                 return res.status(401).json({ err: 'Invalid phone or password' });
             }
             
             const isPasswordValid = await admin.comparePassword(password);
             if (!isPasswordValid) {
-                console.warn("[Admin Login] Password incorrect for admin:", admin._id);
                 return res.status(401).json({ err: 'Invalid phone or password' });
             }
-            
-            console.log("[Admin Login] Authentication successful for admin:", admin._id);
             
             const accessToken = createAccessToken({ id: admin._id, role: admin.role });
             const refreshToken = createRefreshToken({ id: admin._id });
@@ -100,10 +93,9 @@ router.post('/login',
             const safeAdmin = admin.toObject();
             delete safeAdmin.password;
             
-            console.log("[Admin Login] Sending success response");
             return res.status(200).json({ admin: safeAdmin, accessToken });
         } catch (err) {
-            console.error("[Admin Login] Unexpected error:", err);
+            console.error("[Admin Login] Unexpected error:", err.message);
             return res.status(500).json({ err: 'Server error - please try again' });
         }
     }
