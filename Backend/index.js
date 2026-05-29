@@ -49,11 +49,29 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Configure CORS to allow mobile and web requests
 app.use(cors({
-    origin: [ "http://localhost:5173", "http://localhost:5174", "https://m-mart-eight.vercel.app",
-        "https://m-mart-eight.vercel.app/" ],
+    origin: function(origin, callback) {
+        // Allowed origins for web
+        const allowedOrigins = [
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "https://m-mart-eight.vercel.app"
+        ];
+        
+        // Allow requests with no origin (mobile apps, curl requests, etc.)
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            // In production, be more restrictive. For now, log and allow
+            console.log("[CORS] Request from origin:", origin);
+            callback(null, true); // Allow for now to support mobile
+        }
+    },
     methods: "GET,POST,PUT,DELETE,PATCH",
-    credentials: true
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
+    exposedHeaders: ["X-Total-Count"]
 }));
 
 app.use(helmet());
