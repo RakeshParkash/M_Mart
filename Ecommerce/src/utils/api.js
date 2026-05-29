@@ -37,6 +37,7 @@ api.interceptors.response.use(
 
       // Only attempt /admin/token if user is admin
       const role = getUserRole();
+      
       if (role === "admin" || role === "webappAdmin") {
         try {
           const { data } = await api.post("/admin/token");
@@ -45,10 +46,11 @@ api.interceptors.response.use(
           }
           setAuthFromOutside(true);
           return api(original);
-        } catch {
+        } catch (refreshErr) {
+          console.error("[API] Admin token refresh failed");
           clearAuthToken();
           setAuthFromOutside(false);
-          window.location.href = "/login";
+          window.location.href = "/admin/login";
         }
       } else {
         // For normal users, clear auth and only redirect if on protected routes
