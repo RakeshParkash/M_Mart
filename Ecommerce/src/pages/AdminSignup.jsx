@@ -47,7 +47,7 @@ export default function AdminSignup() {
             <Input label="Email" name="email" required onChange={handleChange} />
             <Input label="Phone" name="phone" required onChange={handleChange} />
             <Input label="Master Key" name="masterKey" type="password" required onChange={handleChange} />
-            <Input label="Password" name="password" type="password" required onChange={handleChange} />
+            <Input label="Password" name="password" type="password" autoComplete="new-password" required onChange={handleChange} />
             <Button disabled={loading} className="w-full">
                 {loading ? 'Creating…' : 'Sign Up'}
             </Button>
