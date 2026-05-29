@@ -4,12 +4,14 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import Input from "../components/shared/AdminInputs";
 import Button from "../components/shared/AdminButton";
+import { useCookies } from "react-cookie";
 
 export default function AdminLogin() {
   const [form, setForm] = useState({ phone: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
+  const [, setCookie] = useCookies(["token"]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value.trim() });
@@ -29,7 +31,24 @@ export default function AdminLogin() {
         throw new Error("Invalid response from server");
       }
 
+      // Store accessToken in localStorage for API calls
       localStorage.setItem("accessToken", data.accessToken);
+      
+      // Store admin user data in localStorage (needed for role checking)
+      if (data?.admin) {
+        localStorage.setItem("user", JSON.stringify({ ...data.admin, role: 'admin' }));
+      }
+      
+      // Set token cookie for routing (matches normal login pattern)
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + 30);
+      setCookie("token", data.accessToken, {
+        path: "/",
+        expires: expirationDate,
+        secure: true,
+        sameSite: 'lax'  // Changed from 'strict' to 'lax' for better mobile support
+      });
+      
       navigate("/admin/main");
     } catch (err) {
       setErrorMsg(err.response?.data?.err || err.message || "Login failed");
@@ -61,6 +80,7 @@ export default function AdminLogin() {
             label="Password"
             name="password"
             type="password"
+            autoComplete="current-password"
             required
             onChange={handleChange}
           />
