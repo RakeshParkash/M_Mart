@@ -2,7 +2,7 @@
 import React from "react";
 
 
-const TextInput = ({label, placeholder, className, value, setValue}) =>{
+const TextInput = ({label, placeholder, className, value, setValue, autoComplete, ...props}) =>{
     return (
         <div className={`textInputDiv flex flex-col space-y-2 w-full ${className}`}
         >
@@ -15,6 +15,8 @@ const TextInput = ({label, placeholder, className, value, setValue}) =>{
             id ={label}
             value={value}
             onChange={(e)=>{setValue(e.target.value)}}
+            autoComplete={autoComplete}
+            {...props}
             />
 
         </div> 
