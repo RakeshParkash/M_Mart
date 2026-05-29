@@ -5,6 +5,7 @@ import api from "../utils/api";
 import Input from "../components/shared/AdminInputs";
 import Button from "../components/shared/AdminButton";
 import { persistAuthToken } from "../utils/token";
+import { setAuthFromOutside } from "../utils/authContext";
 
 export default function AdminLogin() {
   const [form, setForm] = useState({ phone: "", password: "" });
@@ -41,6 +42,7 @@ export default function AdminLogin() {
       
       // Persist token in both localStorage and cookie (for routing)
       persistAuthToken(data.accessToken);
+      setAuthFromOutside(true);
       
       navigate("/admin/main");
     } catch (err) {
