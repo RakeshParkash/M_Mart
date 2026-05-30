@@ -4,9 +4,10 @@ function getToken(phone, user) {
   return jwt.sign(
     {
       id: user._id,
-      phone: phone
+      phone: phone,
+      role: "user"
     },
-    process.env.TOKEN_VALUE,
+    process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: "7d" }
   );
 }
