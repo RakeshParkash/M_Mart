@@ -75,8 +75,8 @@ router.post("/login", async (req, res) => {
 
     // Token generation
     const token = jwt.sign(
-      { id: user._id, phone: user.phone },
-      process.env.TOKEN_VALUE,
+      { id: user._id, phone: user.phone, role: "user" },
+      process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "30d" },
     );
 
@@ -141,7 +141,7 @@ const authenticate = async (req, res, next) => {
     return res.status(401).json({ message: "No token." });
   const token = auth.split(" ")[1];
   try {
-    const payload = jwt.verify(token, process.env.TOKEN_VALUE);
+    const payload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     req.user = { id: payload.id };
     next();
   } catch {
