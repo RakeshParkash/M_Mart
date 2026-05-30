@@ -69,11 +69,16 @@ const LoginComponent = () => {
             className="my-2"
             value={phone}
             setValue={setPhone}
-                        autoComplete="tel"
+            autoComplete="tel"
+            required
+          />
+
+          <PasswordInput
+            label="Password"
+            placeholder="Enter your password"
             className="my-2"
             value={password}
             setValue={setPassword}
-            required
           />
 
           <div className="w-full flex items-center justify-end mt-6">
