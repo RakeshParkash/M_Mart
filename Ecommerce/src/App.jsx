@@ -157,6 +157,8 @@ function App() {
                 <Route path="/home" element={<Home theme={theme} />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin/signup" element={<AdminSignup />} />
                 <Route path="*" element={<Navigate to="/login" />} />
               </Routes>
             )}
