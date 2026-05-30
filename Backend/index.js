@@ -92,7 +92,7 @@ const JwtStrategy = require('passport-jwt').Strategy,
 
 const opts = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: process.env.TOKEN_VALUE,
+    secretOrKey: process.env.ACCESS_TOKEN_SECRET,
 };
 
 passport.use('user-jwt', new JwtStrategy(opts, async (jwt_payload, done) => {
