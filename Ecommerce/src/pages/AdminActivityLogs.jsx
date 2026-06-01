@@ -8,6 +8,8 @@ export default function AdminActivityLogs() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ entityType: '', action: '' });
+  const [showDelete, setShowDelete] = useState(false);
+  const [pressTimer, setPressTimer] = useState(null);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -36,11 +38,43 @@ export default function AdminActivityLogs() {
     }
   };
 
+  const handlePressStart = () => {
+    const timer = setTimeout(() => {
+      setShowDelete(prev => !prev);
+      toast.info(showDelete ? 'Secret delete hidden' : 'Secret delete unlocked', { icon: '🕵️' });
+    }, 5000);
+    setPressTimer(timer);
+  };
+
+  const handlePressEnd = () => {
+    if (pressTimer) clearTimeout(pressTimer);
+  };
+
+  const deleteLog = async (id) => {
+    if (!window.confirm('Permanently delete this log?')) return;
+    try {
+      await api.delete(`/admin/history/${id}`);
+      toast.success('Log deleted');
+      fetchLogs();
+    } catch (err) {
+      toast.error('Failed to delete log');
+    }
+  };
+
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gray-50 text-gray-800">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900">Activity Logs</h1>
+          <h1 
+            className="text-3xl font-extrabold text-gray-900 select-none cursor-default"
+            onMouseDown={handlePressStart}
+            onMouseUp={handlePressEnd}
+            onMouseLeave={handlePressEnd}
+            onTouchStart={handlePressStart}
+            onTouchEnd={handlePressEnd}
+          >
+            Activity Logs
+          </h1>
           <p className="text-gray-500">Track all changes and CRUD operations</p>
         </div>
         <div className="flex gap-2">
@@ -86,6 +120,7 @@ export default function AdminActivityLogs() {
                   <th className="p-4 font-semibold">Entity</th>
                   <th className="p-4 font-semibold">Target User</th>
                   <th className="p-4 font-semibold">Details</th>
+                  {showDelete && <th className="p-4 font-semibold">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -116,6 +151,13 @@ export default function AdminActivityLogs() {
                         </pre>
                       </details>
                     </td>
+                    {showDelete && (
+                      <td className="p-4 text-sm">
+                        <button onClick={() => deleteLog(log._id)} className="text-red-500 hover:bg-red-50 p-2 rounded transition">
+                          <Icon icon="mdi:delete" className="text-xl" />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 )) : (
                   <tr>
