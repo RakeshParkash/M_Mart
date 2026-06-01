@@ -9,7 +9,7 @@ export default function AdminReceipts() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ userId: '', amount: '', manualText: '', date: '', image: null });
+  const [formData, setFormData] = useState({ userId: '', amount: '', manualText: '', date: '', image: null, _id: null });
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -56,18 +56,37 @@ export default function AdminReceipts() {
     }
 
     try {
-      await api.post('/admin/receipts', payload, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      toast.success('Receipt added');
+      if (formData._id) {
+        await api.put(`/admin/receipts/${formData._id}`, payload, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        toast.success('Receipt updated');
+      } else {
+        await api.post('/admin/receipts', payload, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        toast.success('Receipt added');
+      }
       setIsModalOpen(false);
-      setFormData({ userId: '', amount: '', manualText: '', date: '', image: null });
+      setFormData({ userId: '', amount: '', manualText: '', date: '', image: null, _id: null });
       fetchReceipts();
     } catch (err) {
-      toast.error('Failed to add receipt');
+      toast.error('Failed to save receipt');
     } finally {
       setUploading(false);
     }
+  };
+
+  const openEdit = (r) => {
+    setFormData({
+      _id: r._id,
+      userId: r.user?._id || '',
+      amount: r.amount || '',
+      manualText: r.manualText || '',
+      date: r.date ? r.date.split('T')[0] : '',
+      image: null
+    });
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => {
@@ -89,7 +108,10 @@ export default function AdminReceipts() {
           <p className="text-gray-500">Manage business and customer receipts</p>
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setFormData({ userId: '', amount: '', manualText: '', date: '', image: null, _id: null });
+            setIsModalOpen(true);
+          }}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg shadow-lg flex items-center gap-2 transition"
         >
           <Icon icon="mdi:plus" className="text-xl" />
@@ -128,7 +150,10 @@ export default function AdminReceipts() {
                     {r.manualText}
                   </div>
                 )}
-                <div className="flex justify-end border-t pt-3">
+                <div className="flex justify-end gap-2 border-t pt-3">
+                  <button onClick={() => openEdit(r)} className="text-indigo-500 hover:text-indigo-700 p-2 rounded-full hover:bg-indigo-50 transition">
+                    <Icon icon="mdi:pencil" className="text-xl" />
+                  </button>
                   <button onClick={() => handleDelete(r._id)} className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition">
                     <Icon icon="mdi:delete" className="text-xl" />
                   </button>
@@ -149,7 +174,7 @@ export default function AdminReceipts() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-indigo-50/50">
-              <h2 className="text-xl font-bold text-indigo-900">Add New Receipt</h2>
+              <h2 className="text-xl font-bold text-indigo-900">{formData._id ? 'Edit Receipt' : 'Add New Receipt'}</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
                 <Icon icon="mdi:close" className="text-2xl" />
               </button>
