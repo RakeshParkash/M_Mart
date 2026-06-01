@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
 import { Icon } from '@iconify/react';
 import { toast } from 'react-toastify';
@@ -9,7 +9,7 @@ export default function AdminActivityLogs() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ entityType: '', action: '' });
   const [showDelete, setShowDelete] = useState(false);
-  const [pressTimer, setPressTimer] = useState(null);
+  const pressTimer = useRef(null);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -39,15 +39,20 @@ export default function AdminActivityLogs() {
   };
 
   const handlePressStart = () => {
-    const timer = setTimeout(() => {
-      setShowDelete(prev => !prev);
-      toast.info(showDelete ? 'Secret delete hidden' : 'Secret delete unlocked', { icon: '🕵️' });
-    }, 5000);
-    setPressTimer(timer);
+    pressTimer.current = setTimeout(() => {
+      setShowDelete(prev => {
+        const next = !prev;
+        toast.info(next ? 'Secret delete unlocked' : 'Secret delete hidden', { icon: '🕵️' });
+        return next;
+      });
+    }, 2000); // Reduced to 2 seconds for better usability
   };
 
   const handlePressEnd = () => {
-    if (pressTimer) clearTimeout(pressTimer);
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
   };
 
   const deleteLog = async (id) => {
