@@ -37,7 +37,7 @@ mongoose.connect(
 
         await db.collection('users').createIndex(
             { email: 1 },
-            { unique: true, partialFilterExpression: { email: { $type: "string" } } }
+            { unique: true, partialFilterExpression: { email: { $type: "string", $gt: "" } } }
         );
         console.log(" Partial unique index created on 'email' ");
     })
