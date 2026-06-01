@@ -3,19 +3,24 @@ import { Icon } from "@iconify/react";
 import { Link, useLocation } from "react-router-dom";
 import SettingsPopover from "../pages/SettingsPage";
 
-const sidebarItems = [
+const userItems = [
   { icon: "ic:baseline-home", label: "Home", path: "/" },
   { icon: "mdi:food-apple-outline", label: "Categories", path: "/categories" },
   { icon: "mdi:clipboard-list-outline", label: "Orders", path: "/orders" },
   { icon: "mdi:cart-outline", label: "Cart", path: "/cart" },
   { icon: "mdi:cart-outline", label: "Wishlist", path: "/wishlist" },
   { icon: "mdi:account-outline", label: "Account", path: "/MyAccount" },
-  // { icon: "mdi:help-circle-outline", label: "Support", path: "/support" },
-  {
-    icon: "mdi:card-account-phone-outline",
-    label: "Contact",
-    path: "/contact",
-  },
+  { icon: "mdi:card-account-phone-outline", label: "Contact", path: "/contact" },
+];
+
+const adminItems = [
+  { icon: "mdi:view-dashboard", label: "Dashboard", path: "/admin/main" },
+  { icon: "mdi:account-group", label: "Users", path: "/admin/users" },
+  { icon: "mdi:box", label: "Products", path: "/admin/products" },
+  { icon: "mdi:receipt", label: "Receipts", path: "/admin/receipts" },
+  { icon: "mdi:clipboard-list", label: "Lists", path: "/admin/lists" },
+  { icon: "mdi:history", label: "Logs", path: "/admin/activity-logs" },
+  { icon: "mdi:message", label: "Messages", path: "/admin/messages" }
 ];
 
 const Sidebar = ({
@@ -28,6 +33,9 @@ const Sidebar = ({
   const [showPopover, setShowPopover] = useState(false);
   const btnRef = useRef(null);
   const location = useLocation();
+
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const itemsToRender = isAdminRoute ? adminItems : userItems;
 
   return (
     <aside
@@ -67,7 +75,7 @@ const Sidebar = ({
 
         {/* Navigation */}
         <nav className={`py-2 ${isCollapsed && !isMobile ? "px-2" : "px-2"}`}>
-          {sidebarItems.map((item) => {
+          {itemsToRender.map((item) => {
             const isActive =
               item.path === "/"
                 ? location.pathname === "/"
