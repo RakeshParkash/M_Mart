@@ -70,7 +70,7 @@ const orderSchema = new mongoose.Schema({
 const UserSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName: { type: String },
-  email: { type: String, unique: true, sparse: true },
+  email: { type: String },
   phone: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   purchased_history: {
