@@ -12,7 +12,7 @@ const purchaseSchema = new mongoose.Schema({
       status: { type: String, default: "Delivered" }
     }
   ]
-}, { _id: false });
+});
 
 // Due history (legacy)
 const dueSchema = new mongoose.Schema({
@@ -25,7 +25,7 @@ const dueSchema = new mongoose.Schema({
       fullyPaid: { type: Boolean, required: true }
     }
   ]
-}, { _id: false });
+});
 
 // Cart item schema
 const cartItemSchema = new mongoose.Schema({
@@ -78,6 +78,10 @@ const UserSchema = new mongoose.Schema({
     default: [],
   },
   dues: {
+    type: [dueSchema],
+    default: [],
+  },
+  previousDuesBackup: {
     type: [dueSchema],
     default: [],
   },
