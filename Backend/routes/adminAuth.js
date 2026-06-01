@@ -373,6 +373,82 @@ router.patch('/user/:userId/history/:type/:date/:itemName', passport.authenticat
     res.json({ message: "Item quantity updated", user });
 });
 
+// Overwrite all items for a specific date in user's history
+router.put('/user/:userId/history/:type/:date', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
+    try {
+        const { type, date } = req.params;
+        const { items } = req.body;
+        if (!["purchased_history", "dues"].includes(type))
+            return res.status(400).json({ message: "Invalid history type" });
+        if (!Array.isArray(items))
+            return res.status(400).json({ message: "Items must be an array" });
+
+        const user = await User.findById(req.params.userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        
+        let entry = user[type].find(entry => entry.date === date);
+        if (items.length === 0) {
+            user[type] = user[type].filter(e => e.date !== date);
+        } else if (!entry) {
+            user[type].push({ date, items });
+        } else {
+            entry.items = items;
+        }
+        await user.save();
+        res.json({ message: `${type} updated successfully`, user });
+    } catch (err) {
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Clear all dues (mark as fully paid)
+router.post('/user/:userId/dues/clear', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        
+        // Backup current state
+        user.previousDuesBackup = user.dues.map(d => ({
+            date: d.date,
+            items: d.items.map(i => ({ ...i.toObject() }))
+        }));
+
+        // Mark all as paid
+        user.dues = user.dues.map(d => {
+            const paidItems = d.items.map(i => ({
+                ...i.toObject(),
+                fullyPaid: true
+            }));
+            return { date: d.date, items: paidItems };
+        });
+
+        await user.save();
+        res.json({ message: "All dues marked as paid", user });
+    } catch (err) {
+        console.error("Clear dues error:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Undo clear all dues
+router.post('/user/:userId/dues/undo-clear', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        
+        if (!user.previousDuesBackup || user.previousDuesBackup.length === 0) {
+            return res.status(400).json({ message: "No previous state found to undo" });
+        }
+
+        user.dues = user.previousDuesBackup;
+        user.previousDuesBackup = []; // clear backup after undo
+        await user.save();
+        res.json({ message: "Dues restored successfully", user });
+    } catch (err) {
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 // Delete a specific purchase/dues item
 router.delete('/user/:userId/history/:type/:date/:itemName', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
     const { type, date, itemName } = req.params;
