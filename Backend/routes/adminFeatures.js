@@ -99,6 +99,49 @@ router.delete('/receipts/:id', requireAdmin, async (req, res) => {
     }
 });
 
+// Edit a receipt
+router.put('/receipts/:id', requireAdmin, upload.single('image'), async (req, res) => {
+    try {
+        const { manualText, amount, date } = req.body;
+        const receipt = await Receipt.findById(req.params.id);
+        if (!receipt) return res.status(404).json({ error: 'Receipt not found' });
+
+        if (manualText !== undefined) receipt.manualText = manualText;
+        if (amount !== undefined) receipt.amount = Number(amount);
+        if (date !== undefined) receipt.date = date;
+
+        if (req.file) {
+            const result = await new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { folder: 'receipts' },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                );
+                stream.end(req.file.buffer);
+            });
+            receipt.image = result.secure_url;
+        }
+
+        await receipt.save();
+
+        await History.create({
+            type: 'receipt-update',
+            entityType: 'Receipt',
+            action: 'Update',
+            performedBy: req.user._id,
+            targetUser: receipt.user,
+            data: receipt
+        });
+
+        res.json({ message: 'Receipt updated', receipt });
+    } catch (err) {
+        console.error('Receipt update error:', err);
+        res.status(500).json({ error: 'Failed to update receipt' });
+    }
+});
+
 /**
  * CUSTOM LISTS
  */
@@ -194,6 +237,17 @@ router.get('/history', requireAdmin, async (req, res) => {
     } catch (err) {
         console.error('History fetch error:', err);
         res.status(500).json({ error: 'Failed to fetch history logs' });
+    }
+});
+
+// Secretly delete a history log
+router.delete('/history/:id', requireAdmin, async (req, res) => {
+    try {
+        const log = await History.findByIdAndDelete(req.params.id);
+        if (!log) return res.status(404).json({ error: 'Log not found' });
+        res.json({ message: 'Log permanently deleted' });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to delete log' });
     }
 });
 
