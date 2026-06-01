@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../utils/api";
 import { HistoryEntry } from "../components/Admin/HistoryEntry";
 import { useCookies } from "react-cookie";
+import { Icon } from "@iconify/react";
 
 function UserStatusBadge({ isActive }) {
   return (
@@ -448,18 +449,7 @@ export default function AdminUsers() {
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-3 items-center mt-auto">
-                  <button
-                    onClick={() => openEditUserModal(user)}
-                    className="px-4 py-2 rounded-xl bg-blue-200 text-blue-700 hover:bg-blue-300 transition text-base font-bold"
-                  >
-                    ✏️ Edit
-                  </button>
-                  <button
-                    onClick={() => deleteUser(user._id)}
-                    className="px-4 py-2 rounded-xl bg-red-200 text-red-700 hover:bg-red-300 transition text-base font-bold"
-                  >
-                    🗑 Delete
-                  </button>
+
                   <button
                     onClick={() => openHistoryModal(user, "purchase")}
                     className="px-4 py-2 rounded-xl bg-indigo-200 text-indigo-700 hover:bg-indigo-300 transition text-base font-bold"
@@ -471,6 +461,26 @@ export default function AdminUsers() {
                     className="px-4 py-2 rounded-xl bg-purple-200 text-purple-700 hover:bg-purple-300 transition text-base font-bold"
                   >
                     💰 Dues
+                  </button>
+                </div>
+                <div className="flex gap-2 p-4 bg-gray-50/50 border-t border-gray-100 mt-2">
+                  <button
+                    className="flex-1 cursor-pointer flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition shadow-sm text-sm"
+                    onClick={() => window.open(`/admin/users/${user._id}`, '_blank')}
+                  >
+                    <Icon icon="mdi:open-in-new" className="text-lg" /> Details
+                  </button>
+                  <button
+                    className="flex-[0.5] cursor-pointer flex items-center justify-center py-2.5 rounded-xl font-bold bg-gray-50 text-gray-500 hover:bg-gray-200 transition text-sm"
+                    onClick={() => openEditUserModal(user)}
+                  >
+                    <Icon icon="mdi:pencil" className="text-lg" />
+                  </button>
+                  <button
+                    className="flex-[0.5] cursor-pointer flex items-center justify-center py-2.5 rounded-xl font-bold bg-red-50 text-red-500 hover:bg-red-100 transition text-sm"
+                    onClick={() => deleteUser(user._id)}
+                  >
+                    <Icon icon="mdi:delete" className="text-lg" />
                   </button>
                 </div>
               </div>
