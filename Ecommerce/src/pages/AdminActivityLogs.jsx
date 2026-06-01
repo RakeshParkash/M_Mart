@@ -9,7 +9,8 @@ export default function AdminActivityLogs() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ entityType: '', action: '' });
   const [showDelete, setShowDelete] = useState(false);
-  const pressTimer = useRef(null);
+  const tapCount = useRef(0);
+  const tapResetTimer = useRef(null);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -38,21 +39,22 @@ export default function AdminActivityLogs() {
     }
   };
 
-  const handlePressStart = () => {
-    pressTimer.current = setTimeout(() => {
+  const handleTap = () => {
+    tapCount.current += 1;
+    
+    if (tapCount.current >= 5) {
       setShowDelete(prev => {
         const next = !prev;
         toast.info(next ? 'Secret delete unlocked' : 'Secret delete hidden', { icon: '🕵️' });
         return next;
       });
-    }, 2000); // Reduced to 2 seconds for better usability
-  };
-
-  const handlePressEnd = () => {
-    if (pressTimer.current) {
-      clearTimeout(pressTimer.current);
-      pressTimer.current = null;
+      tapCount.current = 0;
     }
+
+    if (tapResetTimer.current) clearTimeout(tapResetTimer.current);
+    tapResetTimer.current = setTimeout(() => {
+      tapCount.current = 0;
+    }, 1000); // Reset if they stop tapping for 1 second
   };
 
   const deleteLog = async (id) => {
@@ -71,12 +73,8 @@ export default function AdminActivityLogs() {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
           <h1 
-            className="text-3xl font-extrabold text-gray-900 select-none cursor-default"
-            onMouseDown={handlePressStart}
-            onMouseUp={handlePressEnd}
-            onMouseLeave={handlePressEnd}
-            onTouchStart={handlePressStart}
-            onTouchEnd={handlePressEnd}
+            className="text-3xl font-extrabold text-gray-900 select-none cursor-pointer"
+            onClick={handleTap}
           >
             Activity Logs
           </h1>
