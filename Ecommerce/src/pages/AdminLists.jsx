@@ -8,8 +8,10 @@ export default function AdminLists() {
   const [lists, setLists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentList, setCurrentList] = useState({ title: '', items: [] });
+  const [currentList, setCurrentList] = useState({ title: '', date: '', items: [] });
   const [newItemText, setNewItemText] = useState('');
+  const [newItemPrice, setNewItemPrice] = useState('');
+  const [newItemQuantity, setNewItemQuantity] = useState('');
 
   useEffect(() => {
     fetchLists();
@@ -58,9 +60,16 @@ export default function AdminLists() {
     if (!newItemText.trim()) return;
     setCurrentList({
       ...currentList,
-      items: [...currentList.items, { text: newItemText, completed: false }]
+      items: [...currentList.items, { 
+        text: newItemText, 
+        completed: false,
+        price: newItemPrice ? Number(newItemPrice) : null,
+        quantity: newItemQuantity ? Number(newItemQuantity) : null
+      }]
     });
     setNewItemText('');
+    setNewItemPrice('');
+    setNewItemQuantity('');
   };
 
   const removeItem = (idx) => {
@@ -88,7 +97,7 @@ export default function AdminLists() {
           <p className="text-gray-500">Manage daily bills, tasks, or shopping lists</p>
         </div>
         <button
-          onClick={() => { setCurrentList({ title: '', items: [] }); setIsModalOpen(true); }}
+          onClick={() => { setCurrentList({ title: '', date: '', items: [] }); setIsModalOpen(true); }}
           className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-lg flex items-center gap-2 transition"
         >
           <Icon icon="mdi:plus" className="text-xl" />
@@ -105,7 +114,9 @@ export default function AdminLists() {
               <div className="bg-blue-50/50 p-4 border-b border-gray-100 flex justify-between items-start">
                 <div>
                   <h3 className="font-bold text-lg text-gray-800">{list.title}</h3>
-                  <p className="text-xs text-gray-400">{format(new Date(list.createdAt), 'PP')}</p>
+                  <p className="text-xs text-gray-400">
+                    {list.date ? `Date: ${list.date}` : format(new Date(list.createdAt), 'PP')}
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => { setCurrentList(list); setIsModalOpen(true); }} className="text-blue-500 p-1 hover:bg-blue-100 rounded">
@@ -124,9 +135,16 @@ export default function AdminLists() {
                         <Icon icon={item.completed ? "mdi:checkbox-marked-circle" : "mdi:checkbox-blank-circle-outline"} 
                               className={`text-xl ${item.completed ? 'text-green-500' : 'text-gray-300'}`} />
                       </button>
-                      <span className={`text-sm ${item.completed ? 'line-through text-gray-400' : 'text-gray-700'}`}>
-                        {item.text}
-                      </span>
+                      <div className="flex flex-col">
+                        <span className={`text-sm ${item.completed ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                          {item.text} {item.quantity ? `(Qty: ${item.quantity})` : ''}
+                        </span>
+                        {item.price ? (
+                          <span className={`text-xs font-semibold ${item.completed ? 'text-gray-300' : 'text-emerald-600'}`}>
+                            ₹{item.price}
+                          </span>
+                        ) : null}
+                      </div>
                     </li>
                   ))}
                   {list.items.length === 0 && <li className="text-sm text-gray-400 italic">No items</li>}
@@ -153,29 +171,53 @@ export default function AdminLists() {
               </button>
             </div>
             <div className="p-6 space-y-4 overflow-y-auto">
-              <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">List Title</label>
-                <input 
-                  type="text" className="w-full border rounded-lg p-2.5 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" 
-                  value={currentList.title} onChange={e => setCurrentList({ ...currentList, title: e.target.value })} 
-                  placeholder="E.g., Today's Supplies"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-1 text-gray-700">List Title</label>
+                  <input 
+                    type="text" className="w-full border rounded-lg p-2.5 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" 
+                    value={currentList.title} onChange={e => setCurrentList({ ...currentList, title: e.target.value })} 
+                    placeholder="E.g., Today's Supplies"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1 text-gray-700">Date (Optional)</label>
+                  <input 
+                    type="date" className="w-full border rounded-lg p-2.5 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" 
+                    value={currentList.date || ''} onChange={e => setCurrentList({ ...currentList, date: e.target.value })} 
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-1 text-gray-700">Items</label>
-                <div className="flex gap-2 mb-3">
+                <div className="flex flex-col sm:flex-row gap-2 mb-3">
                   <input 
-                    type="text" className="flex-1 border rounded-lg p-2 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" 
+                    type="text" className="flex-[2] border rounded-lg p-2 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none text-sm" 
                     value={newItemText} onChange={e => setNewItemText(e.target.value)} 
                     onKeyDown={e => e.key === 'Enter' && addItem()}
                     placeholder="Add an item..."
                   />
-                  <button onClick={addItem} className="bg-blue-100 text-blue-700 px-4 rounded-lg font-bold hover:bg-blue-200">Add</button>
+                  <input 
+                    type="number" className="flex-[0.5] border rounded-lg p-2 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none text-sm" 
+                    value={newItemQuantity} onChange={e => setNewItemQuantity(e.target.value)} 
+                    onKeyDown={e => e.key === 'Enter' && addItem()}
+                    placeholder="Qty"
+                  />
+                  <input 
+                    type="number" className="flex-[0.5] border rounded-lg p-2 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none text-sm" 
+                    value={newItemPrice} onChange={e => setNewItemPrice(e.target.value)} 
+                    onKeyDown={e => e.key === 'Enter' && addItem()}
+                    placeholder="Price"
+                  />
+                  <button onClick={addItem} className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-bold hover:bg-blue-200 text-sm">Add</button>
                 </div>
                 <ul className="space-y-2 border rounded-lg p-2 bg-gray-50 max-h-60 overflow-y-auto">
                   {currentList.items.map((item, idx) => (
                     <li key={idx} className="flex items-center justify-between bg-white p-2 rounded shadow-sm">
-                      <span className="text-sm">{item.text}</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{item.text} {item.quantity ? `(Qty: ${item.quantity})` : ''}</span>
+                        {item.price ? <span className="text-xs text-emerald-600 font-semibold">₹{item.price}</span> : null}
+                      </div>
                       <button onClick={() => removeItem(idx)} className="text-red-500 hover:bg-red-50 p-1 rounded">
                         <Icon icon="mdi:close" />
                       </button>
