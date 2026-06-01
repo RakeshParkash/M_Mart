@@ -11,6 +11,7 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const adminAuthRoutes = require('./routes/adminAuth');
+const adminFeaturesRoutes = require('./routes/adminFeatures');
 const productRoutes = require('./routes/product');
 const contactRoutes = require('./routes/contact');
 
@@ -134,6 +135,7 @@ app.get("/", (req, res) => res.send("Hello, World!"));
 
 app.use(authRoutes); // Public auth routes
 app.use('/admin',  adminAuthRoutes); // Admin routes, rate-limited
+app.use('/admin',  adminFeaturesRoutes); // Admin features
 app.use("/products", productRoutes);
 app.use("/contact", contactRoutes);
 // ========================= START SERVER ==========================
