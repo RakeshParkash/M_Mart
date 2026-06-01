@@ -27,6 +27,7 @@ router.get('/receipts', requireAdmin, async (req, res) => {
         const receipts = await Receipt.find(filter).populate('user', 'firstName lastName phone email').sort({ date: -1 });
         res.json({ receipts });
     } catch (err) {
+        console.error("GET /receipts error:", err);
         res.status(500).json({ error: 'Failed to fetch receipts' });
     }
 });
