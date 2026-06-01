@@ -9,6 +9,10 @@ const listItemSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  price: {
+    type: Number,
+    required: false,
+  },
 }, { _id: true }); // keep _id for easy updates
 
 const customListSchema = new mongoose.Schema({
