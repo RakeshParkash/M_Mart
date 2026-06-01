@@ -13,12 +13,20 @@ const listItemSchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
+  quantity: {
+    type: Number,
+    required: false,
+  },
 }, { _id: true }); // keep _id for easy updates
 
 const customListSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
+  },
+  date: {
+    type: String, // e.g. YYYY-MM-DD
+    required: false,
   },
   items: [listItemSchema],
   createdBy: {
