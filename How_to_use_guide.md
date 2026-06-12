@@ -1,0 +1,1 @@
+this is created to tell people how to use this application not how to use the code base its for the people who are using this application and want to know how to use it and what are the features of this application and how to use those features in the best way possible.
