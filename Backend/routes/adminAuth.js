@@ -12,6 +12,9 @@ const passport = require('passport');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 
+const memCache = { products: null, productsTime: 0, users: null, usersTime: 0 };
+const CACHE_TTL = 300000; // 5 mins
+
 /**
  * Admin Authentication
  */
@@ -159,6 +162,7 @@ router.post('/add-user',
             const user = await User.create({
                 firstName, lastName, phone, password: hashedPassword, ...(email && { email })
             });
+            memCache.users = null;
             res.status(201).json({ message: 'User created successfully', user });
         } catch (err) {
             console.error('Error adding user:', err);
@@ -180,6 +184,7 @@ router.delete('/delete-user/:id',
             await History.create({
                 type: 'user-deletion', performedBy: req.user?._id || null, data: user, timestamp: new Date()
             });
+            memCache.users = null;
             res.json({ message: 'User deleted and logged in history' });
         } catch (err) {
             console.error('Delete error:', err);
@@ -211,9 +216,16 @@ router.get('/users', passport.authenticate('admin-jwt', { session: false }), asy
         let totalUsers = 0;
         if (countOnly) totalUsers = await User.countDocuments();
         const skip = parseInt(req.query.skip) || 0;
+        if (!countOnly && skip === 0 && memCache.users && (Date.now() - memCache.usersTime < CACHE_TTL)) {
+            return res.json({ totalUsers: memCache.users.length, users: memCache.users });
+        }
         const users = await User.find({})
             .select('firstName lastName email phone purchased_history dues cart wishlist')
             .skip(skip);
+        if (!countOnly && skip === 0) {
+            memCache.users = users;
+            memCache.usersTime = Date.now();
+        }
         res.json({ totalUsers, users });
     } catch (error) {
         console.error('Error fetching users:', error);
@@ -230,6 +242,7 @@ router.put('/user/:id',
             if ('password' in updateFields && !updateFields.password) delete updateFields.password;
             const user = await User.findByIdAndUpdate(req.params.id, updateFields, { new: true, runValidators: true });
             if (!user) return res.status(404).json({ error: "User not found" });
+            memCache.users = null;
             res.json({ message: "User updated successfully", user });
         } catch (err) {
             console.error(err);
@@ -474,6 +487,7 @@ router.post("/product", verifyToken, isAdmin, validateBody, async (req, res) => 
     try {
         const newProduct = new Product(req.body);
         await newProduct.save();
+        memCache.products = null;
         res.json({ message: "Product created successfully", product: newProduct });
     } catch (err) {
         console.error(err);
@@ -485,7 +499,12 @@ router.post("/product", verifyToken, isAdmin, validateBody, async (req, res) => 
 // Get all products (admin only)
 router.get("/products", verifyToken, isAdmin, async (req, res) => {
     try {
+        if (memCache.products && (Date.now() - memCache.productsTime < CACHE_TTL)) {
+            return res.json({ products: memCache.products });
+        }
         const products = await Product.find();
+        memCache.products = products;
+        memCache.productsTime = Date.now();
         res.json({ products }); 
     } catch (err) {
         res.status(500).json({ message: "Failed to fetch products" });
@@ -527,6 +546,7 @@ router.put("/product/:id", verifyToken, isAdmin, validateBody, async (req, res) 
     try {
         const updated = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!updated) return res.status(404).json({ message: "Product not found" });
+        memCache.products = null;
         res.json({ message: "Product updated", product: updated });
     } catch (err) {
         res.status(400).json({ message: "Update failed", error: err.message });
@@ -538,6 +558,7 @@ router.delete("/product/:id", verifyToken, isAdmin, async (req, res) => {
     try {
         const deleted = await Product.findByIdAndDelete(req.params.id);
         if (!deleted) return res.status(404).json({ message: "Product not found" });
+        memCache.products = null;
         res.json({ message: "Product deleted" });
     } catch (err) {
         res.status(400).json({ message: "Delete failed" });
