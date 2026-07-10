@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
+  useLocation
 } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import { useAuth } from "./utils/authContext";
@@ -35,14 +36,26 @@ import AdminReceipts from "./pages/AdminReceipts";
 import AdminLists from "./pages/AdminLists";
 import AdminActivityLogs from "./pages/AdminActivityLogs";
 import AdminUserDetails from "./pages/AdminUserDetails";
-import ScrollToTop from "./components/ScrollToTop";
+// ScrollToTop inside router
+function ScrollWrapper({ scrollRef }) {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo(0, 0);
+    }
+    window.scrollTo(0, 0); // fallback
+  }, [pathname, scrollRef]);
+  return null;
+}
 
 function App() {
   const [theme, setTheme] = useState("red");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const { isAuthenticated } = useAuth();
+  const mainScrollRef = useRef(null);
 
   useEffect(() => {
     document.body.classList.remove("theme-red", "theme-blue");
@@ -59,9 +72,36 @@ function App() {
     return () => window.removeEventListener("resize", handleResize);
   }, [theme]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const windowScroll = window.scrollY || document.documentElement.scrollTop;
+      const containerScroll = mainScrollRef.current?.scrollTop || 0;
+      
+      if (windowScroll > 400 || containerScroll > 400) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    // Also attach to the container in case it is the one scrolling
+    const scrollContainer = mainScrollRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener("scroll", handleScroll);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (scrollContainer) {
+        scrollContainer.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, []);
+
   return (
     <Router>
-      <ScrollToTop />
+      <ScrollWrapper scrollRef={mainScrollRef} />
       <div className="flex min-h-screen relative">
         <ToastContainer position="bottom-right" />
         {/* Sidebar for Desktop */}
@@ -127,9 +167,10 @@ function App() {
 
         {/* Main Content */}
         <div
-          className={`flex-1 overflow-auto ${!isMobile ? (desktopSidebarOpen ? "ml-64" : "ml-20") : "pt-16"} transition-all duration-300 ease-in-out`}
+          ref={mainScrollRef}
+          className={`flex-1 overflow-auto ${!isMobile ? (desktopSidebarOpen ? "ml-64" : "ml-20") : "pt-16"} transition-all duration-300 ease-in-out relative`}
         >
-          <main className="px-2 py-8">
+          <main className="px-2 py-8 min-h-screen">
             {isAuthenticated ? (
               <Routes>
                 <Route path="/" element={<Home theme={theme} />} />
@@ -174,6 +215,20 @@ function App() {
             )}
           </main>
           <Footer />
+          
+          {/* Scroll to Top Button */}
+          {showScrollTop && (
+            <button
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                mainScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="fixed bottom-8 right-8 z-[9999] bg-blue-600/90 backdrop-blur text-white p-4 rounded-full shadow-2xl hover:bg-blue-700 hover:-translate-y-1 hover:shadow-blue-500/50 transition-all flex items-center justify-center border border-blue-500 cursor-pointer"
+              aria-label="Scroll to top"
+            >
+              <Icon icon="mdi:chevron-up" width={28} height={28} />
+            </button>
+          )}
         </div>
       </div>
     </Router>
