@@ -224,20 +224,22 @@ export default function AdminProducts() {
                       {card.isVariant && <span className="absolute top-3 left-3 bg-blue-600 text-white font-bold px-3 py-1 rounded-full text-xs shadow-md">Variant</span>}
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-2xl font-extrabold text-gray-900 mb-2 truncate group-hover:text-indigo-600 transition-colors">{card.name}</h3>
+                      <h3 className="text-2xl font-extrabold text-gray-900 mb-2 truncate group-hover:text-indigo-600 transition-colors">
+                        {card.name} <span className="text-lg text-gray-500 font-bold ml-1">({card.sizeLabel})</span>
+                      </h3>
                       {card.description && <p className="text-gray-500 text-sm mb-4 line-clamp-2 leading-relaxed">{card.description}</p>}
                     </div>
                     <div className={`grid grid-cols-2 gap-3 mb-5 ${card.isVariant ? 'bg-blue-50/50' : 'bg-gray-50'} p-4 rounded-2xl border ${card.isVariant ? 'border-blue-100' : 'border-gray-200'} shadow-sm`}>
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Stock</span>
                         <div className="text-xl font-bold text-gray-900">
-                          {card.stockValue} <span className="text-sm font-semibold text-gray-500">{card.sizeLabel}</span>
+                          {card.stockValue} <span className="text-sm font-semibold text-gray-500">{card.baseUnit}</span>
                         </div>
                       </div>
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Pricing</span>
                         <div className="text-xl font-extrabold text-green-600 tracking-tight">
-                          ₹{card.priceValue} <span className="text-sm font-bold text-gray-500">/ {card.sizeLabel}</span>
+                          ₹{card.priceValue} <span className="text-sm font-bold text-gray-500">/ {card.baseUnit}</span>
                         </div>
                       </div>
                     </div>
@@ -267,11 +269,11 @@ export default function AdminProducts() {
                         <tr key={card._id} className={`hover:bg-blue-50/50 transition-colors ${card.isVariant ? 'bg-gray-50/30' : ''}`}>
                           <td className="p-4 flex items-center gap-3">
                             {card.image ? <img src={card.image} alt={card.name} className="h-12 w-12 object-contain rounded-lg border border-gray-100 shadow-sm bg-white p-1" /> : <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center text-[10px] font-bold text-gray-400">N/A</div>}
-                            <span className="font-bold text-gray-900">{card.name} {card.isVariant && <span className="ml-2 bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-bold">Variant</span>}</span>
+                            <span className="font-bold text-gray-900">{card.name} <span className="text-gray-500 font-bold ml-1">({card.sizeLabel})</span> {card.isVariant && <span className="ml-2 bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-bold">Variant</span>}</span>
                           </td>
                           <td className="p-4"><span className="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full font-bold">{card.category}</span></td>
-                          <td className="p-4 font-bold text-gray-800">{card.stockValue} <span className="text-gray-500 font-medium">{card.sizeLabel}</span></td>
-                          <td className="p-4"><span className="text-green-600 font-extrabold">₹{card.priceValue}</span> <span className="text-gray-500 font-bold text-sm">/ {card.sizeLabel}</span></td>
+                          <td className="p-4 font-bold text-gray-800">{card.stockValue} <span className="text-gray-500 font-medium">{card.baseUnit}</span></td>
+                          <td className="p-4"><span className="text-green-600 font-extrabold">₹{card.priceValue}</span> <span className="text-gray-500 font-bold text-sm">/ {card.baseUnit}</span></td>
                           <td className="p-4 text-right space-x-3">
                             <button onClick={() => startEdit(card.parentProd)} className="text-indigo-600 font-bold hover:text-indigo-900 transition text-sm">Edit</button>
                             {!card.isVariant && <button onClick={() => deleteProduct(card.parentProd._id)} className="text-red-500 font-bold hover:text-red-700 transition text-sm">Delete</button>}
