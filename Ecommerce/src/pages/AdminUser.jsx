@@ -60,6 +60,7 @@ function UserStatusBadge({ isActive }) {
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [fetching, setFetching] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // --- Products State ---
   const [products, setProducts] = useState([]);
@@ -186,7 +187,7 @@ export default function AdminUsers() {
 
     try {
       const payload = {
-        firstName: userForm.firstName,
+        firstName: userForm.firstName || "Guest",
         lastName: userForm.lastName,
         email: userForm.email || "",
         phone: userForm.phone,
@@ -397,8 +398,14 @@ export default function AdminUsers() {
   };
 
   //
+  //
   // Render
   //
+  const filteredUsers = users.filter((u) =>
+    (u.firstName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (u.lastName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (u.phone || "").includes(searchQuery)
+  );
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 to-white p-8 text-black">
       <div className="max-w-7xl mx-auto">
@@ -414,6 +421,11 @@ export default function AdminUsers() {
           </button>
         </div>
 
+        {/* SEARCH BAR */}
+        <div className="mb-6">
+          <input type="text" placeholder="Search by name or phone..." className="w-full p-4 rounded-xl border-2 border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-lg transition shadow-sm" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+        </div>
+
         {error && (
           <div className="bg-red-100 text-red-700 rounded-xl p-4 mb-6 text-lg font-semibold">{error}</div>
         )}
@@ -424,7 +436,7 @@ export default function AdminUsers() {
           <div className="text-center text-gray-500 text-xl py-10">No users found.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <div
                 key={user._id}
                 className="bg-white shadow-2xl hover:shadow-3xl rounded-3xl p-7 flex flex-col transition-transform duration-150 hover:scale-[1.03]"
@@ -514,12 +526,11 @@ export default function AdminUsers() {
               <form onSubmit={submitUserForm} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-semibold mb-2">First Name</label>
+                    <label className="block text-sm font-semibold mb-2">First Name <span className="text-gray-400 font-normal text-xs">(Optional)</span></label>
                     <input
                       name="firstName"
                       value={userForm.firstName}
                       onChange={handleUserForm}
-                      required
                       className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                   </div>
@@ -756,16 +767,21 @@ export default function AdminUsers() {
                               <label className="block text-sm font-bold mb-2">
                                 Total Price
                               </label>
-                              <input
-                                type="number"
-                                min={0}
-                                step="0.01"
-                                name="totalPrice"
-                                value={item.totalPrice}
-                                onChange={(e) => handlePurchaseFormChange(e, idx)}
-                                className="w-full border p-3 rounded-xl"
-                              />
-                              <div className="text-xs text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <button type="button" onClick={() => handlePurchaseFormChange({target: {name: 'totalPrice', value: Math.max(0, item.totalPrice - 100)}}, idx)} className="px-2.5 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-bold transition text-gray-700">-</button>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step="0.01"
+                                  name="totalPrice"
+                                  value={item.totalPrice}
+                                  onChange={(e) => handlePurchaseFormChange(e, idx)}
+                                  className="w-full border p-2 rounded-xl text-center focus:ring-2 focus:ring-blue-500 outline-none"
+                                  onFocus={(e) => e.target.value === '0' && (e.target.value = '')}
+                                />
+                                <button type="button" onClick={() => handlePurchaseFormChange({target: {name: 'totalPrice', value: Number(item.totalPrice) + 100}}, idx)} className="px-2.5 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-bold transition text-gray-700">+</button>
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
                                 (Auto-calculated, can override)
                               </div>
                             </div>
@@ -905,16 +921,21 @@ export default function AdminUsers() {
                               <label className="block text-sm font-bold mb-2">
                                 Due Amount
                               </label>
-                              <input
-                                type="number"
-                                min={0}
-                                step="0.01"
-                                name="dueAmount"
-                                value={item.dueAmount}
-                                onChange={(e) => handleDueFormChange(e, idx)}
-                                className="w-full border p-3 rounded-xl"
-                              />
-                              <div className="text-xs text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <button type="button" onClick={() => handleDueFormChange({target: {name: 'dueAmount', value: Math.max(0, item.dueAmount - 100)}}, idx)} className="px-2.5 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-bold transition text-gray-700">-</button>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step="0.01"
+                                  name="dueAmount"
+                                  value={item.dueAmount}
+                                  onChange={(e) => handleDueFormChange(e, idx)}
+                                  className="w-full border p-2 rounded-xl text-center focus:ring-2 focus:ring-purple-500 outline-none"
+                                  onFocus={(e) => e.target.value === '0' && (e.target.value = '')}
+                                />
+                                <button type="button" onClick={() => handleDueFormChange({target: {name: 'dueAmount', value: Number(item.dueAmount) + 100}}, idx)} className="px-2.5 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-bold transition text-gray-700">+</button>
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
                                 (Auto-calculated, can override)
                               </div>
                             </div>
