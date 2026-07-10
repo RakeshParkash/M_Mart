@@ -46,22 +46,6 @@ const createAccessToken  = payload =>
       };
 
       const validateBody = (req, res, next) => {
-        const b = req.body;
-
-        if (
-          !b.name || !b.description || !b.quantity_Unit || !b.image || !b.category ||
-          !b.stock || typeof b.stock !== "object" ||
-          !["packet", "weight"].includes(b.stock.type) ||
-          typeof b.stock.value !== "number" ||
-          !b.stock.unit ||
-          !b.selling_Price || typeof b.selling_Price !== "object" ||
-          typeof b.selling_Price.price !== "number" || !b.selling_Price.unit ||
-          !b.buying_Price || typeof b.buying_Price !== "object" ||
-          typeof b.buying_Price.price !== "number" || !b.buying_Price.unit
-        ) {
-          return res.status(400).json({ message: "Invalid or missing product data" });
-        }
-
         next();
       };
 
