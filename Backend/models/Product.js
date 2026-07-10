@@ -23,13 +23,20 @@ const stockSchema = new mongoose.Schema({
 
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
-  description: { type: String, required: true },
+  description: { type: String, required: false },
   quantity_Unit: { type: String, required: true },
-  image: { type: String, required: true },
+  image: { type: String, required: false },
   stock: { type: stockSchema, required: true },  // uses sub-schema here
   selling_Price: { type: priceSchema, required: true },
-  buying_Price: { type: priceSchema, required: true },
+  buying_Price: { type: priceSchema, required: false },
   category: { type: String, required: true },
+  variants: [
+    {
+      label: { type: String, required: true }, // e.g., "500g", "250g"
+      price: { type: Number, required: true },
+      unit: { type: String, required: true }
+    }
+  ],
   // --- NEW FIELDS ---
   totalSold: { type: Number, default: 0 },      // Cumulative sold
   totalDelivered: { type: Number, default: 0 }, // Cumulative delivered
