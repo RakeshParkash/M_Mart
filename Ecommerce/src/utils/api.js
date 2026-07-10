@@ -3,7 +3,8 @@ import { setAuthFromOutside } from "../utils/authContext";
 import { clearAuthToken, getAuthToken } from "./token";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API || "https://m-mart-ad2q.onrender.com",
+  // baseURL: import.meta.env.VITE_API || "https://m-mart-ad2q.onrender.com",
+  baseURL: import.meta.env.VITE_API || "http://localhost:8080",
   withCredentials: true,
 });
 
@@ -50,13 +51,12 @@ api.interceptors.response.use(
           console.error("[API] Admin token refresh failed");
           clearAuthToken();
           setAuthFromOutside(false);
-          window.location.href = "/admin/login";
+          // Redirect handled smoothly by App.jsx route re-render
         }
       } else {
-        // For normal users, clear auth and only redirect if on protected routes
+        // For normal users, clear auth and let App.jsx handle redirect
         clearAuthToken();
         setAuthFromOutside(false);
-        if (shouldRedirect) window.location.href = "/login";
       }
     }
     return Promise.reject(err);
