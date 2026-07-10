@@ -224,7 +224,7 @@ export default function AdminProducts() {
                       {card.isVariant && <span className="absolute top-3 left-3 bg-blue-600 text-white font-bold px-3 py-1 rounded-full text-xs shadow-md">Variant</span>}
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-2xl font-extrabold text-gray-900 mb-2 truncate group-hover:text-indigo-600 transition-colors">
+                      <h3 className="text-2xl font-extrabold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
                         {card.name} <span className="text-lg text-gray-500 font-bold ml-1">({card.sizeLabel})</span>
                       </h3>
                       {card.description && <p className="text-gray-500 text-sm mb-4 line-clamp-2 leading-relaxed">{card.description}</p>}
