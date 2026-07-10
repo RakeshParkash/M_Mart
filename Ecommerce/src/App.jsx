@@ -35,6 +35,7 @@ import AdminReceipts from "./pages/AdminReceipts";
 import AdminLists from "./pages/AdminLists";
 import AdminActivityLogs from "./pages/AdminActivityLogs";
 import AdminUserDetails from "./pages/AdminUserDetails";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   const [theme, setTheme] = useState("red");
@@ -60,6 +61,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop />
       <div className="flex min-h-screen relative">
         <ToastContainer position="bottom-right" />
         {/* Sidebar for Desktop */}
