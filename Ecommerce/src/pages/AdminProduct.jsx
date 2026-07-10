@@ -151,6 +151,41 @@ export default function AdminProducts() {
   const uniqueCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
   const uniqueUnits = ["kg", "g", "litre", "ml", "packet", "piece", "bottle", "box", "dozen"];
 
+  const displayProducts = [];
+  products.forEach(prod => {
+    displayProducts.push({
+      _id: prod._id,
+      isVariant: false,
+      parentProd: prod,
+      name: prod.name,
+      image: prod.image,
+      category: prod.category,
+      description: prod.description,
+      stockValue: prod.stock?.value,
+      priceValue: prod.selling_Price?.price,
+      sizeLabel: prod.quantity_Unit,
+      baseUnit: prod.stock?.unit || ""
+    });
+    if (prod.variants && prod.variants.length > 0) {
+      prod.variants.forEach((v, idx) => {
+        displayProducts.push({
+          _id: `${prod._id}-var-${idx}`,
+          isVariant: true,
+          variantIndex: idx,
+          parentProd: prod,
+          name: prod.name,
+          image: prod.image,
+          category: prod.category,
+          description: prod.description,
+          stockValue: prod.stock?.value,
+          priceValue: v.price,
+          sizeLabel: v.label,
+          baseUnit: v.unit || prod.stock?.unit || ""
+        });
+      });
+    }
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br text-black from-sky-50 to-white p-5">
       <div className="max-w-7xl mx-auto">
@@ -181,46 +216,35 @@ export default function AdminProducts() {
           <>
             {viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-                {products.map((prod) => (
-                  <div key={prod._id} className="bg-white/80 backdrop-blur-md border border-white/40 shadow-xl hover:shadow-2xl rounded-3xl p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 group">
-                    <div className="bg-gradient-to-br from-indigo-50/50 to-purple-50/50 rounded-2xl flex items-center justify-center mb-5 overflow-hidden h-48 p-4 relative group-hover:scale-[1.02] transition-transform duration-300">
-                      {prod.image ? <img src={prod.image} className="max-h-full max-w-full object-contain drop-shadow-md" alt={prod.name} /> : <div className="text-gray-400 font-semibold text-sm">No Image</div>}
-                      <span className="absolute top-3 right-3 bg-white/90 backdrop-blur text-indigo-700 font-bold px-3 py-1 rounded-full text-xs shadow-sm">{prod.category}</span>
+                {displayProducts.map((card) => (
+                  <div key={card._id} className={`bg-white/80 backdrop-blur-md border ${card.isVariant ? 'border-blue-300 shadow-blue-100/50' : 'border-white/40'} shadow-xl hover:shadow-2xl rounded-3xl p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 group`}>
+                    <div className={`bg-gradient-to-br ${card.isVariant ? 'from-blue-50 to-cyan-50' : 'from-indigo-50/50 to-purple-50/50'} rounded-2xl flex items-center justify-center mb-5 overflow-hidden h-48 p-4 relative group-hover:scale-[1.02] transition-transform duration-300`}>
+                      {card.image ? <img src={card.image} className="max-h-full max-w-full object-contain drop-shadow-md" alt={card.name} /> : <div className="text-gray-400 font-semibold text-sm">No Image</div>}
+                      <span className="absolute top-3 right-3 bg-white/90 backdrop-blur text-indigo-700 font-bold px-3 py-1 rounded-full text-xs shadow-sm">{card.category}</span>
+                      {card.isVariant && <span className="absolute top-3 left-3 bg-blue-600 text-white font-bold px-3 py-1 rounded-full text-xs shadow-md">Variant</span>}
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-2xl font-extrabold text-gray-900 mb-2 truncate group-hover:text-indigo-600 transition-colors">{prod.name}</h3>
-                      {prod.description && <p className="text-gray-500 text-sm mb-4 line-clamp-2 leading-relaxed">{prod.description}</p>}
+                      <h3 className="text-2xl font-extrabold text-gray-900 mb-2 truncate group-hover:text-indigo-600 transition-colors">{card.name}</h3>
+                      {card.description && <p className="text-gray-500 text-sm mb-4 line-clamp-2 leading-relaxed">{card.description}</p>}
                     </div>
-                    <div className="grid grid-cols-2 gap-3 mb-5 bg-gray-50 p-4 rounded-2xl border border-gray-200 shadow-sm">
+                    <div className={`grid grid-cols-2 gap-3 mb-5 ${card.isVariant ? 'bg-blue-50/50' : 'bg-gray-50'} p-4 rounded-2xl border ${card.isVariant ? 'border-blue-100' : 'border-gray-200'} shadow-sm`}>
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Stock</span>
                         <div className="text-xl font-bold text-gray-900">
-                          {prod.stock?.value} <span className="text-sm font-semibold text-gray-500">{prod.quantity_Unit}</span>
+                          {card.stockValue} <span className="text-sm font-semibold text-gray-500">{card.sizeLabel}</span>
                         </div>
                       </div>
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Pricing</span>
                         <div className="text-xl font-extrabold text-green-600 tracking-tight">
-                          ₹{prod.selling_Price?.price} <span className="text-sm font-bold text-gray-500">/ {prod.quantity_Unit}</span>
+                          ₹{card.priceValue} <span className="text-sm font-bold text-gray-500">/ {card.sizeLabel}</span>
                         </div>
                       </div>
                     </div>
-                    {prod.variants?.length > 0 && (
-                      <div className="mb-4">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">Variants</span>
-                        <div className="flex flex-wrap gap-2">
-                          {prod.variants.map((v, idx) => (
-                             <span key={idx} className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-md font-semibold border border-blue-100">
-                               {v.label} - ₹{v.price}/{v.unit}
-                             </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                     <div className="mt-auto flex gap-2 pt-3 border-t border-gray-100">
-                      <button onClick={() => startEdit(prod)} className="flex-1 cursor-pointer py-2.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl transition-colors text-sm font-bold shadow-sm">Edit</button>
-                      <button onClick={() => window.open(`/admin/product/${prod._id}`, "_blank")} className="flex-1 cursor-pointer py-2.5 bg-gray-50 text-gray-700 hover:bg-gray-800 hover:text-white rounded-xl transition-colors text-sm font-bold shadow-sm">Details</button>
-                      <button onClick={() => deleteProduct(prod._id)} className="cursor-pointer px-4 py-2.5 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-xl transition-colors text-sm font-bold">✕</button>
+                      <button onClick={() => startEdit(card.parentProd)} className="flex-1 cursor-pointer py-2.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl transition-colors text-sm font-bold shadow-sm">Edit</button>
+                      <button onClick={() => window.open(`/admin/product/${card.parentProd._id}`, "_blank")} className="flex-1 cursor-pointer py-2.5 bg-gray-50 text-gray-700 hover:bg-gray-800 hover:text-white rounded-xl transition-colors text-sm font-bold shadow-sm">Details</button>
+                      {!card.isVariant && <button onClick={() => deleteProduct(card.parentProd._id)} className="cursor-pointer px-4 py-2.5 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-xl transition-colors text-sm font-bold">✕</button>}
                     </div>
                   </div>
                 ))}
@@ -235,34 +259,22 @@ export default function AdminProducts() {
                         <th className="p-4 font-bold tracking-wide">Category</th>
                         <th className="p-4 font-bold tracking-wide">Stock</th>
                         <th className="p-4 font-bold tracking-wide">Sell Price</th>
-                        <th className="p-4 font-bold tracking-wide">Variants</th>
                         <th className="p-4 font-bold tracking-wide text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {products.map(prod => (
-                        <tr key={prod._id} className="hover:bg-blue-50/50 transition-colors">
+                      {displayProducts.map(card => (
+                        <tr key={card._id} className={`hover:bg-blue-50/50 transition-colors ${card.isVariant ? 'bg-gray-50/30' : ''}`}>
                           <td className="p-4 flex items-center gap-3">
-                            {prod.image ? <img src={prod.image} alt={prod.name} className="h-12 w-12 object-contain rounded-lg border border-gray-100 shadow-sm bg-white p-1" /> : <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center text-[10px] font-bold text-gray-400">N/A</div>}
-                            <span className="font-bold text-gray-900">{prod.name}</span>
+                            {card.image ? <img src={card.image} alt={card.name} className="h-12 w-12 object-contain rounded-lg border border-gray-100 shadow-sm bg-white p-1" /> : <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center text-[10px] font-bold text-gray-400">N/A</div>}
+                            <span className="font-bold text-gray-900">{card.name} {card.isVariant && <span className="ml-2 bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-bold">Variant</span>}</span>
                           </td>
-                          <td className="p-4"><span className="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full font-bold">{prod.category}</span></td>
-                          <td className="p-4 font-bold text-gray-800">{prod.stock?.value} <span className="text-gray-500 font-medium">{prod.quantity_Unit}</span></td>
-                          <td className="p-4"><span className="text-green-600 font-extrabold">₹{prod.selling_Price?.price}</span> <span className="text-gray-500 font-bold text-sm">/ {prod.quantity_Unit}</span></td>
-                          <td className="p-4">
-                            {prod.variants?.length > 0 ? (
-                              <div className="flex flex-wrap gap-1">
-                                {prod.variants.map((v, idx) => (
-                                  <span key={idx} className="bg-blue-50 text-blue-700 text-[10px] px-1.5 py-0.5 rounded border border-blue-100 font-bold whitespace-nowrap">
-                                    {v.label}: ₹{v.price}
-                                  </span>
-                                ))}
-                              </div>
-                            ) : <span className="text-gray-400 text-xs">-</span>}
-                          </td>
+                          <td className="p-4"><span className="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full font-bold">{card.category}</span></td>
+                          <td className="p-4 font-bold text-gray-800">{card.stockValue} <span className="text-gray-500 font-medium">{card.sizeLabel}</span></td>
+                          <td className="p-4"><span className="text-green-600 font-extrabold">₹{card.priceValue}</span> <span className="text-gray-500 font-bold text-sm">/ {card.sizeLabel}</span></td>
                           <td className="p-4 text-right space-x-3">
-                            <button onClick={() => startEdit(prod)} className="text-indigo-600 font-bold hover:text-indigo-900 transition text-sm">Edit</button>
-                            <button onClick={() => deleteProduct(prod._id)} className="text-red-500 font-bold hover:text-red-700 transition text-sm">Delete</button>
+                            <button onClick={() => startEdit(card.parentProd)} className="text-indigo-600 font-bold hover:text-indigo-900 transition text-sm">Edit</button>
+                            {!card.isVariant && <button onClick={() => deleteProduct(card.parentProd._id)} className="text-red-500 font-bold hover:text-red-700 transition text-sm">Delete</button>}
                           </td>
                         </tr>
                       ))}
