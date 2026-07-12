@@ -526,9 +526,10 @@ export default function AdminUsers() {
               <form onSubmit={submitUserForm} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-semibold mb-2">First Name <span className="text-gray-400 font-normal text-xs">(Optional)</span></label>
+                    <label className="block text-sm font-semibold mb-2">First Name <span className="text-red-500 font-normal text-xs">*</span></label>
                     <input
                       name="firstName"
+                      required
                       value={userForm.firstName}
                       onChange={handleUserForm}
                       className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -554,25 +555,25 @@ export default function AdminUsers() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Phone</label>
+                    <label className="block text-sm font-semibold mb-2">Phone <span className="text-gray-400 font-normal text-xs">(Optional)</span></label>
                     <input
                       name="phone"
                       value={userForm.phone}
                       onChange={handleUserForm}
-                      required
                       className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      placeholder="Will use Name if left blank"
                     />
                   </div>
                   {!editing && (
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold mb-2">Password</label>
+                      <label className="block text-sm font-semibold mb-2">Password <span className="text-gray-400 font-normal text-xs">(Optional)</span></label>
                       <input
                         type="password"
                         name="password"
                         value={userForm.password}
                         onChange={handleUserForm}
-                        required={!editing}
                         className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        placeholder="Default is 123456"
                       />
                     </div>
                   )}
