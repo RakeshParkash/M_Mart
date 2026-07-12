@@ -143,8 +143,6 @@ router.post('/add-user',
     passport.authenticate('admin-jwt', { session: false }),
     [
         body('firstName').notEmpty().withMessage('First name is required'),
-        body('phone').notEmpty().withMessage('Phone number is required'),
-        body('password').notEmpty().withMessage('Password is required'),
         body('email').optional({ checkFalsy: true }).isEmail().withMessage('Email must be valid'),
         body('lastName').optional({ checkFalsy: true }).trim()
     ],
@@ -152,7 +150,12 @@ router.post('/add-user',
         const errors = validationResult(req);
         if (!errors.isEmpty())
             return res.status(400).json({ error: 'Validation failed', details: errors.array() });
-        const { firstName, lastName, email, phone, password } = req.body;
+        
+        let { firstName, lastName, email, phone, password } = req.body;
+        
+        // Auto-generate phone and password if admin leaves them blank to avoid headache
+        if (!phone || phone.trim() === '') phone = firstName.trim();
+        if (!password || password.trim() === '') password = "123456";
         try {
             if (await User.findOne({ phone }))
                 return res.status(409).json({ error: 'Phone number already exists' });
