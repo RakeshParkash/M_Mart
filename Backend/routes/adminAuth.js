@@ -318,6 +318,7 @@ router.post('/user/:userId/purchase', passport.authenticate('admin-jwt', { sessi
             }
         }
         await user.save();
+        memCache.users = null;
         res.json({ message: 'Purchase and dues updated', user });
     } catch (err) {
         console.error(err);
@@ -349,6 +350,7 @@ router.post('/user/:userId/due', passport.authenticate('admin-jwt', { session: f
             user.dues.push({ date, items });
         }
         await user.save();
+        memCache.users = null;
         res.json({ message: "Due history updated", user });
     } catch (err) {
         res.status(500).json({ error: "Internal server error" });
@@ -364,6 +366,7 @@ router.delete('/user/:userId/history/:type/:date', passport.authenticate('admin-
     if (!user) return res.status(404).json({ message: "User not found" });
     user[type] = user[type].filter(entry => entry.date !== date);
     await user.save();
+    memCache.users = null;
     res.json({ message: `${type} entry removed`, user });
 });
 
@@ -383,6 +386,7 @@ router.patch('/user/:userId/history/:type/:date/:itemName', passport.authenticat
     if (!item) return res.status(404).json({ message: "Item not found" });
     item.quantity = quantity;
     await user.save();
+    memCache.users = null;
     res.json({ message: "Item quantity updated", user });
 });
 
@@ -408,6 +412,7 @@ router.put('/user/:userId/history/:type/:date', passport.authenticate('admin-jwt
             entry.items = items;
         }
         await user.save();
+        memCache.users = null;
         res.json({ message: `${type} updated successfully`, user });
     } catch (err) {
         res.status(500).json({ error: "Internal server error" });
@@ -436,6 +441,7 @@ router.post('/user/:userId/dues/clear', passport.authenticate('admin-jwt', { ses
         });
 
         await user.save();
+        memCache.users = null;
         res.json({ message: "All dues marked as paid", user });
     } catch (err) {
         console.error("Clear dues error:", err);
@@ -456,8 +462,57 @@ router.post('/user/:userId/dues/undo-clear', passport.authenticate('admin-jwt', 
         user.dues = user.previousDuesBackup;
         user.previousDuesBackup = []; // clear backup after undo
         await user.save();
+        memCache.users = null;
         res.json({ message: "Dues restored successfully", user });
     } catch (err) {
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+// Receive Payment (Auto-distribute partial payments across oldest dues)
+router.post('/user/:userId/receive-payment', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
+    try {
+        const { amount } = req.body;
+        let paymentRemaining = Number(amount);
+        if (isNaN(paymentRemaining) || paymentRemaining <= 0) {
+            return res.status(400).json({ message: "Invalid payment amount" });
+        }
+
+        const user = await User.findById(req.params.userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // Backup current state
+        user.previousDuesBackup = user.dues.map(d => ({
+            date: d.date,
+            items: d.items.map(i => ({ ...i.toObject() }))
+        }));
+
+        // Sort dues by date (oldest first)
+        // Assume date is in YYYY-MM-DD string format
+        user.dues.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        for (let dueEntry of user.dues) {
+            if (paymentRemaining <= 0) break;
+
+            for (let item of dueEntry.items) {
+                if (paymentRemaining <= 0) break;
+                if (item.fullyPaid) continue;
+
+                if (paymentRemaining >= item.dueAmount) {
+                    paymentRemaining -= item.dueAmount;
+                    item.dueAmount = 0;
+                    item.fullyPaid = true;
+                } else {
+                    item.dueAmount -= paymentRemaining;
+                    paymentRemaining = 0;
+                }
+            }
+        }
+
+        await user.save();
+        memCache.users = null;
+        res.json({ message: `Payment applied successfully.`, user, remaining: paymentRemaining });
+    } catch (err) {
+        console.error("Receive payment error:", err);
         res.status(500).json({ error: "Internal server error" });
     }
 });
@@ -475,6 +530,7 @@ router.delete('/user/:userId/history/:type/:date/:itemName', passport.authentica
     if (entry.items.length === 0)
         user[type] = user[type].filter(entry => entry.date !== date);
     await user.save();
+    memCache.users = null;
     res.json({ message: "History item deleted", user });
 });
 
