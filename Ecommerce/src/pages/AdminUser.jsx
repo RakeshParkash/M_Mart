@@ -532,7 +532,7 @@ export default function AdminUsers() {
                       required
                       value={userForm.firstName}
                       onChange={handleUserForm}
-                      className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-900 bg-white"
                     />
                   </div>
                   <div>
@@ -541,7 +541,7 @@ export default function AdminUsers() {
                       name="lastName"
                       value={userForm.lastName}
                       onChange={handleUserForm}
-                      className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-900 bg-white"
                     />
                   </div>
                   <div>
@@ -551,7 +551,7 @@ export default function AdminUsers() {
                       name="email"
                       value={userForm.email}
                       onChange={handleUserForm}
-                      className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-900 bg-white"
                     />
                   </div>
                   <div>
@@ -560,7 +560,7 @@ export default function AdminUsers() {
                       name="phone"
                       value={userForm.phone}
                       onChange={handleUserForm}
-                      className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-900 bg-white"
                       placeholder="Will use Name if left blank"
                     />
                   </div>
@@ -572,7 +572,7 @@ export default function AdminUsers() {
                         name="password"
                         value={userForm.password}
                         onChange={handleUserForm}
-                        className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-900 bg-white"
                         placeholder="Default is 123456"
                       />
                     </div>
