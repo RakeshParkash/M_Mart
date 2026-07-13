@@ -482,7 +482,7 @@ export default function AdminUserDetails() {
                 <label className="block text-sm font-bold text-gray-700 mb-2">Record Date <span className="text-red-500">*</span></label>
                 <input 
                   type="date" 
-                  className="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-indigo-500 outline-none font-medium text-gray-800"
+                  className="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-indigo-500 outline-none font-medium text-gray-900 bg-white"
                   value={addModal.date} 
                   onChange={e => setAddModal({ ...addModal, date: e.target.value })} 
                 />
@@ -703,7 +703,7 @@ export default function AdminUserDetails() {
                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Product Name <span className="text-red-500">*</span></label>
                 <input 
                   type="text" required
-                  className="w-full border-2 border-gray-200 p-2.5 rounded-xl focus:border-indigo-500 outline-none font-medium"
+                  className="w-full border-2 border-gray-200 p-2.5 rounded-xl focus:border-indigo-500 outline-none font-medium text-gray-900 bg-white"
                   value={newProductModal.form.name}
                   onChange={e => setNewProductModal(prev => ({ ...prev, form: { ...prev.form, name: e.target.value } }))}
                 />
@@ -713,7 +713,7 @@ export default function AdminUserDetails() {
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Category</label>
                   <select 
-                    className="w-full border-2 border-gray-200 p-2.5 rounded-xl focus:border-indigo-500 outline-none font-medium"
+                    className="w-full border-2 border-gray-200 p-2.5 rounded-xl focus:border-indigo-500 outline-none font-medium text-gray-900 bg-white"
                     value={newProductModal.form.category}
                     onChange={e => setNewProductModal(prev => ({ ...prev, form: { ...prev.form, category: e.target.value } }))}
                   >
@@ -724,7 +724,7 @@ export default function AdminUserDetails() {
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Unit Type (e.g. kg/pc)</label>
                   <select 
-                    className="w-full border-2 border-gray-200 p-2.5 rounded-xl focus:border-indigo-500 outline-none font-medium"
+                    className="w-full border-2 border-gray-200 p-2.5 rounded-xl focus:border-indigo-500 outline-none font-medium text-gray-900 bg-white"
                     value={newProductModal.form.baseUnit}
                     onChange={e => setNewProductModal(prev => ({ ...prev, form: { ...prev.form, baseUnit: e.target.value } }))}
                   >
@@ -744,7 +744,7 @@ export default function AdminUserDetails() {
                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Size/Label <span className="text-gray-400 font-normal">(e.g. 500g, Large)</span></label>
                 <input 
                   type="text" required
-                  className="w-full border-2 border-gray-200 p-2.5 rounded-xl focus:border-indigo-500 outline-none font-medium"
+                  className="w-full border-2 border-gray-200 p-2.5 rounded-xl focus:border-indigo-500 outline-none font-medium text-gray-900 bg-white"
                   value={newProductModal.form.quantity_Unit}
                   onChange={e => setNewProductModal(prev => ({ ...prev, form: { ...prev.form, quantity_Unit: e.target.value } }))}
                 />
@@ -755,7 +755,7 @@ export default function AdminUserDetails() {
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Selling Price (₹) <span className="text-red-500">*</span></label>
                   <input 
                     type="number" required min="0" step="0.01"
-                    className="w-full border-2 border-gray-200 p-2.5 rounded-xl focus:border-indigo-500 outline-none font-bold text-emerald-600"
+                    className="w-full border-2 border-gray-200 p-2.5 rounded-xl focus:border-indigo-500 outline-none font-bold text-emerald-600 bg-white"
                     value={newProductModal.form.sellingPrice}
                     onChange={e => setNewProductModal(prev => ({ ...prev, form: { ...prev.form, sellingPrice: e.target.value } }))}
                   />
@@ -764,7 +764,7 @@ export default function AdminUserDetails() {
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Initial Stock <span className="text-red-500">*</span></label>
                   <input 
                     type="number" required min="0"
-                    className="w-full border-2 border-gray-200 p-2.5 rounded-xl focus:border-indigo-500 outline-none font-bold"
+                    className="w-full border-2 border-gray-200 p-2.5 rounded-xl focus:border-indigo-500 outline-none font-bold text-gray-900 bg-white"
                     value={newProductModal.form.stockValue}
                     onChange={e => setNewProductModal(prev => ({ ...prev, form: { ...prev.form, stockValue: e.target.value } }))}
                   />
