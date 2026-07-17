@@ -180,16 +180,16 @@ export default function AdminUserDetails() {
       date: new Date().toISOString().split('T')[0],
       items: [
         type === 'purchase'
-          ? { name: '', quantity: 1, totalPrice: 0, advancePaid: 0 }
-          : { name: '', quantity: 1, totalPrice: 0, advancePaid: 0, dueAmount: 0, fullyPaid: false }
+          ? { name: '', quantity: 1, totalPrice: '', advancePaid: '' }
+          : { name: '', quantity: 1, totalPrice: '', advancePaid: '', dueAmount: '', fullyPaid: false }
       ]
     });
   };
 
   const handleAddItemBlock = () => {
     const newItem = addModal.type === 'purchase'
-      ? { name: '', quantity: 1, totalPrice: 0, advancePaid: 0 }
-      : { name: '', quantity: 1, totalPrice: 0, advancePaid: 0, dueAmount: 0, fullyPaid: false };
+      ? { name: '', quantity: 1, totalPrice: '', advancePaid: '' }
+      : { name: '', quantity: 1, totalPrice: '', advancePaid: '', dueAmount: '', fullyPaid: false };
     setAddModal({ ...addModal, items: [...addModal.items, newItem] });
   };
 
@@ -231,7 +231,7 @@ export default function AdminUserDetails() {
       isOpen: true,
       sourceModal,
       itemIndex,
-      form: { name: '', category: uniqueCategories[0] || 'Uncategorized', quantity_Unit: '1 unit', baseUnit: 'piece', stockValue: 1, sellingPrice: 0 }
+      form: { name: '', category: '', quantity_Unit: '1 unit', baseUnit: 'piece', stockValue: '', sellingPrice: '' }
     });
   };
 
