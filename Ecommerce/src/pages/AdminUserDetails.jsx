@@ -121,11 +121,25 @@ export default function AdminUserDetails() {
       const product = products.find(p => p.name === currentName);
       if (product && product.selling_Price?.price) {
         const calculatedPrice = product.selling_Price.price * currentQty;
-        // Check if we have totalPrice or dueAmount in this item
         if ('totalPrice' in newItems[idx]) newItems[idx].totalPrice = calculatedPrice;
-        if ('dueAmount' in newItems[idx]) newItems[idx].dueAmount = calculatedPrice;
+        if ('dueAmount' in newItems[idx] && !('totalPrice' in newItems[idx])) newItems[idx].dueAmount = calculatedPrice;
       }
     }
+
+    // Auto calculate dueAmount from totalPrice and advancePaid if applicable
+    if ('dueAmount' in newItems[idx] && 'totalPrice' in newItems[idx]) {
+      const total = Number(field === 'totalPrice' ? value : (newItems[idx].totalPrice || 0));
+      const advance = Number(field === 'advancePaid' ? value : (newItems[idx].advancePaid || 0));
+      newItems[idx].dueAmount = Math.max(0, total - advance);
+      
+      // Auto-check fully paid if due is 0 and there is a total
+      if (total > 0 && newItems[idx].dueAmount === 0) {
+        newItems[idx].fullyPaid = true;
+      } else if (newItems[idx].dueAmount > 0) {
+        newItems[idx].fullyPaid = false;
+      }
+    }
+
     return newItems;
   };
 
@@ -167,7 +181,7 @@ export default function AdminUserDetails() {
       items: [
         type === 'purchase'
           ? { name: '', quantity: 1, totalPrice: 0, advancePaid: 0 }
-          : { name: '', quantity: 1, dueAmount: 0, fullyPaid: false }
+          : { name: '', quantity: 1, totalPrice: 0, advancePaid: 0, dueAmount: 0, fullyPaid: false }
       ]
     });
   };
@@ -175,7 +189,7 @@ export default function AdminUserDetails() {
   const handleAddItemBlock = () => {
     const newItem = addModal.type === 'purchase'
       ? { name: '', quantity: 1, totalPrice: 0, advancePaid: 0 }
-      : { name: '', quantity: 1, dueAmount: 0, fullyPaid: false };
+      : { name: '', quantity: 1, totalPrice: 0, advancePaid: 0, dueAmount: 0, fullyPaid: false };
     setAddModal({ ...addModal, items: [...addModal.items, newItem] });
   };
 
@@ -548,8 +562,16 @@ export default function AdminUserDetails() {
                       ) : (
                         <>
                           <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Total Price</label>
+                            <input type="number" className="w-full border p-2 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none font-medium" value={item.totalPrice || ''} onChange={e => handleAddModalChange(idx, 'totalPrice', Number(e.target.value))} />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Advance Paid</label>
+                            <input type="number" className="w-full border p-2 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none font-medium" value={item.advancePaid || ''} onChange={e => handleAddModalChange(idx, 'advancePaid', Number(e.target.value))} />
+                          </div>
+                          <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Due Amount</label>
-                            <input type="number" className="w-full border p-2 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none font-medium" value={item.dueAmount} onChange={e => handleAddModalChange(idx, 'dueAmount', Number(e.target.value))} />
+                            <input type="number" className="w-full border p-2 rounded-lg bg-gray-100 text-rose-700 font-black focus:ring-2 focus:ring-indigo-500 outline-none" value={item.dueAmount} onChange={e => handleAddModalChange(idx, 'dueAmount', Number(e.target.value))} />
                           </div>
                           <div className="flex items-end">
                             <label className="flex items-center gap-2 font-bold text-gray-700 bg-white border p-2 w-full rounded-lg cursor-pointer h-[42px]">
@@ -651,8 +673,16 @@ export default function AdminUserDetails() {
                     ) : (
                       <>
                         <div>
+                          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Total Price (Legacy optional)</label>
+                          <input type="number" className="w-full border p-2 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none font-medium" value={item.totalPrice || ''} onChange={e => handleEditItemChange(idx, 'totalPrice', Number(e.target.value))} />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Advance Paid (Legacy optional)</label>
+                          <input type="number" className="w-full border p-2 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none font-medium" value={item.advancePaid || ''} onChange={e => handleEditItemChange(idx, 'advancePaid', Number(e.target.value))} />
+                        </div>
+                        <div>
                           <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Due Amount</label>
-                          <input type="number" className="w-full border p-2 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none font-medium" value={item.dueAmount} onChange={e => handleEditItemChange(idx, 'dueAmount', Number(e.target.value))} />
+                          <input type="number" className="w-full border p-2 rounded-lg bg-gray-100 text-rose-700 font-black focus:ring-2 focus:ring-indigo-500 outline-none" value={item.dueAmount} onChange={e => handleEditItemChange(idx, 'dueAmount', Number(e.target.value))} />
                         </div>
                         <div className="flex items-end">
                           <label className="flex items-center gap-2 font-bold text-gray-700 bg-white border p-2 w-full rounded-lg cursor-pointer h-[42px]">
@@ -712,14 +742,17 @@ export default function AdminUserDetails() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Category</label>
-                  <select 
+                  <input
+                    list="quick-categories-list"
                     className="w-full border-2 border-gray-200 p-2.5 rounded-xl focus:border-indigo-500 outline-none font-medium text-gray-900 bg-white"
+                    name="category"
                     value={newProductModal.form.category}
                     onChange={e => setNewProductModal(prev => ({ ...prev, form: { ...prev.form, category: e.target.value } }))}
-                  >
-                    {uniqueCategories.map(c => <option key={c} value={c}>{c}</option>)}
-                    {!uniqueCategories.includes(newProductModal.form.category) && <option value={newProductModal.form.category}>{newProductModal.form.category}</option>}
-                  </select>
+                    placeholder="Select or type new..."
+                  />
+                  <datalist id="quick-categories-list">
+                    {uniqueCategories.map(c => <option key={c} value={c} />)}
+                  </datalist>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Unit Type (e.g. kg/pc)</label>
