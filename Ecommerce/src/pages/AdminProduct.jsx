@@ -35,9 +35,9 @@ export default function AdminProducts() {
       quantity_Unit: "",
       baseUnit: "",
       image: "",
-      stock: { type: "packet", value: 1, unit: "" },
-      selling_Price: { price: 0, unit: "" },
-      buying_Price: { price: 0, unit: "" },
+      stock: { type: "piece", value: '', unit: "" },
+      selling_Price: { price: '', unit: "" },
+      buying_Price: { price: '', unit: "" },
       category: "",
       variants: []
     };
