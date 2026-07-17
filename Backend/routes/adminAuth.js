@@ -321,6 +321,15 @@ router.post('/user/:userId/purchase', passport.authenticate('admin-jwt', { sessi
             }
         }
         await user.save();
+        await History.create({
+            type: 'user-purchase',
+            entityType: 'Purchase',
+            action: 'Create',
+            performedBy: req.user?._id || null,
+            targetUser: user._id,
+            data: { items },
+            timestamp: new Date()
+        });
         memCache.users = null;
         res.json({ message: 'Purchase and dues updated', user });
     } catch (err) {
@@ -353,6 +362,15 @@ router.post('/user/:userId/due', passport.authenticate('admin-jwt', { session: f
             user.dues.push({ date, items });
         }
         await user.save();
+        await History.create({
+            type: 'user-due',
+            entityType: 'Due',
+            action: 'Create',
+            performedBy: req.user?._id || null,
+            targetUser: user._id,
+            data: { items },
+            timestamp: new Date()
+        });
         memCache.users = null;
         res.json({ message: "Due history updated", user });
     } catch (err) {
@@ -444,6 +462,15 @@ router.post('/user/:userId/dues/clear', passport.authenticate('admin-jwt', { ses
         });
 
         await user.save();
+        await History.create({
+            type: 'user-due-clear',
+            entityType: 'Due',
+            action: 'Update',
+            performedBy: req.user?._id || null,
+            targetUser: user._id,
+            data: { message: "All dues marked as paid" },
+            timestamp: new Date()
+        });
         memCache.users = null;
         res.json({ message: "All dues marked as paid", user });
     } catch (err) {
@@ -512,6 +539,15 @@ router.post('/user/:userId/receive-payment', passport.authenticate('admin-jwt', 
         }
 
         await user.save();
+        await History.create({
+            type: 'user-receive-payment',
+            entityType: 'Due',
+            action: 'Update',
+            performedBy: req.user?._id || null,
+            targetUser: user._id,
+            data: { amount, remaining: paymentRemaining },
+            timestamp: new Date()
+        });
         memCache.users = null;
         res.json({ message: `Payment applied successfully.`, user, remaining: paymentRemaining });
     } catch (err) {
