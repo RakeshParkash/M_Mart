@@ -277,8 +277,7 @@ router.post('/user/:userId/purchase', passport.authenticate('admin-jwt', { sessi
             // Product stock update
             const purchasedProduct = await Product.findOne({ name });
             if (purchasedProduct) {
-                if (purchasedProduct.stock.value < quantity)
-                    return res.status(400).json({ message: `Insufficient stock for product: ${name}` });
+                // Relaxed stock checking: allow stock to go negative if not strictly maintained
                 purchasedProduct.stock.value -= quantity;
                 purchasedProduct.totalSold = (purchasedProduct.totalSold || 0) + quantity;
                 await purchasedProduct.save();
@@ -378,17 +377,61 @@ router.post('/user/:userId/due', passport.authenticate('admin-jwt', { session: f
     }
 });
 
-// Delete user's history by date
+// Delete user's history by date (Cross-linked with stock restoration)
 router.delete('/user/:userId/history/:type/:date', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
     const { type, date } = req.params;
     if (!["purchased_history", "dues"].includes(type))
         return res.status(400).json({ message: "Invalid history type" });
     const user = await User.findById(req.params.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
-    user[type] = user[type].filter(entry => entry.date !== date);
+    
+    const otherType = type === 'purchased_history' ? 'dues' : 'purchased_history';
+    
+    const targetBlock = user[type].find(entry => entry.date === date);
+    const otherBlock = user[otherType].find(entry => entry.date === date);
+    
+    if (!targetBlock && !otherBlock) return res.status(404).json({ message: "Date entry not found" });
+    
+    const restoredItems = [];
+    const allItemsToRestore = [];
+    if (targetBlock) allItemsToRestore.push(...targetBlock.items);
+    if (otherBlock) {
+        otherBlock.items.forEach(oi => {
+            if (!allItemsToRestore.some(ti => ti.name === oi.name)) {
+                allItemsToRestore.push(oi);
+            }
+        });
+    }
+
+    for (const item of allItemsToRestore) {
+        const product = await Product.findOne({ name: item.name });
+        if (product) {
+            product.stock.value += item.quantity;
+            product.totalSold = Math.max(0, (product.totalSold || 0) - item.quantity);
+            await product.save();
+            restoredItems.push({ name: item.name, quantity: item.quantity });
+        }
+    }
+    
+    const deletionRecord = {
+        deletedAt: new Date(),
+        type: 'block',
+        date,
+        targetType: type,
+        purchasedBlock: user.purchased_history.find(e => e.date === date) || null,
+        duesBlock: user.dues.find(e => e.date === date) || null,
+        restoredItems
+    };
+    
+    user.recentDeletions.push(deletionRecord);
+    if (user.recentDeletions.length > 5) user.recentDeletions.shift();
+    
+    user.purchased_history = user.purchased_history.filter(entry => entry.date !== date);
+    user.dues = user.dues.filter(entry => entry.date !== date);
+    
     await user.save();
     memCache.users = null;
-    res.json({ message: `${type} entry removed`, user });
+    res.json({ message: `Record removed and stock restored.`, user });
 });
 
 // Update quantity for a specific purchase/dues item
@@ -556,21 +599,117 @@ router.post('/user/:userId/receive-payment', passport.authenticate('admin-jwt', 
     }
 });
 
-// Delete a specific purchase/dues item
+// Delete a specific purchase/dues item (Cross-linked with stock restoration)
 router.delete('/user/:userId/history/:type/:date/:itemName', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
     const { type, date, itemName } = req.params;
     if (!["purchased_history", "dues"].includes(type))
         return res.status(400).json({ message: "Invalid history type" });
     const user = await User.findById(req.params.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
-    const entry = user[type].find(entry => entry.date === date);
-    if (!entry) return res.status(404).json({ message: "Date entry not found" });
-    entry.items = entry.items.filter(item => item.name !== itemName);
-    if (entry.items.length === 0)
-        user[type] = user[type].filter(entry => entry.date !== date);
+    
+    const otherType = type === 'purchased_history' ? 'dues' : 'purchased_history';
+    
+    const targetEntry = user[type].find(entry => entry.date === date);
+    const otherEntry = user[otherType].find(entry => entry.date === date);
+    
+    const targetItem = targetEntry?.items.find(i => i.name === itemName);
+    const otherItem = otherEntry?.items.find(i => i.name === itemName);
+    
+    if (!targetItem && !otherItem) return res.status(404).json({ message: "Item not found" });
+
+    const quantityToRestore = targetItem ? targetItem.quantity : otherItem.quantity;
+    let restored = false;
+    const product = await Product.findOne({ name: itemName });
+    if (product) {
+        product.stock.value += quantityToRestore;
+        product.totalSold = Math.max(0, (product.totalSold || 0) - quantityToRestore);
+        await product.save();
+        restored = true;
+    }
+    
+    const deletionRecord = {
+        deletedAt: new Date(),
+        type: 'item',
+        date,
+        itemName,
+        purchasedItem: user.purchased_history.find(e => e.date === date)?.items.find(i => i.name === itemName) || null,
+        dueItem: user.dues.find(e => e.date === date)?.items.find(i => i.name === itemName) || null,
+        restoredItems: restored ? [{ name: itemName, quantity: quantityToRestore }] : []
+    };
+    user.recentDeletions.push(deletionRecord);
+    if (user.recentDeletions.length > 5) user.recentDeletions.shift();
+    
+    [type, otherType].forEach(t => {
+        const entry = user[t].find(e => e.date === date);
+        if (entry) {
+            entry.items = entry.items.filter(item => item.name !== itemName);
+            if (entry.items.length === 0) {
+                user[t] = user[t].filter(e => e.date !== date);
+            }
+        }
+    });
+
     await user.save();
     memCache.users = null;
-    res.json({ message: "History item deleted", user });
+    res.json({ message: "History item deleted and stock restored.", user });
+});
+
+// Undo last deletion
+router.post('/user/:userId/history/undo-delete', passport.authenticate('admin-jwt', { session: false }), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        
+        if (!user.recentDeletions || user.recentDeletions.length === 0) {
+            return res.status(400).json({ message: "No recent deletions to undo." });
+        }
+        
+        const lastDeletion = user.recentDeletions.pop();
+        
+        // Re-deduct stock
+        if (lastDeletion.restoredItems && lastDeletion.restoredItems.length > 0) {
+            for (const item of lastDeletion.restoredItems) {
+                const product = await Product.findOne({ name: item.name });
+                if (product) {
+                    product.stock.value -= item.quantity;
+                    product.totalSold = (product.totalSold || 0) + item.quantity;
+                    await product.save();
+                }
+            }
+        }
+        
+        // Restore items to user history
+        if (lastDeletion.type === 'block') {
+            if (lastDeletion.purchasedBlock) {
+                const existing = user.purchased_history.find(e => e.date === lastDeletion.date);
+                if (existing) existing.items = [...existing.items, ...lastDeletion.purchasedBlock.items];
+                else user.purchased_history.push(lastDeletion.purchasedBlock);
+            }
+            if (lastDeletion.duesBlock) {
+                const existing = user.dues.find(e => e.date === lastDeletion.date);
+                if (existing) existing.items = [...existing.items, ...lastDeletion.duesBlock.items];
+                else user.dues.push(lastDeletion.duesBlock);
+            }
+        } else if (lastDeletion.type === 'item') {
+            if (lastDeletion.purchasedItem) {
+                let entry = user.purchased_history.find(e => e.date === lastDeletion.date);
+                if (!entry) user.purchased_history.push({ date: lastDeletion.date, items: [lastDeletion.purchasedItem] });
+                else entry.items.push(lastDeletion.purchasedItem);
+            }
+            if (lastDeletion.dueItem) {
+                let entry = user.dues.find(e => e.date === lastDeletion.date);
+                if (!entry) user.dues.push({ date: lastDeletion.date, items: [lastDeletion.dueItem] });
+                else entry.items.push(lastDeletion.dueItem);
+            }
+        }
+        
+        await user.save();
+        memCache.users = null;
+        res.json({ message: "Deletion successfully undone.", user });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
 
 /**
