@@ -145,7 +145,13 @@ export default function AdminUserDetails() {
 
   // --- EDIT MODAL LOGIC ---
   const openEditModal = (type, date, items) => {
-    setEditModal({ isOpen: true, type, date, items: JSON.parse(JSON.stringify(items)) });
+    const cleanedItems = JSON.parse(JSON.stringify(items)).map(item => ({
+      ...item,
+      totalPrice: item.totalPrice === 0 ? '' : item.totalPrice,
+      advancePaid: item.advancePaid === 0 ? '' : item.advancePaid,
+      dueAmount: item.dueAmount === 0 ? '' : item.dueAmount
+    }));
+    setEditModal({ isOpen: true, type, date, items: cleanedItems });
   };
 
   const handleEditItemChange = (idx, field, value) => {
@@ -265,10 +271,21 @@ export default function AdminUserDetails() {
         handleEditItemChange(idx, 'name', name);
       }
       
-      toast.success("Product created and selected!");
+      toast.success("Product successfully created.");
       setNewProductModal({ ...newProductModal, isOpen: false });
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to create product");
+    }
+  };
+
+  const handleUndoDelete = async () => {
+    try {
+      const res = await api.post(`/admin/user/${id}/history/undo-delete`);
+      toast.success(res.data.message || 'Undo successful');
+      fetchOnlyUser();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'No recent deletions to undo.');
     }
   };
 
@@ -288,9 +305,14 @@ export default function AdminUserDetails() {
     <div className="min-h-screen bg-gray-50 pb-32">
       {/* Header */}
       <div className="bg-indigo-900 text-white p-6 sticky top-0 z-10 shadow-md">
-        <button onClick={() => navigate('/admin/users')} className="flex items-center gap-2 text-indigo-200 hover:text-white mb-4 transition">
-          <Icon icon="mdi:arrow-left" /> Back to Users
-        </button>
+        <div className="flex justify-between items-center mb-4">
+          <button onClick={() => navigate('/admin/users')} className="flex items-center gap-2 text-indigo-200 hover:text-white transition">
+            <Icon icon="mdi:arrow-left" /> Back to Users
+          </button>
+          <button onClick={handleUndoDelete} className="flex items-center gap-2 bg-indigo-800 text-indigo-200 px-4 py-1.5 rounded-lg hover:bg-indigo-700 hover:text-white transition shadow text-sm font-bold border border-indigo-700">
+            <Icon icon="mdi:undo" className="text-lg" /> Undo Last Deletion
+          </button>
+        </div>
         <h1 className="text-3xl md:text-4xl font-extrabold">{user.firstName} {user.lastName}</h1>
         <p className="text-indigo-200 mt-1 flex items-center gap-4 text-sm md:text-base">
           <span><Icon icon="mdi:phone" className="inline mr-1" /> {user.phone}</span>
@@ -414,7 +436,7 @@ export default function AdminUserDetails() {
               {!user.dues || user.dues.length === 0 ? (
                 <div className="text-center py-12 px-4 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
                   <Icon icon="mdi:check-circle-outline" className="text-6xl text-emerald-400 mx-auto mb-3" />
-                  <p className="text-gray-500 font-medium">No dues recorded. All clear!</p>
+                  <p className="text-gray-500 font-medium">No dues recorded.</p>
                 </div>
               ) : (
                 user.dues.map((dueEntry, idx) => (
@@ -831,7 +853,7 @@ export default function AdminUserDetails() {
             </div>
             
             <form onSubmit={handleReceivePaymentSubmit} className="p-6 space-y-4 bg-gray-50 text-center">
-              <p className="text-gray-600 font-medium mb-4">Enter the total amount paid by the customer. This will automatically deduct from their oldest unpaid dues perfectly!</p>
+              <p className="text-gray-600 font-medium mb-4">Enter payment amount. This will be automatically applied to the oldest unpaid dues.</p>
               <div>
                 <label className="block text-sm font-bold text-gray-700 uppercase mb-2">Amount Received (₹)</label>
                 <input 
