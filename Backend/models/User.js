@@ -85,6 +85,10 @@ const UserSchema = new mongoose.Schema({
     type: [dueSchema],
     default: [],
   },
+  recentDeletions: {
+    type: Array,
+    default: [],
+  },
   cart: { type: [cartItemSchema], default: [] },
   wishlist: { type: [wishlistItemSchema], default: [] },
   orders: { type: [orderSchema], default: [] },         
